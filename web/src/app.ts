@@ -23,6 +23,7 @@ import { emptyState, errorState, loadingState, panel } from './lib/ui';
 import { renderVariantCard } from './views/variantCard';
 import { renderTissueHeatmap } from './views/tissueHeatmap';
 import { renderStudy } from './views/study';
+import { renderTrackBrowser } from './views/trackBrowser';
 import { maybeStartTour } from './tour';
 import type { IndexDoc, LocusDoc } from './lib/types';
 
@@ -225,6 +226,21 @@ function renderLocus(main: HTMLElement, locus: LocusDoc): void {
       el('ul', { class: 'catalog' }, ...rows),
     ),
   );
+
+  const first = locus.variants[0];
+  if (first) {
+    main.append(
+      el(
+        'p',
+        { class: 'notice' },
+        el(
+          'a',
+          { href: href(`variant/${locus.id}/${first.variant.id}?view=signal`) },
+          'Abrir el navegador de pistas de senal de este locus',
+        ),
+      ),
+    );
+  }
 }
 
 async function renderVariant(
@@ -247,27 +263,23 @@ async function renderVariant(
     return;
   }
 
+  const tabFor = (id: string, label: string) =>
+    el(
+      'a',
+      {
+        class: view === id ? 'tabs__tab is-active' : 'tabs__tab',
+        href: href(`variant/${locusId}/${variantId}?view=${id}`),
+        'aria-current': view === id ? 'page' : null,
+      },
+      label,
+    );
+
   const tabs = el(
     'nav',
     { class: 'tabs', 'aria-label': 'Vistas de la variante' },
-    el(
-      'a',
-      {
-        class: view === 'tracks' ? 'tabs__tab' : 'tabs__tab is-active',
-        href: href(`variant/${locusId}/${variantId}?view=card`),
-        'aria-current': view !== 'tracks' ? 'page' : null,
-      },
-      'Ficha de variante',
-    ),
-    el(
-      'a',
-      {
-        class: view === 'tracks' ? 'tabs__tab is-active' : 'tabs__tab',
-        href: href(`variant/${locusId}/${variantId}?view=tracks`),
-        'aria-current': view === 'tracks' ? 'page' : null,
-      },
-      'Tejido x modalidad',
-    ),
+    tabFor('card', 'Ficha de variante'),
+    tabFor('tracks', 'Tejido x modalidad'),
+    tabFor('signal', 'Pistas de senal'),
     el(
       'a',
       { class: 'tabs__back', href: href(`locus/${locusId}`) },
@@ -279,7 +291,9 @@ async function renderVariant(
   const slot = el('div', { class: 'view-slot' });
   main.append(slot);
 
-  if (view === 'tracks') {
+  if (view === 'signal') {
+    cleanup = renderTrackBrowser(slot, locus, entry.path, record.variant);
+  } else if (view === 'tracks') {
     const path = record.artifacts.tracks;
     if (!path) {
       slot.append(emptyState('Esta variante no tiene mapa de calor congelado.'));

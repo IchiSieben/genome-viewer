@@ -35,7 +35,7 @@ tests, y una capa de presentación que respeta una restricción de despliegue re
 | H2 | Esqueleto del pipeline | **Hecho** — adquisición reanudable, proveniencia sellada |
 | H3 | Vistas V1 y V2 | **Hecho** — ambos temas, responsive, consola limpia |
 | H4 | Datos reales de un locus | **Bloqueado** — necesita `ALPHAGENOME_API_KEY` |
-| H5 | V3, navegador de tracks | Pendiente |
+| H5 | V3, navegador de tracks | **Hecho** — canvas y SVG, zoom, doble resolucion |
 | H6 | Despliegue | Pendiente — requiere confirmación explícita |
 | H7 | Estudio poblacional | Pendiente — necesita H4 |
 
@@ -84,12 +84,17 @@ echo 'ALPHAGENOME_API_KEY="..."' >> ~/.env
 python -m alphagenome_platform.cli probe        # UNA variante, completa H0
 ```
 
-Tests:
+Tests y verificación:
 
 ```bash
-PYTHONPATH=pipeline/src python -m pytest pipeline/tests -q
-cd web && npm run check
+PYTHONPATH=pipeline/src python -m pytest pipeline/tests -q   # 51 tests
+cd web && npm run build && npm run verify
 ```
+
+`npm run verify` sirve el build **desde una subcarpeta**, como se despliega, y
+comprueba en un navegador real que no haya errores de consola, ni peticiones
+fallidas, ni **ninguna petición fuera del host**. Esa última comprobación es
+cómo se verifica la regla de que la web nunca llama a la API.
 
 ## Las vistas
 
@@ -105,8 +110,23 @@ banda continua de color significa un efecto específico de ese sistema. Escala
 divergente con el cero visualmente neutro y dominio por percentil 98, porque usar
 el máximo deja que una sola celda extrema aplane todo el resto.
 
-**V3 a V6** están diseñadas y contratadas, no construidas. Los paneles de estudio
-(V6) ya renderizan desde el manifiesto.
+**V3 — Navegador de tracks.** La vista insignia. Señal predicha REF contra ALT a
+lo largo del locus, con anotación de genes y transcritos debajo y un eje de
+coordenadas GRCh38 real. Rueda para acercar, arrastre para desplazar, teclado
+para todo. Al bajar de 8 192 pb de ventana cambia solo al bloque de 1 pb.
+
+Canvas para la señal densa y SVG por encima para ejes, genes y zonas
+interactivas. El dibujo recorre **píxeles y no muestras**: por cada columna de
+pantalla toma el mínimo y el máximo de las muestras que le tocan, de modo que un
+pico estrecho no desaparece por submuestreo y el coste depende del ancho en
+píxeles, no del tamaño del arreglo. El área sombreada entre las dos líneas,
+coloreada por el signo, es exactamente lo que hace la variante: dos líneas
+superpuestas sin ese relleno obligan al ojo a medir distancias verticales
+pequeñas, que es justo lo que el ojo hace mal.
+
+**V4 y V5** (sashimi de splicing, diferencia de mapas de contacto) están
+contratadas, no construidas. Los paneles de estudio (V6) ya renderizan desde el
+manifiesto.
 
 ## Decisiones, con su alternativa descartada
 

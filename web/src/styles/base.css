@@ -981,3 +981,146 @@ a {
     transition: none;
   }
 }
+
+/* --- Navegador de tracks (V3) ------------------------------------------- */
+
+.browser__chips {
+  display: flex;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  margin: var(--sp-6) 0;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-3);
+  font: inherit;
+  font-size: var(--text-2xs);
+  letter-spacing: 0.02em;
+  padding: var(--sp-2) var(--sp-4);
+  border: var(--stroke-hair) solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+.chip:hover {
+  color: var(--ink);
+}
+.chip--on {
+  border-color: var(--ink-muted);
+  color: var(--ink);
+  background: var(--surface-sunken);
+}
+.chip--action {
+  border-style: dashed;
+}
+/* Las acciones se separan de los filtros de modalidad. */
+.chip--action:first-of-type {
+  margin-left: auto;
+}
+.chip__swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  opacity: 0.45;
+}
+.chip--on .chip__swatch {
+  opacity: 1;
+}
+
+.browser__status {
+  margin: 0 0 var(--sp-4);
+  font-size: var(--text-2xs);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faint);
+}
+
+/* El canvas y el SVG se apilan: la senal densa abajo, lo interactivo arriba. */
+.browser__stage {
+  position: relative;
+  touch-action: none;
+  cursor: grab;
+  border: var(--stroke-hair) solid var(--rule);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  overflow: hidden;
+}
+.browser__stage.is-dragging {
+  cursor: grabbing;
+}
+.browser__canvas {
+  display: block;
+}
+.browser__overlay {
+  position: absolute;
+  inset: 0;
+  /* El SVG deja pasar rueda y arrastre al contenedor; solo los nodos que
+     necesitan eventos propios los recuperan. */
+  pointer-events: none;
+}
+
+.browser__tick {
+  stroke: var(--rule-strong);
+}
+.browser__tick-label {
+  fill: var(--ink-faint);
+  font-size: var(--text-3xs);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.browser__axis-title {
+  fill: var(--ink-muted);
+  font-size: var(--text-3xs);
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+.browser__lane-label {
+  fill: var(--ink);
+  font-size: var(--text-2xs);
+}
+.browser__lane-sub {
+  fill: var(--ink-faint);
+  font-size: var(--text-3xs);
+  letter-spacing: 0.04em;
+}
+.browser__lane-rule {
+  stroke: var(--rule);
+  stroke-width: 1;
+}
+.browser__variant-mark {
+  stroke: var(--ink);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+  opacity: 0.75;
+}
+.browser__variant-label {
+  fill: var(--ink);
+  font-size: var(--text-3xs);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+.browser__gene-body {
+  stroke: var(--ink-faint);
+  stroke-width: 1;
+}
+.browser__gene-arrow {
+  fill: none;
+  stroke: var(--ink-faint);
+  stroke-width: 1;
+}
+.browser__exon {
+  fill: var(--ink-muted);
+  opacity: 0.75;
+}
+.browser__gene-label {
+  fill: var(--ink-muted);
+  font-size: var(--text-3xs);
+  font-weight: 600;
+}
+.browser__empty-note {
+  fill: var(--ink-faint);
+  font-size: var(--text-2xs);
+}

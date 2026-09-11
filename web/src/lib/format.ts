@@ -110,3 +110,39 @@ export function variantLabel(v: {
 }): string {
   return `${coordinate(v.chromosome, v.position)} ${v.ref}>${v.alt}`;
 }
+
+/**
+ * Marcas redondas dentro de un intervalo, al estilo de `d3.ticks`.
+ *
+ * Se escribe a mano en vez de traer `d3-array` (que ademas no publica tipos)
+ * porque es lo unico que se necesitaba de la libreria. El paso se elige entre
+ * 1, 2 y 5 por potencia de diez, que es lo que da coordenadas genomicas
+ * legibles: 54 500 000 y no 54 512 384.
+ *
+ * @param start Inicio del intervalo.
+ * @param stop Fin del intervalo.
+ * @param count Numero aproximado de marcas deseadas.
+ * @returns Las marcas, en orden ascendente.
+ */
+export function niceTicks(start: number, stop: number, count: number): number[] {
+  if (!(count > 0) || !Number.isFinite(start) || !Number.isFinite(stop)) return [];
+  if (start === stop) return [start];
+
+  const span = Math.abs(stop - start);
+  const rough = span / count;
+  const power = Math.floor(Math.log10(rough));
+  const base = Math.pow(10, power);
+  const ratio = rough / base;
+  const step = (ratio >= 5 ? 10 : ratio >= 2 ? 5 : ratio >= 1 ? 2 : 1) * base;
+
+  const lo = Math.min(start, stop);
+  const hi = Math.max(start, stop);
+  const first = Math.ceil(lo / step) * step;
+
+  const out: number[] = [];
+  // El limite duro evita que un paso degenerado congele la pestana.
+  for (let value = first, guard = 0; value <= hi && guard < 1000; value += step, guard++) {
+    out.push(Math.round(value * 1e6) / 1e6);
+  }
+  return out;
+}

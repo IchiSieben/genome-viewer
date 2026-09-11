@@ -214,12 +214,27 @@ def _variant_id(chromosome: str, position: int, ref: str, alt: str) -> str:
 # --------------------------------------------------------------------------
 
 
-def _synthetic_signal(rng: np.random.Generator, length: int, peaks: int) -> np.ndarray:
+def _synthetic_signal(
+    rng: np.random.Generator,
+    length: int,
+    peaks: int,
+    focus: int | None = None,
+    focus_width: float = 24.0,
+) -> np.ndarray:
     """Senal de cobertura con picos, parecida en forma a la real.
 
     No pretende imitar biologia: solo tener la estadistica que estresa al
     visor, que es cola pesada, fondo bajo y picos estrechos. Si el visor se ve
     bien con esto, se vera bien con datos reales.
+
+    Args:
+      rng: Generador determinista.
+      length: Numero de muestras.
+      peaks: Picos de fondo repartidos al azar.
+      focus: Si se da, se garantiza un pico ahi. Sin el, la variante caeria en
+        una zona de fondo en la mayoria de los tracks y la diferencia REF/ALT
+        seria invisible: la vista no demostraria lo que dice demostrar.
+      focus_width: Ancho del pico garantizado, en muestras.
     """
     x = np.abs(rng.normal(0.0, 0.08, length))
     grid = np.arange(length)
@@ -228,6 +243,10 @@ def _synthetic_signal(rng: np.random.Generator, length: int, peaks: int) -> np.n
         width = max(2.0, rng.gamma(2.0, 6.0))
         height = rng.gamma(2.0, 1.4)
         x += height * np.exp(-0.5 * ((grid - center) / width) ** 2)
+    if focus is not None:
+        x += rng.uniform(2.5, 6.0) * np.exp(
+            -0.5 * ((grid - focus) / focus_width) ** 2
+        )
     return x
 
 
@@ -242,7 +261,7 @@ def _synthetic_delta(
     grid = np.arange(ref.size)
     envelope = np.exp(-0.5 * ((grid - focus) / reach) ** 2)
     direction = -1.0 if rng.random() < 0.5 else 1.0
-    delta = direction * ref * envelope * rng.uniform(0.15, 0.75)
+    delta = direction * ref * envelope * rng.uniform(0.3, 0.8)
     delta[envelope < 1e-4] = 0.0
     return delta
 
@@ -274,7 +293,13 @@ def _write_signal_level(
         reach = max(3.0, length / 256)
 
         for t in range(n_tracks):
-            ref = _synthetic_signal(rng, length, peaks=max(3, length // 900))
+            ref = _synthetic_signal(
+                rng,
+                length,
+                peaks=max(3, length // 900),
+                focus=focus,
+                focus_width=max(6.0, reach * 0.8),
+            )
             delta = _synthetic_delta(rng, ref, focus, reach)
             q_ref = quantize.quantize(ref, "linear")
             q_delta = quantize.quantize(delta, "linear")

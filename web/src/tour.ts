@@ -59,6 +59,14 @@ const STEPS: Step[] = [
       'aporta cada uno y en que direccion, agrupados en sus cuatro familias.',
   },
   {
+    target: '.browser__stage',
+    title: 'Recorrer el locus',
+    body:
+      'La linea gris es la senal de referencia y la de color es la de la ' +
+      'variante. El area sombreada entre las dos es la diferencia. Rueda para ' +
+      'acercar, arrastra para desplazar, tecla 0 para volver al locus entero.',
+  },
+  {
     target: '.heatmap-scroll',
     title: 'Ubicuo o especifico de tejido',
     body:
