@@ -1,0 +1,41 @@
+{
+  "measuredAt": "2026-09-11T12:29:51.736Z",
+  "runs": {
+    "homeFast": {
+      "ms": 120,
+      "transferredBytes": 19113
+    },
+    "cardFast": {
+      "ms": 154,
+      "transferredBytes": 22224
+    },
+    "browserFast": {
+      "ms": 161,
+      "transferredBytes": 421192
+    },
+    "homeSlow3G": {
+      "ms": 1336,
+      "transferredBytes": 19113
+    },
+    "cardSlow3G": {
+      "ms": 2140,
+      "transferredBytes": 22224
+    },
+    "browserSlow3G": {
+      "ms": 2148,
+      "transferredBytes": 20303
+    },
+    "interaction": {
+      "lastFrameMs": 4.8,
+      "dragSteps": 24,
+      "wheelSteps": 12,
+      "wheelTotalMs": 1101,
+      "memory": {
+        "usedJSHeapBytes": 10000000,
+        "totalJSHeapBytes": 10000000
+      },
+      "statusLine": "chr12:54,054,228-55,102,803 · 1.05 Mb · resolucion 128 pb por bin · 4.8 ms por frame",
+      "frames": []
+    }
+  }
+}

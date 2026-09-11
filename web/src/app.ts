@@ -412,6 +412,35 @@ function describeError(error: unknown): { title: string; detail: string } {
   };
 }
 
+/**
+ * Arranca las descargas que la ruta va a necesitar, sin esperar al indice.
+ *
+ * Con 400 ms de latencia, abrir una variante costaba TRES viajes en serie:
+ * index.json, luego locus.json, luego card.json. Pero las rutas de los dos
+ * ultimos son parte del contrato, no un dato: `loci/<id>/locus.json` y
+ * `variants/<vid>/card.json`. Se piden por convencion en paralelo con el
+ * indice, y como el cache es por URL, cuando el codigo real los pide ya estan
+ * en vuelo o resueltos. Si el indice dijera otra ruta, esa peticion se
+ * descarta y se hace la buena: la especulacion nunca cambia lo que se muestra.
+ */
+function warmUp(current: Route): void {
+  const locusId = current.params['locus'];
+  if (!locusId) return;
+  const locusPath = `loci/${locusId}/locus.json`;
+  loadLocus(locusPath).catch(() => {});
+
+  const variantId = current.params['variant'];
+  if (!variantId || current.name !== 'variant') return;
+  const view = current.query.get('view') ?? 'card';
+  const file = view === 'tracks' ? 'tracks.json' : 'card.json';
+  if (view === 'card' || view === 'tracks') {
+    // `loadCard`/`loadTracks` resuelven la ruta relativa al locus, igual que
+    // hara el render; la clave de cache coincide exactamente.
+    const relative = `variants/${variantId}/${file}`;
+    (view === 'tracks' ? loadTracks : loadCard)(locusPath, relative).catch(() => {});
+  }
+}
+
 async function route(): Promise<void> {
   const main = document.getElementById('main');
   if (!main) return;
@@ -422,6 +451,7 @@ async function route(): Promise<void> {
   window.scrollTo(0, 0);
 
   const current = parseRoute();
+  warmUp(current);
   main.append(loadingState('el catalogo'));
 
   try {

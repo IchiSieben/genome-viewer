@@ -9,6 +9,11 @@
       content="Visor interactivo de efectos de variante predichos por AlphaGenome. Sitio estatico, sin backend, sin llamadas a la API."
     />
     <meta name="color-scheme" content="light dark" />
+
+    <!-- El catalogo se pide EN PARALELO con la descarga del script, no
+         despues de ejecutarlo. Con 400 ms de latencia, cada viaje en serie que
+         se elimina vale mas que cualquier recorte de bytes. -->
+    <link rel="preload" href="data/index.json" as="fetch" crossorigin="anonymous" />
   </head>
   <body>
     <a class="skip-link" href="#main">Saltar al contenido</a>

@@ -187,6 +187,11 @@ a {
 /* --- Panel -------------------------------------------------------------- */
 
 .panel {
+  /* El navegador se salta el layout de lo que no se ve. Una linea de CSS que
+     importa en la ficha, que apila cuatro paneles altos. `contain-intrinsic-size`
+     evita que la barra de desplazamiento salte al entrar en vista. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 420px;
   background: var(--surface);
   border: var(--stroke-hair) solid var(--rule);
   border-radius: var(--radius-md);

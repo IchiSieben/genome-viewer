@@ -5,6 +5,7 @@
 // clase de fallo que importa: una ruta absoluta que funciona en localhost y da
 // 404 en produccion.
 import { createServer } from 'node:http';
+import { gzipSync } from 'node:zlib';
 import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -48,7 +49,23 @@ const server = createServer(async (req, res) => {
   }
   try {
     const body = await readFile(file);
-    res.writeHead(200, { 'content-type': TYPES[extname(file)] ?? 'application/octet-stream' });
+    const type = TYPES[extname(file)] ?? 'application/octet-stream';
+    // Se comprime como lo hace cualquier servidor real. Sin esto la medicion
+    // con red estrangulada transfiere bytes SIN comprimir y da un tiempo que
+    // no se parece a produccion: es medir mal, no medir despacio.
+    const acceptsGzip = (req.headers['accept-encoding'] || '').includes('gzip');
+    const compressible = /text|json|javascript|svg/.test(type);
+    if (acceptsGzip && compressible && body.length > 512) {
+      const packed = gzipSync(body, { level: 6 });
+      res.writeHead(200, {
+        'content-type': type,
+        'content-encoding': 'gzip',
+        'vary': 'Accept-Encoding',
+      });
+      res.end(packed);
+      return;
+    }
+    res.writeHead(200, { 'content-type': type });
     res.end(body);
   } catch {
     res.writeHead(404).end('no encontrado');

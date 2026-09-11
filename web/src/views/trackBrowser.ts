@@ -370,6 +370,52 @@ export function renderTrackBrowser(
   let disposed = false;
   const tip = tooltip();
 
+  // ---- Presupuesto de frames ---------------------------------------------
+  // Un render por FRAME como maximo, nunca uno por evento de rueda o de
+  // movimiento. Sin esto, una rueda rapida encola decenas de redibujados
+  // completos y el visor se siente pegajoso justo cuando se le pide fluidez.
+  let renderPending = false;
+  let lastFrameMs = 0;
+
+  function scheduleDraw(): void {
+    if (renderPending || disposed) return;
+    renderPending = true;
+    requestAnimationFrame(() => {
+      renderPending = false;
+      const t0 = performance.now();
+      draw();
+      lastFrameMs = performance.now() - t0;
+    });
+  }
+
+  // ---- Transformacion durante el gesto -----------------------------------
+  // Mientras el gesto esta vivo se aplica una transformacion barata sobre el
+  // bitmap ya dibujado; el redibujado a resolucion completa espera a que el
+  // gesto se asiente. Es la diferencia entre arrastrar a 60 fps y arrastrar a
+  // la velocidad a la que se sepa recalcular 8192 muestras por lane.
+  let settleTimer = 0;
+  let gestureScale = 1;
+  let gestureShift = 0;
+
+  function applyGestureTransform(): void {
+    const origin = LABEL_WIDTH;
+    canvas.style.transformOrigin = `${origin}px 0`;
+    canvas.style.transform =
+      gestureScale === 1 && gestureShift === 0
+        ? ''
+        : `translateX(${gestureShift}px) scaleX(${gestureScale})`;
+  }
+
+  function settle(): void {
+    window.clearTimeout(settleTimer);
+    settleTimer = window.setTimeout(() => {
+      gestureScale = 1;
+      gestureShift = 0;
+      applyGestureTransform();
+      void ensureBlocks().then(scheduleDraw);
+    }, 140);
+  }
+
   function lanes(): LaneData[] {
     const out: LaneData[] = [];
     const span = view.end - view.start;
@@ -513,6 +559,7 @@ export function renderTrackBrowser(
       `${fmt.intervalLabel(locus.interval.chromosome, view.start, view.end)} · ` +
       `${fmt.span(span)} · ` +
       `resolucion ${level === 'detail' ? '1 pb' : `${overview.binSize} pb por bin`}` +
+      (lastFrameMs ? ` · ${lastFrameMs.toFixed(1)} ms por frame` : '') +
       (data.length ? '' : ' · elige al menos una modalidad') +
       (detailOutOfRange
         ? ` · el bloque de 1 pb solo cubre ${fmt.intervalLabel(
@@ -552,11 +599,20 @@ export function renderTrackBrowser(
     const span = (view.end - view.start) * factor;
     // El zoom se ancla al cursor: el punto bajo el puntero no se mueve.
     const fraction = (anchorBp - view.start) / (view.end - view.start);
+    const before = view;
     view = clampView({
       start: anchorBp - fraction * span,
       end: anchorBp + (1 - fraction) * span,
     });
-    void ensureBlocks().then(draw);
+
+    // Escalado inmediato del bitmap para que el gesto responda en el frame,
+    // y redibujado de verdad cuando la rueda se detiene.
+    const ratio = (before.end - before.start) / (view.end - view.start);
+    gestureScale *= ratio;
+    const anchorPx = scale.toPixel(anchorBp) - LABEL_WIDTH;
+    gestureShift = (gestureShift - anchorPx) * ratio + anchorPx;
+    applyGestureTransform();
+    settle();
   }
 
   let dragging = false;
@@ -567,6 +623,7 @@ export function renderTrackBrowser(
     dragging = true;
     dragStartX = event.clientX;
     dragStartView = { ...view };
+    window.clearTimeout(settleTimer);
     stage.setPointerCapture(event.pointerId);
     stage.classList.add('is-dragging');
   }
@@ -578,11 +635,17 @@ export function renderTrackBrowser(
     if (dragging) {
       const span = dragStartView.end - dragStartView.start;
       const deltaBp = ((dragStartX - event.clientX) / pw) * span;
+      const previous = view.start;
       view = clampView({
         start: dragStartView.start + deltaBp,
         end: dragStartView.end + deltaBp,
       });
-      draw();
+      // Lo que de verdad se movio puede ser menos de lo arrastrado si la vista
+      // topo con el borde del locus; el desplazamiento visual sigue a eso, no
+      // al raton, para que el tope se vea.
+      const movedBp = view.start - previous;
+      gestureShift -= (movedBp / span) * pw;
+      applyGestureTransform();
       return;
     }
 
@@ -620,6 +683,7 @@ export function renderTrackBrowser(
   }
 
   function onPointerUp(event: PointerEvent): void {
+    if (dragging) settle();
     dragging = false;
     try {
       stage.releasePointerCapture(event.pointerId);
@@ -646,7 +710,7 @@ export function renderTrackBrowser(
       return;
     }
     event.preventDefault();
-    void ensureBlocks().then(draw);
+    void ensureBlocks().then(scheduleDraw);
   }
 
   // ---- Carga --------------------------------------------------------------
@@ -706,7 +770,7 @@ export function renderTrackBrowser(
         else selected.add(modality);
         buildChips();
         status.textContent = 'Cargando senal...';
-        void ensureBlocks().then(draw);
+        void ensureBlocks().then(scheduleDraw);
       });
       chips.append(chip);
     }
@@ -724,7 +788,7 @@ export function renderTrackBrowser(
       jump.addEventListener('click', () => {
         view = clampView({ start: detail.interval.start, end: detail.interval.end });
         status.textContent = 'Cargando senal...';
-        void ensureBlocks().then(draw);
+        void ensureBlocks().then(scheduleDraw);
       });
       chips.append(jump);
     }
@@ -736,7 +800,7 @@ export function renderTrackBrowser(
     });
     reset.addEventListener('click', () => {
       view = { ...full };
-      void ensureBlocks().then(draw);
+      void ensureBlocks().then(scheduleDraw);
     });
     chips.append(reset);
   }
@@ -777,9 +841,9 @@ export function renderTrackBrowser(
 
   const stopResize = onResize(body, (w) => {
     width = w;
-    draw();
+    scheduleDraw();
   });
-  const stopTheme = onThemeChange(draw);
+  const stopTheme = onThemeChange(scheduleDraw);
 
   status.textContent = 'Cargando senal...';
   void (async () => {
@@ -808,6 +872,7 @@ export function renderTrackBrowser(
 
   return () => {
     disposed = true;
+    window.clearTimeout(settleTimer);
     stopResize();
     stopTheme();
     tip.hide();
