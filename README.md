@@ -30,18 +30,24 @@ tests, y una capa de presentación que respeta una restricción de despliegue re
 
 | Hito | Qué es | Estado |
 |---|---|---|
-| H0 | Verificación de acceso | **Parcial** — sin llave; esquema documentado leyendo el cliente |
+| H0 | Verificación de acceso | **Hecho** — 39 llamadas; los 18 features del AVI resueltos |
 | H1 | Contrato de datos y fixtures | **Hecho** — 7 esquemas, 86 artefactos, 51 tests |
 | H2 | Esqueleto del pipeline | **Hecho** — adquisición reanudable, proveniencia sellada |
 | H3 | Vistas V1 y V2 | **Hecho** — ambos temas, responsive, consola limpia |
-| H4 | Datos reales de un locus | **Bloqueado** — necesita `ALPHAGENOME_API_KEY` |
-| H5 | V3, navegador de tracks | **Hecho** — canvas y SVG, zoom, doble resolucion |
-| H6 | Despliegue | Pendiente — requiere confirmación explícita |
-| H7 | Estudio poblacional | Pendiente — necesita H4 |
+| H4 | Datos reales de tres loci | **Hecho** — PPP1R1A/PDE1B, RASGEF1B, RPL13A |
+| H5 | V3, navegador de tracks | **Hecho** — canvas y SVG, zoom, doble resolución |
+| H6 | Despliegue | **Hecho** — [en línea](https://darkgray-alpaca-401605.hostingersite.com/) |
+| N1 | Mapa de saturación | **Hecho** — 512 posiciones × 3 alternativas |
+| N2 | Enlace cruzado entre vistas | **Hecho** |
+| N3 | Estado en la URL | **Hecho** — locus, variante, vista, pistas y zoom |
+| H7 | Estudio poblacional | Pendiente |
 
-**No hay llave de API en esta máquina**, así que todo lo que se ve corre sobre
-**fixtures sintéticas**. Están marcadas como tales en cada artefacto y la web lo
-avisa en pantalla con una franja ámbar. No son predicciones de AlphaGenome.
+**En línea:** <https://darkgray-alpaca-401605.hostingersite.com/>
+
+Los datos son **reales**, del Atlas API y del Model API. El generador de
+fixtures sintéticas sigue existiendo para desarrollar sin gastar cuota, y lo que
+sale de él se sella `source: "synthetic"` y la web lo avisa con una franja
+ámbar. Nada sintético está publicado.
 
 ## Las tres restricciones que definen la arquitectura
 
@@ -84,11 +90,21 @@ echo 'ALPHAGENOME_API_KEY="..."' >> ~/.env
 python -m alphagenome_platform.cli probe        # UNA variante, completa H0
 ```
 
+Datos reales, con la llave en `~/.env`:
+
+```bash
+python -m alphagenome_platform.cli build-locus          # los tres loci
+python -m alphagenome_platform.cli build-locus rpl13a   # solo uno
+```
+
 Tests y verificación:
 
 ```bash
-PYTHONPATH=pipeline/src python -m pytest pipeline/tests -q   # 51 tests
-cd web && npm run build && npm run verify
+PYTHONPATH=pipeline/src python -m pytest pipeline/tests -q   # 54 tests
+cd web && npm run build
+npm run verify         # 16 escenarios en Chromium, dos temas, ancho de movil
+npm run verify:links   # enlace cruzado y estado en la URL
+npm run measure        # tiempo hasta interactivo y coste por frame
 ```
 
 `npm run verify` sirve el build **desde una subcarpeta**, como se despliega, y
@@ -123,6 +139,18 @@ píxeles, no del tamaño del arreglo. El área sombreada entre las dos líneas,
 coloreada por el signo, es exactamente lo que hace la variante: dos líneas
 superpuestas sin ese relleno obligan al ojo a medir distancias verticales
 pequeñas, que es justo lo que el ojo hace mal.
+
+**N1 — Mapa de saturación.** Para cada posición de una ventana de 512 pb, el AVI
+de las **tres** bases alternativas posibles. Es el gráfico insignia de la
+genómica con aprendizaje profundo y no existía en navegador para AlphaGenome.
+Los motivos aparecen solos, como columnas contiguas de color fuerte. La
+secuencia de referencia no se pide a ninguna fuente extra: cada variante llega
+como `chr:pos:REF>ALT`, así que se deduce de la propia respuesta del Atlas.
+
+Escala **secuencial**, no divergente, aunque el sistema visual reserve la
+divergente para diferencias REF/ALT: el AVI mide impacto, no dirección, y una
+rampa divergente inventaría un eje que el dato no tiene. El score crudo con
+signo se guarda igual, por si otra vista lo quiere.
 
 **V4 y V5** (sashimi de splicing, diferencia de mapas de contacto) están
 contratadas, no construidas. Los paneles de estudio (V6) ya renderizan desde el
@@ -159,16 +187,30 @@ que se descartó y por qué. Las tres que más definen el proyecto:
   resultado. El esquema **no deja** marcar un estudio como concluyente sin poder
   medido. Un resultado nulo se muestra con la misma prominencia que uno positivo.
 
+## Lo que la corrida con datos reales corrigió
+
+**La variante semilla de los documentos de contexto está mal.** `rs884510` se da
+como `chr12:54578515:T>C` y el servidor la rechaza: la base de referencia real
+ahí es **C**. Los alelos que el Atlas conoce son A, G y T. El pipeline ahora
+resuelve cada variante contra el servidor antes de usarla, en vez de fiarse de
+un literal.
+
+**Los 18 features del AVI ya no son provisionales.** Salieron de una consulta
+real y viven en `pipeline/src/alphagenome_platform/avi.py` con su familia
+explícita. Un nombre desconocido **lanza**: es mejor que el pipeline se detenga
+a que la cascada de V1 caiga callada en la familia equivocada.
+
+**La cascada cierra.** `base + Σ contribuciones = score crudo`, con el valor base
+medido en **-0,049016** y una dispersión entre variantes de 3,5e-05. Un test lo
+comprueba en cada ficha.
+
 ## Riesgo principal que sigue vivo
 
-**Los nombres exactos de los 18 features del AVI.** Son server-side: `grep -rn
-"AVI"` sobre el paquete `alphagenome` 0.9.0 completo da **cero coincidencias**.
-V1 los necesita.
-
-Mitigación: el contrato los modela como lista ordenada de objetos con
-`id`/`label`/`family`, no como 18 campos fijos. Si el servidor devuelve otros
-nombres, cambia la fixture y no el código del visor. El costo de equivocarse es
-una cadena de texto.
+**Ensembl REST es intermitente.** Devuelve 500 y agota el tiempo de lectura con
+frecuencia para ciertos genes, PPP1R1A entre ellos. La anotación se pide por
+trozos, se cachea en disco, cae de `lookup` a `overlap` como respaldo y **nunca
+bloquea una corrida**: un locus se congela con o sin carril de genes. Aun así,
+reconstruir desde cero en un mal momento puede dar un carril incompleto.
 
 ## Estructura
 

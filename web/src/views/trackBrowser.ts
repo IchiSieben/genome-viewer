@@ -29,7 +29,7 @@ import type { AnnotationsDoc, LocusDoc, Variant } from '../lib/types';
 const LANE_HEIGHT = 58;
 const LANE_GAP = 6;
 const AXIS_HEIGHT = 28;
-const GENE_LANE_HEIGHT = 54;
+const GENE_LANE_HEIGHT = 72;
 const LABEL_WIDTH = 132;
 const RIGHT_PAD = 12;
 /** Menos de esto en pantalla y conviene el bloque de 1 pb, si lo cubre. */
@@ -235,7 +235,22 @@ function drawAxis(view: Viewport, plotWidth: number, chromosome: string): SVGGEl
   return group;
 }
 
-/** Carril de genes y transcritos, con exones y sentido de la hebra. */
+/**
+ * Carril de genes y transcritos, con exones y sentido de la hebra.
+ *
+ * Reparto en sub-carriles
+ * -----------------------
+ * Un locus de 1 Mb trae del orden de 45 genes anotados. Dibujarlos todos en una
+ * linea deja los nombres unos encima de otros y el carril se vuelve ilegible:
+ * medido en el sitio desplegado, no supuesto. Aqui se empaquetan en sub-carriles
+ * de forma que dos genes solo comparten carril si NO se solapan en pantalla, y
+ * la etiqueta solo se escribe si de verdad cabe en el ancho del gen.
+ */
+const GENE_LANE_STEP = 15;
+const MAX_GENE_LANES = 3;
+/** Ancho aproximado de un caracter a 10 px en la tipografia de la etiqueta. */
+const LABEL_CHAR_PX = 5.4;
+
 function drawGenes(
   annotations: AnnotationsDoc | null,
   view: Viewport,
@@ -266,29 +281,56 @@ function drawGenes(
   }
 
   const scale = makeScale(view, plotWidth);
+  const right = LABEL_WIDTH + plotWidth;
 
-  annotations.genes.forEach((gene, index) => {
-    const y = top + 12 + (index % 2) * 22;
-    const x0 = Math.max(LABEL_WIDTH, scale.toPixel(gene.start));
-    const x1 = Math.min(LABEL_WIDTH + plotWidth, scale.toPixel(gene.end));
-    if (x1 < LABEL_WIDTH || x0 > LABEL_WIDTH + plotWidth) return;
+  // Solo lo que se ve, ordenado por inicio: el empaquetado necesita orden.
+  const visible = annotations.genes
+    .filter((g) => g.end >= view.start && g.start <= view.end)
+    .map((gene) => ({
+      gene,
+      x0: Math.max(LABEL_WIDTH, scale.toPixel(gene.start)),
+      x1: Math.min(right, scale.toPixel(gene.end)),
+    }))
+    .sort((a, b) => a.x0 - b.x0);
 
-    // Cuerpo del gen.
+  // Empaquetado: un gen entra en el primer sub-carril cuyo ultimo ocupante
+  // termine antes de que este empiece. Se reserva sitio para la etiqueta.
+  const laneEnds: number[] = [];
+  let hidden = 0;
+
+  for (const item of visible) {
+    const label = `${item.gene.name} ${item.gene.strand}`;
+    const labelPx = label.length * LABEL_CHAR_PX;
+    const needed = Math.max(item.x1, item.x0 + labelPx) + 6;
+
+    let lane = laneEnds.findIndex((end) => end <= item.x0);
+    if (lane === -1) {
+      if (laneEnds.length >= MAX_GENE_LANES) {
+        hidden += 1;
+        continue;
+      }
+      lane = laneEnds.length;
+      laneEnds.push(0);
+    }
+    laneEnds[lane] = needed;
+
+    const y = top + 14 + lane * GENE_LANE_STEP;
+
     group.append(
       svg('line', {
-        x1: String(x0),
-        x2: String(x1),
+        x1: String(item.x0),
+        x2: String(item.x1),
         y1: String(y),
         y2: String(y),
         class: 'browser__gene-body',
       }),
     );
 
-    // Marcas de sentido a lo largo del cuerpo: un gen sin hebra indicada es
-    // una convencion rota en cualquier navegador genomico.
+    // Marcas de sentido: un gen sin hebra indicada es una convencion rota en
+    // cualquier navegador genomico.
     const step = 34;
-    for (let x = x0 + step / 2; x < x1; x += step) {
-      const d = gene.strand === '-' ? -3.5 : 3.5;
+    for (let x = item.x0 + step / 2; x < item.x1; x += step) {
+      const d = item.gene.strand === '-' ? -3.5 : 3.5;
       group.append(
         svg('path', {
           d: `M ${x - d} ${y - 3} L ${x + d} ${y} L ${x - d} ${y + 3}`,
@@ -297,32 +339,50 @@ function drawGenes(
       );
     }
 
-    for (const transcript of gene.transcripts ?? []) {
+    for (const transcript of item.gene.transcripts ?? []) {
       for (const [exonStart, exonEnd] of transcript.exons) {
         const ex0 = scale.toPixel(exonStart);
         const ex1 = scale.toPixel(exonEnd);
-        if (ex1 < LABEL_WIDTH || ex0 > LABEL_WIDTH + plotWidth) continue;
+        if (ex1 < LABEL_WIDTH || ex0 > right) continue;
         group.append(
           svg('rect', {
             x: String(Math.max(LABEL_WIDTH, ex0)),
-            y: String(y - 5),
-            width: String(Math.max(1, Math.min(LABEL_WIDTH + plotWidth, ex1) - Math.max(LABEL_WIDTH, ex0))),
-            height: '10',
+            y: String(y - 4),
+            width: String(
+              Math.max(1, Math.min(right, ex1) - Math.max(LABEL_WIDTH, ex0)),
+            ),
+            height: '8',
             class: 'browser__exon',
           }),
         );
       }
     }
 
+    // La etiqueta solo si cabe. Un nombre que se sale y se superpone con el
+    // vecino informa menos que no estar.
+    if (item.x1 - item.x0 >= labelPx * 0.55) {
+      group.append(
+        svg('text', {
+          x: String(item.x0 + 2),
+          y: String(y - 6),
+          class: 'browser__gene-label',
+          text: label,
+        }),
+      );
+    }
+  }
+
+  if (hidden > 0) {
     group.append(
       svg('text', {
-        x: String(Math.max(LABEL_WIDTH + 4, x0)),
-        y: String(y - 9),
-        class: 'browser__gene-label',
-        text: `${gene.name} ${gene.strand}`,
+        x: String(right),
+        y: String(top + 14 + MAX_GENE_LANES * GENE_LANE_STEP + 4),
+        class: 'browser__empty-note',
+        'text-anchor': 'end',
+        text: `+${hidden} genes mas, acerca el zoom para verlos`,
       }),
     );
-  });
+  }
 
   return group;
 }

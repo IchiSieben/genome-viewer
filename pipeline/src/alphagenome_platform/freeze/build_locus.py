@@ -495,6 +495,7 @@ def build_signal_blocks(
     model_output: Any,
     interval_start: int,
     prov_note: str,
+    path_prefix: str = "",
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """Emite los bloques AGSB de una variante y devuelve su descripcion.
 
@@ -596,7 +597,7 @@ def build_signal_blocks(
             )
             measurements.append({"kind": "signal", "label": path.name, **measured})
             modalities[modality] = {
-                "path": f"signals/{level}/{modality}.bin",
+                "path": f"{path_prefix}signals/{level}/{modality}.bin",
                 "bytes": measured["bytes"],
                 "tracks": len(headers),
             }

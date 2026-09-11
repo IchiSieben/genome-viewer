@@ -39,6 +39,15 @@ def build_locus(
 
     dist = dist or contract.DIST
     out_dir = dist / "loci" / config.id
+    # Un locus se reconstruye ENTERO. Sin esto, los artefactos de una corrida
+    # anterior sobreviven, y si el visor resuelve una ruta hacia uno de ellos
+    # muestra datos viejos con la proveniencia nueva, que es la peor forma de
+    # equivocarse en este proyecto.
+    if out_dir.exists():
+        import shutil
+
+        shutil.rmtree(out_dir)
+        _log.info("[%s] artefactos anteriores eliminados", config.id)
     key = atlas_source.load_api_key()
     client = atlas.create(key)
 
@@ -245,6 +254,7 @@ def build_locus(
             levels, signal_measurements = bl.build_signal_blocks(
                 vdir, config.id, config.chromosome, spec, output, start,
                 prov_note="Perfiles de predict_variant, una sola peticion.",
+                path_prefix=f"variants/{vid}/",
             )
             measurements.extend(signal_measurements)
             if levels:

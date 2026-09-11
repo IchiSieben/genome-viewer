@@ -255,3 +255,40 @@ def test_write_json_rechaza_nan() -> None:
         target = pathlib.Path(tmp) / "annotations.json"
         with pytest.raises((contract.ContractViolation, Exception)):
             contract.write_json(target, "annotations", document, label="prueba")
+
+
+def test_no_hay_bloques_de_senal_huerfanos() -> None:
+    """Ningun .bin en data/dist puede quedar sin que un locus lo referencie.
+
+    Este test existe por un fallo real y caro. Las rutas de los bloques por
+    variante se escribian relativas al directorio de la VARIANTE, pero el
+    contrato dice que las rutas de `locus.json` son relativas a ese archivo. El
+    visor resolvia hacia el directorio del locus, donde seguian los bloques
+    SINTETICOS de una corrida anterior, y los dibujaba tan tranquilo con el
+    sello de proveniencia del Atlas encima. No hubo ningun 404 ni ningun error
+    de consola: un artefacto viejo en el sitio equivocado se ve exactamente
+    igual que uno correcto.
+    """
+    referenced: set[pathlib.Path] = set()
+    for locus_path in DIST.glob("loci/*/locus.json"):
+        doc = json.loads(locus_path.read_text(encoding="utf-8"))
+        base = locus_path.parent
+        levels = list((doc.get("signals") or {}).values())
+        for entry in doc["variants"]:
+            levels.extend((entry.get("signals") or {}).values())
+        for level in levels:
+            for ref in level["modalities"].values():
+                target = (base / ref["path"]).resolve()
+                assert target.exists(), (
+                    f"{locus_path.name} apunta a {ref['path']}, que no existe"
+                )
+                assert target.stat().st_size == ref["bytes"], ref["path"]
+                referenced.add(target)
+
+    on_disk = {p.resolve() for p in DIST.rglob("*.bin")}
+    orphans = sorted(p.relative_to(DIST.resolve()) for p in on_disk - referenced)
+    assert not orphans, (
+        f"{len(orphans)} bloques de senal sin referencia en data/dist: "
+        f"{orphans[:5]}. Son peso muerto en el despliegue y, peor, candidatos "
+        f"a que una ruta mal resuelta los muestre como si fueran los buenos."
+    )
