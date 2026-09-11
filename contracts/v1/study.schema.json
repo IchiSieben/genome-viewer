@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ic7.dev/alphagenome/contracts/v1/study.schema.json",
+  "title": "Manifiesto de estudio",
+  "description": "Un estudio declara que vistas quiere y con que datos. El visor renderiza tipos de vista; agregar un estudio NO debe requerir tocar el codigo del visor. Si hay que tocarlo, la abstraccion esta mal.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "id",
+    "label",
+    "status",
+    "honesty",
+    "panels"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "$ref": "common.schema.json#/$defs/schemaVersion"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "label": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "planned",
+        "running",
+        "positive",
+        "null",
+        "inconclusive",
+        "underpowered"
+      ]
+    },
+    "provenance": {
+      "$ref": "common.schema.json#/$defs/provenance"
+    },
+    "honesty": {
+      "type": "object",
+      "description": "Requisito no negociable: tamano de muestra, poder, limitaciones y signo del resultado, visibles en pantalla.",
+      "required": [
+        "sampleSize",
+        "limitations"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "sampleSize": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "integer",
+              "string"
+            ]
+          }
+        },
+        "power": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true,
+          "properties": {
+            "achieved": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "target": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "effectiveUnits": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "Numero efectivo de haplotipos independientes, NO el conteo de variantes. En una poblacion con cuello de botella las variantes viajan juntas y tratarlas como independientes es anticonservador."
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "preregistered": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "ethics": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "panels": {
+      "type": "array",
+      "description": "Cada panel nombra un TIPO de vista que el visor ya sabe renderizar y le pasa datos. Nada de codigo por estudio.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "title",
+          "data"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "distribution",
+              "calibration",
+              "dosage",
+              "forest",
+              "scatter",
+              "table",
+              "note"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "caption": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "data": {
+            "type": [
+              "string",
+              "object"
+            ]
+          },
+          "options": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    }
+  }
+}

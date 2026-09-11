@@ -1,0 +1,57 @@
+# ---------------------------------------------------------------------------
+# Secretos. Esta seccion va primero a proposito: la llave de AlphaGenome es
+# personal e intransferible segun los terminos de uso, y no debe entrar nunca
+# al repositorio, ni siquiera en un archivo de ejemplo con valor real.
+# ---------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets/
+**/credentials.json
+
+# Artefactos crudos descargados de las APIs (pesados, regenerables)
+data/raw/
+data/cache/
+*.bgz
+*.bgz.tbi
+*.vcf
+*.vcf.gz
+*.vcf.gz.tbi
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+# Ojo: la regla tiene que ser ANCLADA. Un "dist/" suelto tambien atrapa
+# data/dist/, que es justamente lo que NO queremos ignorar.
+/pipeline/dist/
+/pipeline/build/
+
+# Node / web
+node_modules/
+/web/dist/
+_dist/
+.vite/
+*.tsbuildinfo
+
+# Copia derivada que produce `npm run sync`. El original vive en data/dist/.
+/web/public/data/
+
+# Artefactos congelados: se versionan los JSON, que son el ejemplo legible y
+# diffeable del contrato, y NO los bloques de senal, que son 7,2 MB de binario
+# regenerable de forma determinista con:
+#   python -m alphagenome_platform.cli fixtures
+data/dist/**/*.bin
+
+# Sistema operativo / editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

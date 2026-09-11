@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ic7.dev/alphagenome/contracts/v1/card.schema.json",
+  "title": "Ficha de variante (V1)",
+  "description": "AVI sobre su escala PHRED, cascada de contribuciones SHAP y tracks mas afectados. Presupuesto: 50 KB.\n\nLos 18 features del AVI se modelan como una LISTA ORDENADA de objetos, no como 18 campos con nombre fijo. Los nombres exactos son server-side y no estan en el cliente 0.9.0 (verificado con grep). Si el servidor devuelve nombres distintos a los supuestos, cambia la fixture, no el codigo del visor.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "variant",
+    "provenance",
+    "avi",
+    "features"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "$ref": "common.schema.json#/$defs/schemaVersion"
+    },
+    "variant": {
+      "$ref": "common.schema.json#/$defs/variant"
+    },
+    "provenance": {
+      "$ref": "common.schema.json#/$defs/provenance"
+    },
+    "avi": {
+      "type": "object",
+      "required": [
+        "phred"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "phred": {
+          "type": "number",
+          "minimum": 0,
+          "description": "PHRED = -10*log10(1-cuantil). 10 = top 10%, 20 = top 1%, 30 = top 0,1%."
+        },
+        "quantile": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "baseValue": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Valor base de la explicacion SHAP. La cascada parte de aqui y las contribuciones deben sumar hasta el score."
+        }
+      }
+    },
+    "featureFamilies": {
+      "type": "array",
+      "description": "Las cuatro familias del AVI: 10 regulatorios, 4 de proteina, 2 de conservacion, 2 de indel.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "label"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "enum": [
+              "regulatory",
+              "protein",
+              "conservation",
+              "indel"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "expectedCount": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "features": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "family",
+          "contribution"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "family": {
+            "enum": [
+              "regulatory",
+              "protein",
+              "conservation",
+              "indel"
+            ]
+          },
+          "contribution": {
+            "type": "number",
+            "description": "Contribucion SHAP con signo."
+          },
+          "value": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Valor del feature, si el servidor lo da."
+          }
+        }
+      }
+    },
+    "topTracks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "modality",
+          "score"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "modality": {
+            "type": "string"
+          },
+          "biosample": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ontologyCurie": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "strand": {
+            "enum": [
+              "+",
+              "-",
+              ".",
+              null
+            ]
+          },
+          "score": {
+            "type": "number"
+          },
+          "quantile": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

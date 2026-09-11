@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ic7.dev/alphagenome/contracts/v1/tracks.schema.json",
+  "title": "Mapa de calor biosample x modalidad (V2)",
+  "description": "Efecto escalar de una variante a lo largo de cientos de biosamples. Las celdas van en formato disperso con indices enteros: una matriz densa de 300x11 en JSON con nombres repetidos costaria varias veces mas. Presupuesto: 120 KB.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "variant",
+    "provenance",
+    "modalities",
+    "biosamples",
+    "cells"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "$ref": "common.schema.json#/$defs/schemaVersion"
+    },
+    "variant": {
+      "$ref": "common.schema.json#/$defs/variant"
+    },
+    "provenance": {
+      "$ref": "common.schema.json#/$defs/provenance"
+    },
+    "modalities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "label"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "signed": {
+            "type": "boolean",
+            "description": "Si el scorer produce valores con signo. Decide si la paleta es divergente o secuencial."
+          },
+          "unit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "organSystems": {
+      "type": "array",
+      "description": "Agrupacion por ontologia, NO alfabetica. Es lo que permite ver de un vistazo si un efecto es ubicuo o especifico de tejido.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "label"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "biosamples": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "label"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "ontologyCurie": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "biosampleType": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "organSystem": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "cells": {
+      "type": "array",
+      "description": "Disperso: [indice biosample, indice modalidad, valor, cuantil].",
+      "items": {
+        "type": "array",
+        "minItems": 3,
+        "maxItems": 4,
+        "prefixItems": [
+          {
+            "type": "integer",
+            "minimum": 0
+          },
+          {
+            "type": "integer",
+            "minimum": 0
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ic7.dev/alphagenome/contracts/v1/locus.schema.json",
+  "title": "Locus",
+  "description": "Un locus, sus variantes y el mapa de sus bloques de senal. Se descarga al entrar al locus, nunca antes. Presupuesto: 64 KB.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "id",
+    "label",
+    "interval",
+    "provenance",
+    "variants"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "$ref": "common.schema.json#/$defs/schemaVersion"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "label": {
+      "type": "string"
+    },
+    "interval": {
+      "$ref": "common.schema.json#/$defs/interval"
+    },
+    "provenance": {
+      "$ref": "common.schema.json#/$defs/provenance"
+    },
+    "genes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "annotations": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "variants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "variant",
+          "artifacts"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "variant": {
+            "$ref": "common.schema.json#/$defs/variant"
+          },
+          "aviPhred": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "artifacts": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "card": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "tracks": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "splice": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "contact": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "signals": {
+      "type": "object",
+      "description": "Bloques de senal por resolucion. La web carga un bloque por modalidad y solo cuando esa modalidad se muestra.",
+      "additionalProperties": false,
+      "properties": {
+        "overview": {
+          "$ref": "#/$defs/signalLevel"
+        },
+        "detail": {
+          "$ref": "#/$defs/signalLevel"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "signalLevel": {
+      "type": "object",
+      "required": [
+        "binSize",
+        "length",
+        "interval",
+        "modalities"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "binSize": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "length": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Valores por track y arreglo."
+        },
+        "interval": {
+          "$ref": "common.schema.json#/$defs/interval"
+        },
+        "modalities": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "common.schema.json#/$defs/signalRef"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,225 @@
+/* ---------------------------------------------------------------------------
+   Sistema visual. Se define UNA vez y todas las vistas derivan de aqui.
+
+   La regla del encargo: que se vea como un producto, no como seis graficos de
+   seis personas distintas. Por eso ninguna vista declara un color propio; si
+   una vista necesita un color que no esta aqui, el que falta es un token.
+
+   Tema claro y oscuro, los dos disenados. El oscuro no es el claro invertido:
+   las paletas de datos cambian de luminosidad para mantener el contraste sobre
+   fondo oscuro, y el neutro del cero cambia de ser mas claro que los extremos a
+   ser mas oscuro.
+   --------------------------------------------------------------------------- */
+
+:root {
+  /* --- Tipografia -------------------------------------------------------- */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  /* Todo numero, coordenada y score va en monoespaciada con cifras tabulares:
+     en una tabla de scores las columnas tienen que alinearse por digito. */
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Segoe UI Mono", Menlo,
+    Consolas, monospace;
+
+  --text-3xs: 0.625rem;  /* 10px - etiquetas de eje muy densas */
+  --text-2xs: 0.6875rem; /* 11px - etiquetas de eje */
+  --text-xs: 0.75rem;    /* 12px - metadatos, pies */
+  --text-sm: 0.8125rem;  /* 13px - cuerpo denso, tablas */
+  --text-base: 0.9375rem;/* 15px - cuerpo */
+  --text-lg: 1.125rem;   /* 18px - titulo de panel */
+  --text-xl: 1.5rem;     /* 24px - titulo de vista */
+  --text-2xl: 2rem;      /* 32px - cifra destacada */
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.55;
+
+  /* --- Espaciado --------------------------------------------------------- */
+  --sp-1: 0.125rem;
+  --sp-2: 0.25rem;
+  --sp-3: 0.375rem;
+  --sp-4: 0.5rem;
+  --sp-6: 0.75rem;
+  --sp-8: 1rem;
+  --sp-12: 1.5rem;
+  --sp-16: 2rem;
+  --sp-24: 3rem;
+
+  --radius-sm: 3px;
+  --radius-md: 5px;
+
+  /* --- Superficies y tinta (claro) --------------------------------------- */
+  --bg: #fbfbfa;
+  --surface: #ffffff;
+  --surface-sunken: #f4f4f2;
+  --ink: #17191c;
+  --ink-muted: #5c6470;
+  --ink-faint: #8a929e;
+  --rule: #e4e5e8;
+  --rule-strong: #c8ccd2;
+  --accent: #1f5fd0;
+  --accent-soft: #e8effb;
+
+  /* Estados semanticos. Sobrios: esto es un instrumento, no un panel de
+     alarmas. El unico uso de rojo es para lo que de verdad esta roto. */
+  --warn: #8a5a00;
+  --warn-soft: #fdf3e0;
+  --danger: #a32a1f;
+  --danger-soft: #fbeceb;
+  --ok: #1f6b4a;
+  --ok-soft: #e7f4ee;
+
+  /* --- Paleta divergente: diferencias REF/ALT ---------------------------- */
+  /* Azul-naranja, no rojo-verde: es el par que sobrevive a los tres tipos de
+     daltonismo. El cero tiene que leerse como NEUTRO, no como un color debil de
+     alguno de los dos extremos. */
+  --div-neg-3: #16456b;
+  --div-neg-2: #2f7bb0;
+  --div-neg-1: #94c0dc;
+  --div-zero: #eceae6;
+  --div-pos-1: #f4bd8d;
+  --div-pos-2: #d8782d;
+  --div-pos-3: #8f420b;
+
+  /* --- Paleta secuencial: magnitudes sin signo --------------------------- */
+  --seq-0: #f2f4f3;
+  --seq-1: #cfe0dc;
+  --seq-2: #9fc6be;
+  --seq-3: #68a89e;
+  --seq-4: #3d7c73;
+  --seq-5: #1d544d;
+
+  /* --- Paleta categorica: las 11 modalidades ---------------------------- */
+  --cat-rna-seq: #2f6f9f;
+  --cat-atac: #1f8f78;
+  --cat-dnase: #4f9a4a;
+  --cat-cage: #a8871c;
+  --cat-procap: #cf7327;
+  --cat-chip-tf: #bd4f3c;
+  --cat-chip-histone: #a54c8a;
+  --cat-splice-sites: #6d55a5;
+  --cat-splice-site-usage: #5468b5;
+  --cat-polyadenylation: #6f7c8a;
+  --cat-contact-maps: #4a5058;
+
+  /* --- Nucleotidos, convencion de navegador genomico --------------------- */
+  --nt-a: #3f9142;
+  --nt-c: #2f6f9f;
+  --nt-g: #c08a1e;
+  --nt-t: #bd4436;
+
+  /* --- Trazo ------------------------------------------------------------- */
+  --stroke-hair: 1px;
+  --stroke-signal: 1.25px;
+  --focus-ring: 2px solid var(--accent);
+}
+
+/* El tema por defecto del sistema. Se excluye [data-theme="light"] para que la
+   eleccion explicita del usuario gane sobre la preferencia del sistema. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1013;
+    --surface: #16191e;
+    --surface-sunken: #101318;
+    --ink: #e7eaee;
+    --ink-muted: #98a1ac;
+    --ink-faint: #69727d;
+    --rule: #252931;
+    --rule-strong: #383e48;
+    --accent: #6aa1ff;
+    --accent-soft: #17233a;
+
+    --warn: #dfa845;
+    --warn-soft: #2b2214;
+    --danger: #e57a6e;
+    --danger-soft: #2e1a18;
+    --ok: #5cbb90;
+    --ok-soft: #14261e;
+
+    /* Los extremos se aclaran y el cero se oscurece: sobre fondo oscuro, un
+       neutro claro seria el valor MAS llamativo del mapa, justo al reves de lo
+       que tiene que pasar. */
+    --div-neg-3: #9ccbe8;
+    --div-neg-2: #4e95c8;
+    --div-neg-1: #2c5c7d;
+    --div-zero: #22262c;
+    --div-pos-1: #7a4d22;
+    --div-pos-2: #d4822f;
+    --div-pos-3: #f3b87e;
+
+    --seq-0: #191d22;
+    --seq-1: #23443f;
+    --seq-2: #2f6159;
+    --seq-3: #3f8177;
+    --seq-4: #5ca396;
+    --seq-5: #8cc5ba;
+
+    --cat-rna-seq: #64a6d6;
+    --cat-atac: #43c1a6;
+    --cat-dnase: #7cc476;
+    --cat-cage: #d4b249;
+    --cat-procap: #f09a52;
+    --cat-chip-tf: #e7806c;
+    --cat-chip-histone: #d07ab4;
+    --cat-splice-sites: #9c88d4;
+    --cat-splice-site-usage: #8195e0;
+    --cat-polyadenylation: #9aa7b5;
+    --cat-contact-maps: #7b828c;
+
+    --nt-a: #6cc06f;
+    --nt-c: #64a6d6;
+    --nt-g: #d9ab4a;
+    --nt-t: #e7806c;
+  }
+}
+
+/* La eleccion explicita gana en las dos direcciones. */
+:root[data-theme="dark"] {
+  --bg: #0e1013;
+  --surface: #16191e;
+  --surface-sunken: #101318;
+  --ink: #e7eaee;
+  --ink-muted: #98a1ac;
+  --ink-faint: #69727d;
+  --rule: #252931;
+  --rule-strong: #383e48;
+  --accent: #6aa1ff;
+  --accent-soft: #17233a;
+
+  --warn: #dfa845;
+  --warn-soft: #2b2214;
+  --danger: #e57a6e;
+  --danger-soft: #2e1a18;
+  --ok: #5cbb90;
+  --ok-soft: #14261e;
+
+  --div-neg-3: #9ccbe8;
+  --div-neg-2: #4e95c8;
+  --div-neg-1: #2c5c7d;
+  --div-zero: #22262c;
+  --div-pos-1: #7a4d22;
+  --div-pos-2: #d4822f;
+  --div-pos-3: #f3b87e;
+
+  --seq-0: #191d22;
+  --seq-1: #23443f;
+  --seq-2: #2f6159;
+  --seq-3: #3f8177;
+  --seq-4: #5ca396;
+  --seq-5: #8cc5ba;
+
+  --cat-rna-seq: #64a6d6;
+  --cat-atac: #43c1a6;
+  --cat-dnase: #7cc476;
+  --cat-cage: #d4b249;
+  --cat-procap: #f09a52;
+  --cat-chip-tf: #e7806c;
+  --cat-chip-histone: #d07ab4;
+  --cat-splice-sites: #9c88d4;
+  --cat-splice-site-usage: #8195e0;
+  --cat-polyadenylation: #9aa7b5;
+  --cat-contact-maps: #7b828c;
+
+  --nt-a: #6cc06f;
+  --nt-c: #64a6d6;
+  --nt-g: #d9ab4a;
+  --nt-t: #e7806c;
+}

@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ic7.dev/alphagenome/contracts/v1/common.schema.json",
+  "title": "Piezas comunes del contrato v1",
+  "$defs": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^1\\.\\d+\\.\\d+$",
+      "description": "Version del contrato. La web rechaza un major que no conoce."
+    },
+    "provenance": {
+      "type": "object",
+      "description": "Sello de proveniencia. Obligatorio en TODO artefacto. Los cuantiles del AVI se recalibraron el 2026-06-18 y la inferencia de indels se corrigio el 2026-07-14: comparar artefactos de cosechas distintas es invalido, y este sello es lo unico que lo hace detectable.",
+      "required": [
+        "source",
+        "clientVersion",
+        "queriedAt",
+        "configHash",
+        "calibrationEpoch"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "source": {
+          "enum": [
+            "atlas-api",
+            "model-api",
+            "synthetic"
+          ],
+          "description": "'synthetic' marca fixtures. Nunca debe aparecer en un artefacto publicado como dato real."
+        },
+        "clientVersion": {
+          "type": "string",
+          "description": "Version del paquete alphagenome usado."
+        },
+        "pipelineVersion": {
+          "type": "string"
+        },
+        "queriedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "UTC ISO-8601 del momento de la consulta."
+        },
+        "configHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{16,64}$",
+          "description": "sha256 truncado de la configuracion normalizada."
+        },
+        "calibrationEpoch": {
+          "type": "string",
+          "description": "Epoca de calibracion declarada, p.ej. 'quantiles>=2026-06-18,indels>=2026-07-14'."
+        },
+        "scorers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hasQuantiles": {
+          "type": "boolean",
+          "description": "Si el servidor devolvio layers['quantiles']. El cliente 0.9.0 solo lo crea cuando calibrated_scores no viene vacio, asi que es condicional y hay que declararlo."
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "variant": {
+      "type": "object",
+      "required": [
+        "id",
+        "chromosome",
+        "position",
+        "ref",
+        "alt"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^chr[0-9XYM]+-[0-9]+-[ACGT]+-[ACGT]+$",
+          "description": "Identificador seguro para rutas. El Atlas usa 'chr:pos:ref>alt' con '>', que no vale en un nombre de archivo; aqui se normaliza a guiones."
+        },
+        "chromosome": {
+          "type": "string",
+          "pattern": "^chr[0-9XYM]+$"
+        },
+        "position": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "1-based, como genome.Variant."
+        },
+        "ref": {
+          "type": "string",
+          "pattern": "^[ACGT]+$"
+        },
+        "alt": {
+          "type": "string",
+          "pattern": "^[ACGT]+$"
+        },
+        "rsid": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "gene": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "interval": {
+      "type": "object",
+      "required": [
+        "chromosome",
+        "start",
+        "end"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "chromosome": {
+          "type": "string",
+          "pattern": "^chr[0-9XYM]+$"
+        },
+        "start": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "0-based inclusivo, como genome.Interval."
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "0-based exclusivo."
+        }
+      }
+    },
+    "signalRef": {
+      "type": "object",
+      "required": [
+        "path",
+        "bytes",
+        "tracks"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tracks": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
+  }
+}

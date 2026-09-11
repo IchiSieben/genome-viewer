@@ -1,0 +1,67 @@
+======================================================================
+SONDA OFFLINE H0 - alphagenome instalado, SIN llave, SIN red
+======================================================================
+python              : 3.12.10
+alphagenome version : 0.9.0
+anndata version     : 0.13.3.post0
+grpcio version      : 1.83.1
+endpoint por defecto: dns:///gdmscience.googleapis.com:443
+DEFAULT_MAX_WORKERS : 10
+_INTERVAL_CHUNK_SIZE: 32
+
+--- Convenciones de coordenadas (verificado ejecutando) ---
+Interval('chr11',5225726,5226575) -> chr11:5225726-5226575:.  width=849
+Variant('chr12',54578515,'T','C')  -> chr12:54578515:T>C
+  .position (1-based)             = 54578515
+  .reference_bases / .alternate   = T / C
+  .reference_interval (0-based)   = chr12:54578514-54578515:. width=1
+  => confirma: Interval 0-based semiabierto, Variant 1-based
+
+--- Longitudes de secuencia soportadas por el Model API ---
+  SEQUENCE_LENGTH_16KB         = 16,384
+  SEQUENCE_LENGTH_100KB        = 131,072
+  SEQUENCE_LENGTH_500KB        = 524,288
+  SEQUENCE_LENGTH_1MB          = 1,048,576
+  SUPPORTED_SEQUENCE_LENGTHS = [16384, 131072, 524288, 1048576]
+
+--- Scorers recomendados del Model API (nombres exactos) ---
+  n = 19
+    ATAC                   CenterMaskScorer
+    CONTACT_MAPS           ContactMapScorer
+    DNASE                  CenterMaskScorer
+    CHIP_TF                CenterMaskScorer
+    CHIP_HISTONE           CenterMaskScorer
+    CAGE                   CenterMaskScorer
+    PROCAP                 CenterMaskScorer
+    RNA_SEQ                GeneMaskLFCScorer
+    RNA_SEQ_ACTIVE         GeneMaskActiveScorer
+    SPLICE_SITES           GeneMaskSplicingScorer
+    SPLICE_SITE_USAGE      GeneMaskSplicingScorer
+    SPLICE_JUNCTIONS       SpliceJunctionScorer
+    POLYADENYLATION        PolyadenylationScorer
+    ATAC_ACTIVE            CenterMaskScorer
+    DNASE_ACTIVE           CenterMaskScorer
+    CHIP_TF_ACTIVE         CenterMaskScorer
+    CHIP_HISTONE_ACTIVE    CenterMaskScorer
+    CAGE_ACTIVE            CenterMaskScorer
+    PROCAP_ACTIVE          CenterMaskScorer
+
+--- Tipos de salida del modelo (modalidades) ---
+  n = 11: ATAC, CAGE, DNASE, RNA_SEQ, CHIP_HISTONE, CHIP_TF, SPLICE_SITES, SPLICE_SITE_USAGE, SPLICE_JUNCTIONS, CONTACT_MAPS, PROCAP
+
+--- Columnas de metadata de track que el cliente reconoce ---
+  requeridas: name, strand
+  opcionales: ontology_curie, biosample_type, biosample_name, 'Assay title'
+  (leido de models/track_data_utils.py metadata_from_proto/_to_proto)
+
+--- Tipos de ontologia ---
+  CLO, UBERON, CL, EFO, NTR
+
+--- LO QUE NO SE PUEDE VERIFICAR SIN LLAVE ---
+  [BLOQUEADO] nombres exactos de los 18 features del AVI (son server-side; 'AVI' no
+  [BLOQUEADO]   aparece en ningun archivo del paquete cliente 0.9.0 - verificado con grep)
+  [BLOQUEADO] claves reales del Mapping devuelto por query_variant
+  [BLOQUEADO] presencia real de layers['quantiles'] (el codigo solo lo crea si el
+  [BLOQUEADO]   servidor devuelve calibrated_scores no vacio)
+  [BLOQUEADO] forma real de .X por scorer
+  [BLOQUEADO] cuota / RESOURCE_EXHAUSTED con max_workers 1, 4, 8

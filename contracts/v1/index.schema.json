@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ic7.dev/alphagenome/contracts/v1/index.schema.json",
+  "title": "Indice de la plataforma",
+  "description": "Catalogo ligero. Es lo unico que la web descarga al arrancar, asi que no lleva datos de variante: solo punteros. Presupuesto: 32 KB.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "generated",
+    "loci",
+    "studies"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "$ref": "common.schema.json#/$defs/schemaVersion"
+    },
+    "generated": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "provenance": {
+      "$ref": "common.schema.json#/$defs/provenance"
+    },
+    "loci": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "chromosome",
+          "start",
+          "end",
+          "path"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "label": {
+            "type": "string"
+          },
+          "chromosome": {
+            "type": "string",
+            "pattern": "^chr[0-9XYM]+$"
+          },
+          "start": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "end": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "genes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "variantCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "path": {
+            "type": "string"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "studies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "status",
+          "path"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "label": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "planned",
+              "running",
+              "positive",
+              "null",
+              "inconclusive",
+              "underpowered"
+            ],
+            "description": "Un resultado nulo o sin poder se declara aqui y se muestra con la misma prominencia que uno positivo."
+          },
+          "path": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

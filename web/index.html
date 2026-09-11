@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Visor de predicciones de AlphaGenome</title>
+    <meta
+      name="description"
+      content="Visor interactivo de efectos de variante predichos por AlphaGenome. Sitio estatico, sin backend, sin llamadas a la API."
+    />
+    <meta name="color-scheme" content="light dark" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Saltar al contenido</a>
+
+    <header class="topbar">
+      <a class="topbar__brand" href="#/">
+        <span class="topbar__mark" aria-hidden="true"></span>
+        <span class="topbar__name">Visor AlphaGenome</span>
+      </a>
+      <nav class="topbar__nav" aria-label="Principal">
+        <a class="topbar__link" href="#/">Loci</a>
+        <a class="topbar__link" href="#/about">Sobre estos datos</a>
+        <button class="topbar__button" type="button" id="tour-button">
+          Como se usa
+        </button>
+        <button
+          class="topbar__button"
+          type="button"
+          id="theme-toggle"
+          aria-label="Cambiar entre tema claro y oscuro"
+          title="Cambiar tema"
+        >
+          Tema
+        </button>
+      </nav>
+    </header>
+
+    <main id="main" class="main"></main>
+
+    <footer class="footer">
+      <p>
+        Resultados derivados de AlphaGenome, sujetos a los
+        <strong>AlphaGenome Output Terms of Use</strong>. Uso no comercial, de
+        investigacion. No es un dispositivo medico y no constituye consejo
+        medico.
+      </p>
+      <p class="footer__quiet">
+        Predicciones de un modelo, no mediciones experimentales. El pipeline
+        corre en local con una llave personal; esta pagina solo lee archivos
+        congelados y nunca llama a la API.
+      </p>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

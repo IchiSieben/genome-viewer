@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ic7.dev/alphagenome/contracts/v1/annotations.schema.json",
+  "title": "Anotacion de genes y transcritos",
+  "description": "Carril de anotacion del navegador de tracks (V3). Coordenadas GRCh38 absolutas, 0-based. Presupuesto: 128 KB.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "locus",
+    "interval",
+    "provenance",
+    "genes"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "$ref": "common.schema.json#/$defs/schemaVersion"
+    },
+    "locus": {
+      "type": "string"
+    },
+    "interval": {
+      "$ref": "common.schema.json#/$defs/interval"
+    },
+    "provenance": {
+      "$ref": "common.schema.json#/$defs/provenance"
+    },
+    "genes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "strand",
+          "start",
+          "end"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "strand": {
+            "enum": [
+              "+",
+              "-",
+              "."
+            ]
+          },
+          "start": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "end": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "transcripts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "exons"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "exons": {
+                  "type": "array",
+                  "description": "Pares [inicio, fin] 0-based.",
+                  "items": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
