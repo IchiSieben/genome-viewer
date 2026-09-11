@@ -133,10 +133,11 @@ manifiesto.
 Están en [`docs/01-architecture.md`](docs/01-architecture.md), cada una con lo
 que se descartó y por qué. Las tres que más definen el proyecto:
 
-- **Sin framework en el frontend.** Vite y TypeScript, sin React ni Astro. El
-  build pesa 12,5 kB de JS comprimido. Astro se descartó porque su ventaja real
-  (páginas por archivo) obliga a reescritura en el servidor, y la restricción es
-  archivos estáticos y nada más.
+- **Sin framework en el frontend.** Vite y TypeScript, sin React ni Astro, y
+  **cero dependencias de runtime**: el build pesa 17,3 kB de JS comprimido, las
+  cuatro vistas incluidas. Astro se descartó porque su ventaja real (páginas por
+  archivo) obliga a reescritura en el servidor, y la restricción es archivos
+  estáticos y nada más.
 - **int16 crudo en un bloque binario propio**, no base64 dentro de JSON. 2,00
   bytes por valor contra 2,67; y sin decodificación en JS.
 - **Se guarda REF y DELTA, no REF y ALT.** La hipótesis inicial era que
