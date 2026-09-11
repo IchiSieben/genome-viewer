@@ -102,6 +102,35 @@ def _cmd_budget(_: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_build_locus(args: argparse.Namespace) -> int:
+    """Congela loci reales. Es el comando que gasta cuota de verdad."""
+    from alphagenome_platform.acquire import atlas_source
+    from alphagenome_platform.freeze import run
+
+    try:
+        atlas_source.load_api_key()
+    except atlas_source.MissingApiKey as error:
+        print(error)
+        return 2
+
+    outcome = run.build_all(
+        args.loci or None,
+        max_workers=args.max_workers,
+        with_signals=not args.no_signals,
+    )
+    rows: dict[str, Any] = {}
+    for row in outcome["measurements"]:
+        current = rows.get(row["kind"])
+        if current is None or row["usedFraction"] > current["usedFraction"]:
+            rows[row["kind"]] = row
+    print()
+    print(f"loci congelados: {', '.join(outcome['loci'])}")
+    print(f"artefactos escritos: {len(outcome['measurements'])}")
+    print()
+    _print_budget_table(rows)
+    return 0
+
+
 def _cmd_probe(args: argparse.Namespace) -> int:
     """Consulta UNA variante y documenta el esquema real de la respuesta.
 
@@ -198,6 +227,18 @@ def main(argv: list[str] | None = None) -> int:
 
     p = sub.add_parser("budget", help="tabla de uso de presupuesto")
     p.set_defaults(func=_cmd_budget)
+
+    p = sub.add_parser(
+        "build-locus", help="congela loci REALES desde las APIs (gasta cuota)"
+    )
+    p.add_argument("loci", nargs="*", help="ids de locus; vacio = todos")
+    p.add_argument("--max-workers", type=int, default=4)
+    p.add_argument(
+        "--no-signals",
+        action="store_true",
+        help="solo V1 y V2; omite predict_variant y los bloques de senal",
+    )
+    p.set_defaults(func=_cmd_build_locus)
 
     p = sub.add_parser("probe", help="UNA consulta real al Atlas (gasta cuota)")
     p.add_argument(

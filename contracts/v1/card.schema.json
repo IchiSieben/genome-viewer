@@ -47,7 +47,14 @@
             "number",
             "null"
           ],
-          "description": "Valor base de la explicacion SHAP. La cascada parte de aqui y las contribuciones deben sumar hasta el score."
+          "description": "Valor base de la explicacion SHAP. La cascada parte de aqui y las contribuciones deben sumar hasta el score. Medido en H0: -0,049016, constante entre variantes."
+        },
+        "rawScore": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Score AVI crudo y CON SIGNO, tal cual lo devuelve el scorer AVI_SCORE. El PHRED se deriva del cuantil, que es otra cosa: el crudo puede ser negativo."
         }
       }
     },

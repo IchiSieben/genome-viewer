@@ -347,6 +347,12 @@ export function renderTissueHeatmap(
 
   const covered = new Set(doc.cells.map((c) => `${c[0]}:${c[1]}`)).size;
   const total = doc.biosamples.length * doc.modalities.length;
+  // Si el pipeline recorto filas, se dice. Mostrar 240 de 412 sin avisar seria
+  // dejar creer que ese es todo el atlas de tejidos.
+  const trimmed =
+    doc.biosampleTotal !== undefined && doc.biosampleTotal > doc.biosamples.length
+      ? ` · ${doc.biosamples.length} de ${doc.biosampleTotal} biosamples, los de mayor efecto`
+      : '';
 
   container.append(
     el(
@@ -367,7 +373,7 @@ export function renderTissueHeatmap(
     panel(
       {
         title: 'Efecto por tejido y modalidad',
-        subtitle: `${covered} de ${total} celdas con senal medible`,
+        subtitle: `${covered} de ${total} celdas con senal medible${trimmed}`,
         hint:
           'Las filas van agrupadas por sistema de organos, no en orden ' +
           'alfabetico: asi una banda de color continua significa un efecto ' +

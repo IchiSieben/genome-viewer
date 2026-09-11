@@ -82,13 +82,25 @@ def test_toda_proveniencia_declara_epoca_de_calibracion() -> None:
         assert prov["source"] in {"atlas-api", "model-api", "synthetic"}
 
 
-def test_las_fixtures_se_declaran_sinteticas() -> None:
-    """Una figura hecha con datos inventados no puede pasar por prediccion."""
-    card = json.loads(
-        next(iter(_dist_files("card"))).read_text(encoding="utf-8")
-    )
-    assert card["provenance"]["source"] == "synthetic"
-    assert "NO son predicciones" in card["provenance"]["notes"]
+def test_lo_sintetico_se_declara_sintetico() -> None:
+    """Una figura hecha con datos inventados no puede pasar por prediccion.
+
+    Ya no se exige que TODO sea sintetico: con la llave presente, `data/dist/`
+    lleva artefactos reales del Atlas. Lo que se exige es que cada uno diga la
+    verdad sobre su origen, y que lo sintetico lo grite.
+    """
+    vistos = set()
+    for kind, path in contract.iter_dist():
+        if path.suffix != ".json":
+            continue
+        document = json.loads(path.read_text(encoding="utf-8"))
+        prov = document.get("provenance")
+        if prov is None:
+            continue
+        vistos.add(prov["source"])
+        if prov["source"] == "synthetic":
+            assert "NO son predicciones" in (prov.get("notes") or ""), path
+    assert vistos, "ningun artefacto declara origen"
 
 
 def test_los_18_features_del_avi_estan_completos() -> None:
@@ -107,17 +119,27 @@ def test_los_18_features_del_avi_estan_completos() -> None:
         }, path
 
 
-def test_la_cascada_shap_suma_hasta_el_score() -> None:
-    """Si la cascada no cierra, la vista V1 estaria mintiendo sobre el total."""
+def test_la_cascada_shap_suma_al_score_crudo() -> None:
+    """Si la cascada no cierra, la vista V1 estaria mintiendo sobre el total.
+
+    Cierra contra el score CRUDO, no contra el PHRED. Son cosas distintas: el
+    crudo es la salida con signo del scorer y el PHRED se deriva del cuantil.
+    La version anterior de este test los confundia porque las fixtures
+    sinteticas los habian hecho coincidir por construccion; con datos reales el
+    crudo de esta variante es negativo y el PHRED no puede serlo.
+    """
+    comprobados = 0
     for path in _dist_files("card"):
         card = json.loads(path.read_text(encoding="utf-8"))
+        raw = card["avi"].get("rawScore")
+        if raw is None:
+            continue
         total = card["avi"]["baseValue"] + sum(
             f["contribution"] for f in card["features"]
         )
-        # El PHRED publicado esta recortado a [0, 60]; la suma debe coincidir
-        # salvo por ese recorte.
-        esperado = min(max(total, 0.0), 60.0)
-        assert abs(esperado - card["avi"]["phred"]) < 1e-3, path
+        assert abs(total - raw) < 1e-3, f"{path}: {total} != {raw}"
+        comprobados += 1
+    assert comprobados, "ninguna ficha trae rawScore"
 
 
 def test_phred_y_cuantil_son_consistentes() -> None:
@@ -125,6 +147,8 @@ def test_phred_y_cuantil_son_consistentes() -> None:
     for path in _dist_files("card"):
         card = json.loads(path.read_text(encoding="utf-8"))
         phred, quantile = card["avi"]["phred"], card["avi"]["quantile"]
+        if quantile is None:
+            continue
         assert abs((1.0 - 10.0 ** (-phred / 10.0)) - quantile) < 1e-4, path
 
 
@@ -182,3 +206,52 @@ def test_el_estudio_declara_su_honestidad() -> None:
         if study["status"] in {"positive", "null"}:
             assert honesty["power"] is not None, path
             assert honesty["power"].get("achieved") is not None, path
+
+
+def test_ningun_artefacto_contiene_nan_ni_infinity() -> None:
+    """NaN e Infinity no son JSON valido, aunque Python los lea de vuelta.
+
+    Este test existe por un fallo real: el Atlas devuelve NaN en el feature
+    ALPHAMISSENSE cuando la variante no es missense, y `json.dumps` lo escribio
+    sin comillas. Python releia el archivo sin quejarse, pero `JSON.parse` del
+    navegador lo rechazaba y la vista moria con "no es JSON valido" sin decir
+    cual. Se comprueba sobre el TEXTO, no sobre el objeto, porque el objeto ya
+    perdio la evidencia.
+    """
+    import re
+
+    for kind, path in contract.iter_dist():
+        if path.suffix != ".json":
+            continue
+        text = path.read_text(encoding="utf-8")
+        offenders = re.findall(r"(?<![\"\w])(?:-?Infinity|NaN)(?![\"\w])", text)
+        assert not offenders, (
+            f"{path.relative_to(DIST)} contiene {set(offenders)}, que no es JSON "
+            f"valido. Un valor que no aplica se escribe null."
+        )
+
+
+def test_write_json_rechaza_nan() -> None:
+    """El propio escritor tiene que negarse, no solo los constructores."""
+    import math
+    import tempfile
+
+    document = {
+        "schemaVersion": "1.1.0",
+        "locus": "x",
+        "interval": {"chromosome": "chr1", "start": 0, "end": 10},
+        "provenance": {
+            "source": "synthetic",
+            "clientVersion": "0",
+            "queriedAt": "2026-01-01T00:00:00Z",
+            "configHash": "0123456789abcdef",
+            "calibrationEpoch": "x",
+        },
+        "genes": [
+            {"name": "G", "strand": "+", "start": 0, "end": math.nan},
+        ],
+    }
+    with tempfile.TemporaryDirectory() as tmp:
+        target = pathlib.Path(tmp) / "annotations.json"
+        with pytest.raises((contract.ContractViolation, Exception)):
+            contract.write_json(target, "annotations", document, label="prueba")

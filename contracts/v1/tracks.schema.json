@@ -109,6 +109,11 @@
         }
       }
     },
+    "biosampleTotal": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Cuantos biosamples habia ANTES de recortar al tope de filas. Si es mayor que la longitud de 'biosamples', la vista debe decir que muestra un subconjunto."
+    },
     "cells": {
       "type": "array",
       "description": "Disperso: [indice biosample, indice modalidad, valor, cuantil].",

@@ -100,10 +100,10 @@ a {
   width: 18px;
   height: 14px;
   background:
-    linear-gradient(var(--cat-rna-seq), var(--cat-rna-seq)) 0 60% / 3px 40% no-repeat,
-    linear-gradient(var(--cat-atac), var(--cat-atac)) 5px 20% / 3px 80% no-repeat,
-    linear-gradient(var(--cat-cage), var(--cat-cage)) 10px 45% / 3px 55% no-repeat,
-    linear-gradient(var(--cat-procap), var(--cat-procap)) 15px 5% / 3px 95% no-repeat;
+    linear-gradient(var(--cat-1), var(--cat-1)) 0 60% / 3px 40% no-repeat,
+    linear-gradient(var(--cat-2), var(--cat-2)) 5px 20% / 3px 80% no-repeat,
+    linear-gradient(var(--cat-4), var(--cat-4)) 10px 45% / 3px 55% no-repeat,
+    linear-gradient(var(--cat-5), var(--cat-5)) 15px 5% / 3px 95% no-repeat;
 }
 
 .topbar__name {
@@ -369,6 +369,12 @@ a {
   margin-left: auto;
   font-size: var(--text-sm);
   color: var(--ink-muted);
+}
+.gauge-block__legend {
+  margin: var(--sp-4) 0 0;
+  font-size: var(--text-3xs);
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
 }
 .gauge-block__formula {
   margin: var(--sp-4) 0 0;

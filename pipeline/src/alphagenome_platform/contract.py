@@ -206,9 +206,21 @@ def write_json(
     en produccion, no en el build.
     """
     validate(kind, document, label)
-    payload = json.dumps(document, ensure_ascii=False, separators=(",", ":")).encode(
-        "utf-8"
-    )
+    try:
+        # allow_nan=False es la linea que importa. Por defecto Python emite
+        # `NaN`, `Infinity` y `-Infinity` SIN COMILLAS, que no son JSON valido:
+        # json.loads los acepta de vuelta, asi que el error es invisible desde
+        # Python, pero JSON.parse del navegador los rechaza y la vista muere con
+        # "no es JSON valido". Mejor fallar aqui, en el build.
+        payload = json.dumps(
+            document, ensure_ascii=False, separators=(",", ":"), allow_nan=False
+        ).encode("utf-8")
+    except ValueError as error:
+        raise ContractViolation(
+            f"{kind} {label or ''}: el documento contiene NaN o Infinity, que no "
+            f"son JSON valido. Conviertelos a null antes de escribir "
+            f"(un feature que no aplica es null, no NaN). Causa: {error}"
+        ) from error
     measured = check_budget(kind, payload, label)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(payload)

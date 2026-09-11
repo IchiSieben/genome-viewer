@@ -152,10 +152,15 @@ function aviGauge(card: CardDoc, width: number): HTMLElement {
       }),
     ),
     root as unknown as HTMLElement,
-    el('p', {
-      class: 'gauge-block__formula',
-      text: 'PHRED = -10 · log₁₀(1 - cuantil)',
-    }),
+    el('p', { class: 'gauge-block__legend', text: fmt.PHRED_LEGEND }),
+    el(
+      'p',
+      { class: 'gauge-block__formula' },
+      'PHRED = -10 · log₁₀(1 - cuantil)',
+      card.avi.rawScore !== null && card.avi.rawScore !== undefined
+        ? `   ·   score crudo ${fmt.signed2(card.avi.rawScore)}`
+        : '',
+    ),
   );
 }
 
@@ -390,10 +395,21 @@ function familySummary(card: CardDoc): HTMLElement {
 
 /** Tracks mas afectados, ordenados por magnitud del efecto. */
 function topTracks(card: CardDoc): HTMLElement {
-  const tracks = card.topTracks ?? [];
-  if (!tracks.length) {
+  const all = card.topTracks ?? [];
+  if (!all.length) {
     return el('p', { class: 'state__detail', text: 'Sin tracks destacados.' });
   }
+  // Tope por modalidad. Sin el, una modalidad con cientos de tracks copa la
+  // lista entera y el panel deja de informar sobre las demas: doce filas de
+  // SPLICE_JUNCTIONS dicen mucho menos que cuatro modalidades distintas.
+  const PER_MODALITY = 3;
+  const seen = new Map<string, number>();
+  const tracks = all.filter((t) => {
+    const n = seen.get(t.modality) ?? 0;
+    if (n >= PER_MODALITY) return false;
+    seen.set(t.modality, n + 1);
+    return true;
+  });
   const max = Math.max(...tracks.map((t) => Math.abs(t.score)), 1);
 
   return el(
@@ -502,7 +518,7 @@ export function renderVariantCard(container: HTMLElement, card: CardDoc): () => 
     panel(
       {
         title: 'Tracks mas afectados',
-        subtitle: 'Mayor magnitud de efecto predicho',
+        subtitle: `Mayor magnitud de efecto, hasta ${3} por modalidad`,
         hint:
           'El cuadrito de la izquierda es la modalidad. El color de la barra es ' +
           'la direccion del efecto: naranja lo sube, azul lo baja. La barra mide ' +

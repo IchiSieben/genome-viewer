@@ -260,6 +260,21 @@ LOCUS = {
                 "properties": {
                     "variant": {"$ref": "common.schema.json#/$defs/variant"},
                     "aviPhred": {"type": ["number", "null"], "minimum": 0},
+                    "note": {"type": ["string", "null"]},
+                    "signals": {
+                        "type": "object",
+                        "description": (
+                            "Bloques de senal de ESTA variante. El delta REF/ALT "
+                            "pertenece a la variante, no al locus, asi que cada "
+                            "una tiene los suyos. Si falta, el visor cae a los "
+                            "del locus."
+                        ),
+                        "additionalProperties": False,
+                        "properties": {
+                            "overview": {"$ref": "locus.schema.json#/$defs/signalLevel"},
+                            "detail": {"$ref": "locus.schema.json#/$defs/signalLevel"},
+                        },
+                    },
                     "artifacts": {
                         "type": "object",
                         "additionalProperties": False,
@@ -352,7 +367,16 @@ CARD = {
                     "type": ["number", "null"],
                     "description": (
                         "Valor base de la explicacion SHAP. La cascada parte de "
-                        "aqui y las contribuciones deben sumar hasta el score."
+                        "aqui y las contribuciones deben sumar hasta el score. "
+                        "Medido en H0: -0,049016, constante entre variantes."
+                    ),
+                },
+                "rawScore": {
+                    "type": ["number", "null"],
+                    "description": (
+                        "Score AVI crudo y CON SIGNO, tal cual lo devuelve el "
+                        "scorer AVI_SCORE. El PHRED se deriva del cuantil, que "
+                        "es otra cosa: el crudo puede ser negativo."
                     ),
                 },
             },
@@ -498,6 +522,15 @@ TRACKS = {
                     "organSystem": {"type": ["string", "null"]},
                 },
             },
+        },
+        "biosampleTotal": {
+            "type": "integer",
+            "minimum": 0,
+            "description": (
+                "Cuantos biosamples habia ANTES de recortar al tope de filas. "
+                "Si es mayor que la longitud de 'biosamples', la vista debe "
+                "decir que muestra un subconjunto."
+            ),
         },
         "cells": {
             "type": "array",

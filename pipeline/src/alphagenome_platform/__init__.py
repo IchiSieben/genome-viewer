@@ -7,7 +7,7 @@ solo conoce el esquema de esos artefactos, jamas este codigo.
 
 __version__ = "0.1.0"
 
-SCHEMA_VERSION = "1.0.0"
+SCHEMA_VERSION = "1.1.0"
 """Version del contrato de datos entre el pipeline y la web.
 
 Politica de versionado (ver docs/02-data-contract.md):

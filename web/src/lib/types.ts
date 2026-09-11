@@ -97,6 +97,12 @@ export interface LocusDoc {
   variants: Array<{
     variant: Variant;
     aviPhred?: number | null;
+    note?: string | null;
+    /** Bloques de senal de ESTA variante. El delta pertenece a la variante. */
+    signals?: {
+      overview?: SignalLevel;
+      detail?: SignalLevel;
+    };
     artifacts: {
       card?: string | null;
       tracks?: string | null;
@@ -129,7 +135,10 @@ export interface CardDoc {
     /** PHRED = -10*log10(1-cuantil). 10 = top 10 %, 20 = top 1 %, 30 = top 0,1 %. */
     phred: number;
     quantile?: number | null;
+    /** Valor base de la cascada SHAP. Medido: -0,049016. */
     baseValue?: number | null;
+    /** Score crudo CON SIGNO del scorer AVI_SCORE. Puede ser negativo. */
+    rawScore?: number | null;
   };
   featureFamilies?: Array<{
     id: FeatureFamily;
@@ -169,6 +178,8 @@ export interface TracksDoc {
     biosampleType?: string | null;
     organSystem?: string | null;
   }>;
+  /** Cuantos habia antes de recortar. Mayor que biosamples.length = subconjunto. */
+  biosampleTotal?: number;
   cells: HeatCell[];
 }
 

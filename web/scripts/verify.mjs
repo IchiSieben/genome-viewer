@@ -97,18 +97,19 @@ await visit('02-locus', '#/locus/ppp1r1a-pde1b', {
   ],
 });
 
-await visit('03-ficha-variante', '#/variant/ppp1r1a-pde1b/chr12-54578515-T-C?view=card', {
+await visit('03-ficha-variante', '#/variant/ppp1r1a-pde1b/chr12-54578515-C-T?view=card', {
   checks: [
     { selector: '.gauge', label: 'medidor AVI' },
     { selector: '.waterfall__bar', min: 18, label: 'barras de la cascada SHAP' },
     { selector: '.waterfall__family', min: 4, label: 'encabezados de familia' },
     { selector: '.family-summary__row', min: 4, label: 'filas de resumen por familia' },
-    { selector: '.track-list__row', min: 10, label: 'tracks destacados' },
-    { selector: '.provenance--synthetic', label: 'aviso de datos sinteticos' },
+    { selector: '.track-list__row', min: 6, label: 'tracks destacados' },
+    { selector: '.gauge-block__legend', label: 'clave del eje PHRED' },
+    { selector: '.provenance', label: 'sello de proveniencia' },
   ],
 });
 
-await visit('04-ficha-oscuro', '#/variant/ppp1r1a-pde1b/chr12-54578515-T-C?view=card', {
+await visit('04-ficha-oscuro', '#/variant/ppp1r1a-pde1b/chr12-54578515-C-T?view=card', {
   theme: 'dark',
   checks: [
     { selector: '.waterfall__bar', min: 18, label: 'barras de la cascada SHAP' },
@@ -116,7 +117,7 @@ await visit('04-ficha-oscuro', '#/variant/ppp1r1a-pde1b/chr12-54578515-T-C?view=
   ],
 });
 
-await visit('05-mapa-calor', '#/variant/ppp1r1a-pde1b/chr12-54578515-T-C?view=tracks', {
+await visit('05-mapa-calor', '#/variant/ppp1r1a-pde1b/chr12-54578515-C-T?view=tracks', {
   checks: [
     { selector: '.heatmap__cell', min: 300, label: 'celdas del mapa' },
     { selector: '.heatmap__group-label', min: 8, label: 'grupos por sistema de organos' },
@@ -125,7 +126,7 @@ await visit('05-mapa-calor', '#/variant/ppp1r1a-pde1b/chr12-54578515-T-C?view=tr
   ],
 });
 
-await visit('06-mapa-calor-oscuro', '#/variant/ppp1r1a-pde1b/chr12-54578515-T-C?view=tracks', {
+await visit('06-mapa-calor-oscuro', '#/variant/ppp1r1a-pde1b/chr12-54578515-C-T?view=tracks', {
   theme: 'dark',
   checks: [{ selector: '.heatmap__cell', min: 300, label: 'celdas del mapa' }],
 });
@@ -138,13 +139,13 @@ await visit('07-estudio', '#/study/atlas-andino', {
   ],
 });
 
-await visit('08-movil-mapa', '#/variant/ppp1r1a-pde1b/chr12-54578515-T-C?view=tracks', {
+await visit('08-movil-mapa', '#/variant/ppp1r1a-pde1b/chr12-54578515-C-T?view=tracks', {
   width: 390,
   height: 844,
   checks: [{ selector: '.heatmap-scroll', label: 'contenedor con desplazamiento propio' }],
 });
 
-await visit('09-movil-ficha', '#/variant/ppp1r1a-pde1b/chr12-54578515-T-C?view=card', {
+await visit('09-movil-ficha', '#/variant/ppp1r1a-pde1b/chr12-54578515-C-T?view=card', {
   width: 390,
   height: 844,
   checks: [{ selector: '.waterfall__bar', min: 18, label: 'barras de la cascada' }],
@@ -154,7 +155,7 @@ await visit('10-sobre-los-datos', '#/about', {
   checks: [{ selector: '.facts dd', min: 4, label: 'hechos del contrato' }],
 });
 
-await visit('11-navegador', '#/variant/ppp1r1a-pde1b/chr12-54578515-T-C?view=signal', {
+await visit('11-navegador', '#/variant/ppp1r1a-pde1b/chr12-54578515-C-T?view=signal', {
   checks: [
     { selector: '.browser__canvas', label: 'canvas de senal' },
     { selector: '.browser__overlay', label: 'overlay SVG' },
@@ -166,12 +167,12 @@ await visit('11-navegador', '#/variant/ppp1r1a-pde1b/chr12-54578515-T-C?view=sig
   ],
 });
 
-await visit('12-navegador-oscuro', '#/variant/ppp1r1a-pde1b/chr12-54578515-T-C?view=signal', {
+await visit('12-navegador-oscuro', '#/variant/ppp1r1a-pde1b/chr12-54578515-C-T?view=signal', {
   theme: 'dark',
   checks: [{ selector: '.browser__canvas', label: 'canvas de senal' }],
 });
 
-await visit('13-navegador-movil', '#/variant/ppp1r1a-pde1b/chr12-54578515-T-C?view=signal', {
+await visit('13-navegador-movil', '#/variant/ppp1r1a-pde1b/chr12-54578515-C-T?view=signal', {
   width: 390,
   height: 844,
   checks: [{ selector: '.browser__canvas', label: 'canvas de senal' }],

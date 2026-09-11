@@ -75,20 +75,29 @@ export function phredMeaning(phred: number): string {
   const topFraction = Math.pow(10, -phred / 10);
   if (topFraction >= 1) return 'sin senal';
   const percent = topFraction * 100;
-  if (percent >= 1) return `${percent.toFixed(0)} % superior`;
-  if (percent >= 0.1) return `${percent.toFixed(1)} % superior`;
-  if (percent >= 0.01) return `${percent.toFixed(2)} % superior`;
-  return `${percent.toExponential(1)} % superior`;
+  // Con un PHRED bajo, "top 94 %" es literalmente cierto y se lee justo al
+  // reves de lo que significa: parece un percentil 94. Por debajo del 50 % de
+  // corte se dice en positivo cuanta variacion queda por encima.
+  if (percent > 50) {
+    return `por debajo de la mediana del genoma`;
+  }
+  if (percent >= 1) return `en el ${percent.toFixed(0)} % mas alto`;
+  if (percent >= 0.1) return `en el ${percent.toFixed(1)} % mas alto`;
+  if (percent >= 0.01) return `en el ${percent.toFixed(2)} % mas alto`;
+  return `en el ${percent.toExponential(1)} % mas alto`;
 }
 
 /** Marcas interpretables del eje PHRED. */
 export const PHRED_TICKS: Array<{ value: number; label: string }> = [
   { value: 0, label: '0' },
-  { value: 10, label: '10 · top 10 %' },
-  { value: 20, label: '20 · top 1 %' },
-  { value: 30, label: '30 · top 0,1 %' },
-  { value: 40, label: '40 · top 0,01 %' },
+  { value: 10, label: '10' },
+  { value: 20, label: '20' },
+  { value: 30, label: '30' },
+  { value: 40, label: '40' },
 ];
+
+/** Clave del eje PHRED, en una linea aparte para que no choque con las marcas. */
+export const PHRED_LEGEND = '10 = 10 % mas alto · 20 = 1 % · 30 = 0,1 % · 40 = 0,01 %';
 
 /** Fecha ISO a algo legible, sin inventar zona horaria. */
 export function timestamp(iso: string): string {

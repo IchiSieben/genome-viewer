@@ -333,8 +333,11 @@ export function renderTrackBrowser(
   locus: LocusDoc,
   locusPath: string,
   variant: Variant | null,
+  variantSignals?: LocusDoc['variants'][number]['signals'],
 ): () => void {
-  const signals = locus.signals;
+  // El delta REF/ALT es de la variante, no del locus: se prefieren sus bloques
+  // y solo se cae a los del locus si no los tiene.
+  const signals = variantSignals ?? locus.signals;
   if (!signals?.overview) {
     container.append(
       emptyState(

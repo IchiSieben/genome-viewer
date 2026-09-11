@@ -292,7 +292,9 @@ async function renderVariant(
   main.append(slot);
 
   if (view === 'signal') {
-    cleanup = renderTrackBrowser(slot, locus, entry.path, record.variant);
+    cleanup = renderTrackBrowser(
+      slot, locus, entry.path, record.variant, record.signals,
+    );
   } else if (view === 'tracks') {
     const path = record.artifacts.tracks;
     if (!path) {
@@ -397,7 +399,12 @@ function describeError(error: unknown): { title: string; detail: string } {
     return { title: 'Contrato de datos incompatible', detail: error.message };
   }
   if (error instanceof DataError) {
-    return { title: 'No se pudieron cargar los datos', detail: error.message };
+    // El mensaje nombra el artefacto: "no es JSON valido" sin decir CUAL es un
+    // diagnostico inservible, y esa diferencia cuesta media hora.
+    return {
+      title: 'No se pudieron cargar los datos',
+      detail: `${error.message}  (${error.url})`,
+    };
   }
   return {
     title: 'Algo salio mal',

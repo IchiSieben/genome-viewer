@@ -62,6 +62,25 @@
             ],
             "minimum": 0
           },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "signals": {
+            "type": "object",
+            "description": "Bloques de senal de ESTA variante. El delta REF/ALT pertenece a la variante, no al locus, asi que cada una tiene los suyos. Si falta, el visor cae a los del locus.",
+            "additionalProperties": false,
+            "properties": {
+              "overview": {
+                "$ref": "locus.schema.json#/$defs/signalLevel"
+              },
+              "detail": {
+                "$ref": "locus.schema.json#/$defs/signalLevel"
+              }
+            }
+          },
           "artifacts": {
             "type": "object",
             "additionalProperties": false,

@@ -44,6 +44,44 @@ class MissingApiKey(RuntimeError):
     """No hay llave. Es un estado esperado, no un fallo del programa."""
 
 
+def _read_env_lines(path: pathlib.Path) -> list[str]:
+    """Lee un archivo .env sin suponer la codificacion.
+
+    En Windows, `Out-File` y la redireccion `>` de PowerShell 5.1 escriben
+    **UTF-16 LE con BOM**, no UTF-8. Un lector que asuma UTF-8 falla al
+    decodificar y el programa reporta 'no hay llave' cuando la llave si esta,
+    que es un diagnostico enganoso y costoso de perseguir.
+
+    Se detecta el BOM y, si no lo hay, se prueba UTF-8 antes de caer a la
+    codificacion ANSI del sistema.
+    """
+    raw = path.read_bytes()
+    text: str | None = None
+    # Se usan los codecs que CONSUMEN el BOM ("utf-16", "utf-8-sig"). Con
+    # "utf-16-le" el BOM sobrevive como un ﻿ invisible al principio de la
+    # primera linea, y str.strip() no lo quita: el nombre de la variable deja de
+    # coincidir y vuelve el mismo diagnostico enganoso de "no hay llave".
+    for bom, encoding in (
+        (b"\xff\xfe", "utf-16"),
+        (b"\xfe\xff", "utf-16"),
+        (b"\xef\xbb\xbf", "utf-8-sig"),
+    ):
+        if raw.startswith(bom):
+            text = raw.decode(encoding)
+            break
+    if text is None:
+        for encoding in ("utf-8", "cp1252", "latin-1"):
+            try:
+                text = raw.decode(encoding)
+                break
+            except UnicodeDecodeError:
+                continue
+    if text is None:
+        return []
+    # Cinturon y tirantes: se quita cualquier marca de orden residual.
+    return [line.lstrip("﻿") for line in text.splitlines()]
+
+
 def load_api_key(env_path: pathlib.Path | None = None) -> str:
     """Lee la llave del entorno o de ``~/.env``.
 
@@ -60,8 +98,8 @@ def load_api_key(env_path: pathlib.Path | None = None) -> str:
 
     path = env_path or pathlib.Path.home() / ".env"
     if path.exists():
-        for line in path.read_text(encoding="utf-8").splitlines():
-            line = line.strip()
+        for line in _read_env_lines(path):
+            line = line.strip().removeprefix("export ").strip()
             if line.startswith("ALPHAGENOME_API_KEY"):
                 _, _, value = line.partition("=")
                 return value.strip().strip('"').strip("'")
