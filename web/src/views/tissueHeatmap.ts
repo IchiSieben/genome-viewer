@@ -169,7 +169,11 @@ function legend(domainMax: number, width: number, clamped: boolean): SVGSVGEleme
   return root;
 }
 
-function drawHeatmap(doc: TracksDoc, width: number): HTMLElement {
+function drawHeatmap(
+  doc: TracksDoc,
+  width: number,
+  onOpenSignal?: (modality: string, biosample: string) => void,
+): HTMLElement {
   const { groups, height } = layoutGroups(doc);
   const nModalities = doc.modalities.length;
 
@@ -298,12 +302,21 @@ function drawHeatmap(doc: TracksDoc, width: number): HTMLElement {
               ...(biosample.ontologyCurie
                 ? [{ label: 'Ontologia', value: biosample.ontologyCurie }]
                 : []),
+              ...(onOpenSignal
+                ? [{ label: '', value: 'clic para ver esta pista en el locus' }]
+                : []),
             ],
             mouse.clientX || box.right,
             mouse.clientY || box.top,
           );
         };
 
+        if (onOpenSignal) {
+          rect.style.cursor = 'pointer';
+          rect.addEventListener('click', () =>
+            onOpenSignal(modality.id, biosample.label),
+          );
+        }
         rect.addEventListener('mouseenter', describe);
         rect.addEventListener('mousemove', (event) =>
           tip.move(event.clientX, event.clientY),
@@ -330,6 +343,7 @@ function drawHeatmap(doc: TracksDoc, width: number): HTMLElement {
 export function renderTissueHeatmap(
   container: HTMLElement,
   doc: TracksDoc,
+  onOpenSignal?: (modality: string, biosample: string) => void,
 ): () => void {
   const slot = el('div', { class: 'heatmap-slot' });
   const legendSlot = el('div', { class: 'heatmap-legend' });
@@ -342,7 +356,7 @@ export function renderTissueHeatmap(
     clear(slot);
     clear(legendSlot);
     legendSlot.append(legend(domainMax, width, clamped) as unknown as HTMLElement);
-    slot.append(drawHeatmap(doc, width));
+    slot.append(drawHeatmap(doc, width, onOpenSignal));
   };
 
   const covered = new Set(doc.cells.map((c) => `${c[0]}:${c[1]}`)).size;
@@ -377,7 +391,8 @@ export function renderTissueHeatmap(
         hint:
           'Las filas van agrupadas por sistema de organos, no en orden ' +
           'alfabetico: asi una banda de color continua significa un efecto ' +
-          'especifico de ese sistema. El gris neutro es cero, no ausencia de dato.',
+          'especifico de ese sistema. El gris neutro es cero, no ausencia de ' +
+          'dato. Cada celda es pinchable y lleva a esa pista en el locus.',
       },
       el('div', {}, legendSlot, slot),
     ),

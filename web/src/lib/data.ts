@@ -13,6 +13,7 @@ import type {
   CardDoc,
   IndexDoc,
   LocusDoc,
+  SaturationDoc,
   StudyDoc,
   TracksDoc,
 } from './types';
@@ -123,6 +124,13 @@ export function loadAnnotations(
   relative: string,
 ): Promise<AnnotationsDoc> {
   return fetchJson<AnnotationsDoc>(resolveRelative(locusPath, relative));
+}
+
+export function loadSaturation(
+  locusPath: string,
+  relative: string,
+): Promise<SaturationDoc> {
+  return fetchJson<SaturationDoc>(resolveRelative(locusPath, relative));
 }
 
 export function loadStudy(path: string): Promise<StudyDoc> {

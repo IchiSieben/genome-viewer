@@ -69,6 +69,16 @@ es 20 en el cliente, asi que 3 + 11 entran holgados en una sola peticion."""
 SIGNAL_OUTPUTS = ("RNA_SEQ", "DNASE", "ATAC", "CAGE", "CHIP_HISTONE", "PROCAP")
 """Modalidades de perfil para V3. Los mapas de contacto son 2D y van en V5."""
 
+SATURATION_WINDOW = 512
+"""Ancho de la ventana del mapa de saturacion, en pares de bases.
+
+512 pb son 16 sub-peticiones de 32 pb y unas 1.536 variantes. Es el unico
+sitio del pipeline donde se usa `query_interval`, que es el metodo caro, y a
+esta escala su coste es de un par de segundos.
+"""
+
+ALT_BASES = ("A", "C", "G", "T")
+
 ONTOLOGY_TERMS = (
     "UBERON:0000178",  # sangre
     "UBERON:0002048",  # pulmon
@@ -606,3 +616,107 @@ def build_signal_blocks(
             del first
 
     return levels, measurements
+
+
+# --------------------------------------------------------------------------
+# N1: mapa de saturacion
+# --------------------------------------------------------------------------
+
+
+def build_saturation(
+    client: Any,
+    config: LocusConfig,
+    spec: VariantSpec,
+    prov: dict[str, Any],
+    *,
+    window: int = SATURATION_WINDOW,
+) -> dict[str, Any]:
+    """Consulta todas las variantes de una ventana y arma el mapa.
+
+    La secuencia de referencia NO se pide aparte: cada variante llega como
+    ``chr:pos:REF>ALT``, asi que la referencia se deduce de la propia respuesta.
+    Una fuente menos que sincronizar y un fallo menos que tener.
+
+    Args:
+      client: Cliente del Atlas.
+      config: Locus al que pertenece la ventana.
+      spec: Variante sobre la que se centra.
+      prov: Sello de proveniencia ya construido.
+      window: Ancho de la ventana en pares de bases.
+
+    Returns:
+      El documento del mapa, listo para validar y escribir.
+    """
+    from alphagenome.data import genome
+
+    half = window // 2
+    start = spec.position - half
+    end = start + window
+    interval = genome.Interval(config.chromosome, start, end)
+
+    _log.info(
+        "[%s] saturacion: %d pb -> ~%d sub-peticiones de 32 pb",
+        config.id,
+        window,
+        -(-window // 32),
+    )
+    t0 = time.perf_counter()
+    result = client.query_interval(
+        interval, requested_scorers=["AVI_SCORE"], progress_bar=False
+    )
+    _log.info("[%s] saturacion en %.2fs", config.id, time.perf_counter() - t0)
+
+    adata = result["AVI_SCORE"]
+    quantiles = (
+        np.asarray(adata.layers["quantiles"]).ravel()
+        if adata.layers and "quantiles" in adata.layers
+        else None
+    )
+
+    raw_scores = np.asarray(adata.X).ravel()
+    reference = ["N"] * window
+    grid: list[list[float | None]] = [[None] * window for _ in ALT_BASES]
+    raw_grid: list[list[float | None]] = [[None] * window for _ in ALT_BASES]
+    filled = 0
+
+    for row, variant in enumerate(adata.obs["variant"]):
+        _chrom, pos_text, alleles = str(variant).split(":")
+        ref_base, alt_base = alleles.split(">")
+        # Solo SNVs: un indel no cabe en una rejilla de una base por columna.
+        if len(ref_base) != 1 or len(alt_base) != 1:
+            continue
+        column = int(pos_text) - 1 - start
+        if not 0 <= column < window:
+            continue
+        reference[column] = ref_base
+        if alt_base not in ALT_BASES:
+            continue
+        value = 0.0
+        if quantiles is not None and row < quantiles.size:
+            q = float(quantiles[row])
+            if np.isfinite(q):
+                value = avi.phred_from_quantile(q)
+        if not np.isfinite(value):
+            value = 0.0
+        index = ALT_BASES.index(alt_base)
+        grid[index][column] = round(float(value), 3)
+        if row < raw_scores.size and np.isfinite(raw_scores[row]):
+            raw_grid[index][column] = round(float(raw_scores[row]), 4)
+        filled += 1
+
+    possible = window * (len(ALT_BASES) - 1)
+    values = [v for fila in grid for v in fila if v is not None]
+
+    return {
+        "schemaVersion": SCHEMA_VERSION,
+        "locus": config.id,
+        "interval": {"chromosome": config.chromosome, "start": start, "end": end},
+        "provenance": prov,
+        "focus": spec.position,
+        "reference": "".join(reference),
+        "alts": list(ALT_BASES),
+        "phred": grid,
+        "raw": raw_grid,
+        "maxPhred": round(max(values), 3) if values else None,
+        "coverage": round(filled / possible, 4) if possible else None,
+    }

@@ -283,6 +283,7 @@ LOCUS = {
                             "tracks": {"type": ["string", "null"]},
                             "splice": {"type": ["string", "null"]},
                             "contact": {"type": ["string", "null"]},
+                            "saturation": {"type": ["string", "null"]},
                         },
                     },
                 },
@@ -716,6 +717,87 @@ ANNOTATIONS = {
     },
 }
 
+SATURATION = {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": BASE + "saturation.schema.json",
+    "title": "Mapa de saturacion (N1)",
+    "description": (
+        "Para cada posicion de una ventana, el AVI de las TRES bases "
+        "alternativas posibles. Es el grafico insignia de la genomica con "
+        "aprendizaje profundo: deja ver de un vistazo donde el modelo cree que "
+        "la secuencia importa, porque los motivos aparecen solos como columnas "
+        "contiguas de color fuerte. "
+        "Los datos salen de atlas.query_interval, el UNICO metodo que trocea a "
+        "32 pb. Una ventana de 512 pb son 16 sub-peticiones y ~1.536 variantes. "
+        "Presupuesto: 96 KB."
+    ),
+    "type": "object",
+    "required": [
+        "schemaVersion",
+        "locus",
+        "interval",
+        "provenance",
+        "reference",
+        "alts",
+        "phred",
+    ],
+    "additionalProperties": False,
+    "properties": {
+        "schemaVersion": {"$ref": "common.schema.json#/$defs/schemaVersion"},
+        "locus": {"type": "string"},
+        "interval": {"$ref": "common.schema.json#/$defs/interval"},
+        "provenance": {"$ref": "common.schema.json#/$defs/provenance"},
+        "focus": {
+            "type": ["integer", "null"],
+            "description": "Posicion 1-based de la variante destacada, si hay.",
+        },
+        "reference": {
+            "type": "string",
+            "pattern": "^[ACGTN]*$",
+            "description": (
+                "Secuencia de referencia de la ventana, una base por posicion. "
+                "Se deriva del propio Atlas: cada variante viene como "
+                "chr:pos:REF>ALT, asi que la referencia no hay que pedirla "
+                "aparte."
+            ),
+        },
+        "alts": {
+            "type": "array",
+            "items": {"type": "string", "pattern": "^[ACGT]$"},
+            "description": "Filas del mapa, en orden fijo.",
+        },
+        "phred": {
+            "type": "array",
+            "description": (
+                "Una fila por base alternativa, una columna por posicion. "
+                "null donde el alelo coincide con la referencia, que no es una "
+                "variante, o donde el Atlas no la conoce."
+            ),
+            "items": {
+                "type": "array",
+                "items": {"type": ["number", "null"]},
+            },
+        },
+        "raw": {
+            "type": "array",
+            "description": (
+                "El mismo mapa con el score CRUDO y con signo. El PHRED es una "
+                "magnitud calibrada y va con escala secuencial; el crudo "
+                "conserva el signo por si una vista quiere divergente."
+            ),
+            "items": {
+                "type": "array",
+                "items": {"type": ["number", "null"]},
+            },
+        },
+        "maxPhred": {"type": ["number", "null"]},
+        "coverage": {
+            "type": ["number", "null"],
+            "description": "Fraccion de celdas posibles con dato.",
+        },
+    },
+}
+
 SCHEMAS = {
     "common.schema.json": COMMON,
     "index.schema.json": INDEX,
@@ -724,6 +806,7 @@ SCHEMAS = {
     "tracks.schema.json": TRACKS,
     "study.schema.json": STUDY,
     "annotations.schema.json": ANNOTATIONS,
+    "saturation.schema.json": SATURATION,
 }
 
 

@@ -108,6 +108,7 @@ export interface LocusDoc {
       tracks?: string | null;
       splice?: string | null;
       contact?: string | null;
+      saturation?: string | null;
     };
   }>;
   signals?: {
@@ -232,4 +233,23 @@ export interface AnnotationsDoc {
     end: number;
     transcripts?: Array<{ id: string; exons: Array<[number, number]> }>;
   }>;
+}
+
+export interface SaturationDoc {
+  schemaVersion: string;
+  locus: string;
+  interval: Interval;
+  provenance: Provenance;
+  /** Posicion 1-based de la variante que ancla la ventana. */
+  focus?: number | null;
+  /** Secuencia de referencia, una base por columna. */
+  reference: string;
+  /** Filas del mapa, en orden fijo. */
+  alts: string[];
+  /** Una fila por base alternativa; null donde el alelo es el de referencia. */
+  phred: Array<Array<number | null>>;
+  /** El mismo mapa con el score crudo y con signo. */
+  raw?: Array<Array<number | null>>;
+  maxPhred?: number | null;
+  coverage?: number | null;
 }

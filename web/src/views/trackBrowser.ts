@@ -334,6 +334,14 @@ export function renderTrackBrowser(
   locusPath: string,
   variant: Variant | null,
   variantSignals?: LocusDoc['variants'][number]['signals'],
+  urlState?: {
+    /** Modalidades que pedia la URL, si las pedia. */
+    tracks?: string[];
+    /** Ventana de zoom que pedia la URL, en pares de bases. */
+    window?: { start: number; end: number };
+    /** Publica el estado sin provocar una navegacion. */
+    publish: (state: { tracks: string[]; start: number; end: number }) => void;
+  },
 ): () => void {
   // El delta REF/ALT es de la variante, no del locus: se prefieren sus bloques
   // y solo se cae a los del locus si no los tiene.
@@ -351,13 +359,27 @@ export function renderTrackBrowser(
   const overview = signals.overview;
   const detail = signals.detail;
   const available = MODALITY_ORDER.filter((m) => m in overview.modalities);
-  const selected = new Set<string>(available.slice(0, 3));
+  // La URL manda sobre el valor por defecto: asi un enlace compartido abre
+  // exactamente la misma pantalla, que es el punto de tener estado en la URL.
+  const fromUrl = (urlState?.tracks ?? []).filter((m) => available.includes(m as never));
+  const selected = new Set<string>(
+    fromUrl.length ? fromUrl : available.slice(0, 3),
+  );
 
   const blocks = new Map<string, DecodedBlock>();
   let annotations: AnnotationsDoc | null = null;
 
   const full: Viewport = { start: overview.interval.start, end: overview.interval.end };
   let view: Viewport = { ...full };
+  if (urlState?.window) {
+    const { start, end } = urlState.window;
+    if (Number.isFinite(start) && Number.isFinite(end) && end > start) {
+      view = {
+        start: Math.max(full.start, Math.floor(start)),
+        end: Math.min(full.end, Math.ceil(end)),
+      };
+    }
+  }
 
   const canvas = el('canvas', { class: 'browser__canvas' });
   const overlay = svg('svg', { class: 'browser__overlay' });
@@ -544,6 +566,12 @@ export function renderTrackBrowser(
         );
       }
     }
+
+    urlState?.publish({
+      tracks: [...selected],
+      start: view.start,
+      end: view.end,
+    });
 
     const level = data[0]?.level ?? 'overview';
     const span = view.end - view.start;

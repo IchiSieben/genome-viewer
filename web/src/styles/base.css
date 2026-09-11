@@ -1135,3 +1135,113 @@ a {
   fill: var(--ink-faint);
   font-size: var(--text-2xs);
 }
+
+/* --- Mapa de saturacion (N1) -------------------------------------------- */
+
+.saturation__readout {
+  margin: 0 0 var(--sp-4);
+  font-size: var(--text-2xs);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faint);
+}
+.saturation__readout-strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+.saturation__stage {
+  position: relative;
+  border: var(--stroke-hair) solid var(--rule);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: crosshair;
+  overflow: hidden;
+}
+.saturation__canvas {
+  display: block;
+}
+.saturation__overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.saturation__row-label {
+  font-size: var(--text-2xs);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+.saturation__row-label--quiet {
+  fill: var(--ink-faint);
+  font-weight: 400;
+}
+.saturation__tick {
+  stroke: var(--rule-strong);
+}
+.saturation__tick-label {
+  fill: var(--ink-faint);
+  font-size: var(--text-3xs);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.saturation__gene-body {
+  stroke: var(--ink-faint);
+  stroke-width: 1;
+}
+.saturation__exon {
+  fill: var(--ink-muted);
+  opacity: 0.8;
+}
+.saturation__gene-label {
+  fill: var(--ink-muted);
+  font-size: var(--text-3xs);
+  font-weight: 600;
+}
+/* La variante que ancla la ventana se marca con un contorno, no con relleno:
+   rellenarla taparia justo el dato que se vino a ver. */
+.saturation__focus {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 2;
+}
+.saturation__selected {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.saturation__legend {
+  margin-top: var(--sp-6);
+}
+.saturation__legend {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  flex-wrap: wrap;
+  margin-top: var(--sp-6);
+}
+.saturation__legend-note {
+  margin: 0;
+  font-size: var(--text-3xs);
+  font-family: var(--font-mono);
+  color: var(--ink-faint);
+}
+
+/* Una fila enlazable se anuncia al pasar por encima: sin eso, la unica forma
+   de descubrir el enlace cruzado es hacer clic por casualidad. */
+.waterfall__row--linked {
+  cursor: pointer;
+}
+.waterfall__row--linked:hover .waterfall__label,
+.waterfall__row--linked:focus-visible .waterfall__label {
+  fill: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* La cabecera es pegajosa: sin este margen, saltar a un panel lo deja medio
+   tapado por ella. */
+.panel,
+.card__identity,
+.tabs {
+  scroll-margin-top: calc(var(--sp-16) + var(--sp-8));
+}

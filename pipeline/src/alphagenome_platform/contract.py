@@ -80,6 +80,11 @@ BUDGETS: dict[str, Budget] = {
         96 * 1024,
         "Manifiesto mas paneles embebidos pequenos; los datos grandes van aparte.",
     ),
+    "saturation": Budget(
+        "saturation",
+        96 * 1024,
+        "512 posiciones x 3 alternativas de PHRED, mas la secuencia de referencia.",
+    ),
     "annotations": Budget(
         "annotations",
         128 * 1024,
@@ -261,5 +266,7 @@ def iter_dist(dist: pathlib.Path | None = None) -> Iterator[tuple[str, pathlib.P
             yield "study", path
         elif name == "annotations.json":
             yield "annotations", path
+        elif name == "saturation.json":
+            yield "saturation", path
         elif path.suffix == ".bin":
             yield "signal", path

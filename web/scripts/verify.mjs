@@ -178,6 +178,27 @@ await visit('13-navegador-movil', '#/variant/ppp1r1a-pde1b/chr12-54578515-C-T?vi
   checks: [{ selector: '.browser__canvas', label: 'canvas de senal' }],
 });
 
+await visit('14-saturacion', '#/variant/ppp1r1a-pde1b/chr12-54578515-C-T?view=saturation', {
+  checks: [
+    { selector: '.saturation__canvas', label: 'canvas del mapa' },
+    { selector: '.saturation__row-label', min: 5, label: 'etiquetas de fila A C G T + ref' },
+    { selector: '.saturation__tick-label', min: 3, label: 'marcas del eje' },
+    { selector: '.saturation__focus', label: 'marca de la variante' },
+    { selector: '.legend', label: 'leyenda' },
+  ],
+});
+
+await visit('15-saturacion-oscuro', '#/variant/ppp1r1a-pde1b/chr12-54578515-C-T?view=saturation', {
+  theme: 'dark',
+  checks: [{ selector: '.saturation__canvas', label: 'canvas del mapa' }],
+});
+
+await visit('16-saturacion-movil', '#/variant/ppp1r1a-pde1b/chr12-54578515-C-T?view=saturation', {
+  width: 390,
+  height: 844,
+  checks: [{ selector: '.saturation__canvas', label: 'canvas del mapa' }],
+});
+
 await browser.close();
 console.log(`\n${failures === 0 ? 'TODO OK' : failures + ' FALLAS'}`);
 process.exit(failures === 0 ? 0 : 1);

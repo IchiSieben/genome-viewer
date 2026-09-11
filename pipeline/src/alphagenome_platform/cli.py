@@ -117,6 +117,7 @@ def _cmd_build_locus(args: argparse.Namespace) -> int:
         args.loci or None,
         max_workers=args.max_workers,
         with_signals=not args.no_signals,
+        with_saturation=not args.no_saturation,
     )
     rows: dict[str, Any] = {}
     for row in outcome["measurements"]:
@@ -237,6 +238,11 @@ def main(argv: list[str] | None = None) -> int:
         "--no-signals",
         action="store_true",
         help="solo V1 y V2; omite predict_variant y los bloques de senal",
+    )
+    p.add_argument(
+        "--no-saturation",
+        action="store_true",
+        help="omite el mapa de saturacion (unico uso de query_interval)",
     )
     p.set_defaults(func=_cmd_build_locus)
 

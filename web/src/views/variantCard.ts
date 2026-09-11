@@ -19,6 +19,24 @@ import { FAMILY_LABEL, FAMILY_ORDER, familyColor, modalityColor } from '../lib/c
 import { panel, predictionNotice, provenanceStrip, tooltip } from '../lib/ui';
 import type { AviFeature, CardDoc } from '../lib/types';
 
+/**
+ * Feature del AVI -> modalidad del navegador de tracks.
+ *
+ * Los diez features regulatorios son el maximo entre tejidos de UNA modalidad,
+ * asi que el salto natural desde la cascada es "enseñame esa modalidad a lo
+ * largo del locus". Los de proteina, conservacion e indel no tienen pista que
+ * enseñar y no son enlazables: enlazar a una vista vacia seria peor que no
+ * enlazar.
+ */
+const FEATURE_TO_MODALITY: Record<string, string> = {
+  MAX_ABS_RNA_SEQ: 'RNA_SEQ',
+  MAX_ABS_ATAC: 'ATAC',
+  MAX_ABS_DNASE: 'DNASE',
+  MAX_ABS_CAGE: 'CAGE',
+  MAX_ABS_PROCAP: 'PROCAP',
+  MAX_ABS_CHIP_HISTONE: 'CHIP_HISTONE',
+};
+
 const ROW_HEIGHT = 22;
 const ROW_GAP = 3;
 const FAMILY_GAP = 16;
@@ -203,7 +221,11 @@ function layoutRows(card: CardDoc): { rows: WaterfallRow[]; height: number } {
  * son el aporte con signo) y la magnitud relativa (el ancho de la barra contra
  * el ancho total del eje).
  */
-function waterfall(card: CardDoc, width: number): HTMLElement {
+function waterfall(
+  card: CardDoc,
+  width: number,
+  onOpenSignal?: (modality: string) => void,
+): HTMLElement {
   const { rows, height } = layoutRows(card);
   const plotWidth = Math.max(MIN_PLOT_WIDTH, width - LABEL_WIDTH - VALUE_WIDTH - 16);
 
@@ -272,9 +294,40 @@ function waterfall(card: CardDoc, width: number): HTMLElement {
     const x1 = Math.max(x(row.from), x(row.to));
     const positive = feature.contribution >= 0;
 
-    const group = svg('g', { class: 'waterfall__row', tabindex: '0', role: 'listitem' });
+    const modality = FEATURE_TO_MODALITY[feature.id];
+    const linkable = Boolean(modality && onOpenSignal);
+    const group = svg('g', {
+      class: linkable ? 'waterfall__row waterfall__row--linked' : 'waterfall__row',
+      tabindex: '0',
+      role: 'listitem',
+    });
+    if (linkable) {
+      const open = () => onOpenSignal!(modality!);
+      group.addEventListener('click', open);
+      group.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          open();
+        }
+      });
+    }
 
     group.append(
+      // Zona de impacto que cubre la fila entera.
+      //
+      // Un <g> de SVG no tiene area propia: solo sus hijos reciben el puntero.
+      // Sin esta banda transparente, el hueco entre la etiqueta y la barra cae
+      // al <svg> de fondo, y tanto el clic como el tooltip fallan justo donde
+      // el usuario cree que esta pinchando la fila. Se descubrio porque una
+      // prueba de clic no encontraba la fila donde la fila estaba.
+      svg('rect', {
+        x: '0',
+        y: String(row.y),
+        width: String(width),
+        height: String(ROW_HEIGHT),
+        fill: 'transparent',
+        'pointer-events': 'all',
+      }),
       svg('text', {
         x: String(LABEL_WIDTH - 10),
         y: String(row.y + ROW_HEIGHT / 2 + 4),
@@ -325,6 +378,9 @@ function waterfall(card: CardDoc, width: number): HTMLElement {
             : []),
           { label: 'Acumulado antes', value: fmt.fixed2(row.from) },
           { label: 'Acumulado despues', value: fmt.fixed2(row.to) },
+          ...(linkable
+            ? [{ label: '', value: 'clic para ver esta pista en el locus' }]
+            : []),
         ],
         mouse.clientX || rect.right,
         mouse.clientY || rect.top,
@@ -449,7 +505,11 @@ function topTracks(card: CardDoc): HTMLElement {
 }
 
 /** Monta la vista completa en `container` y devuelve la funcion de limpieza. */
-export function renderVariantCard(container: HTMLElement, card: CardDoc): () => void {
+export function renderVariantCard(
+  container: HTMLElement,
+  card: CardDoc,
+  onOpenSignal?: (modality: string) => void,
+): () => void {
   const gaugeSlot = el('div', { class: 'card__gauge-slot' });
   const waterfallSlot = el('div', { class: 'card__waterfall-slot' });
 
@@ -457,7 +517,7 @@ export function renderVariantCard(container: HTMLElement, card: CardDoc): () => 
     clear(gaugeSlot);
     clear(waterfallSlot);
     gaugeSlot.append(aviGauge(card, Math.min(width, 520)));
-    waterfallSlot.append(waterfall(card, Math.max(320, width)));
+    waterfallSlot.append(waterfall(card, Math.max(320, width), onOpenSignal));
   };
 
   const header = el(
@@ -511,7 +571,8 @@ export function renderVariantCard(container: HTMLElement, card: CardDoc): () => 
         hint:
           'Cada barra va del score acumulado antes del feature al de despues. ' +
           'Hacia la derecha sube el score, hacia la izquierda lo baja. La linea ' +
-          'vertical es el valor base del que parte la explicacion.',
+          'vertical es el valor base del que parte la explicacion. Los features ' +
+          'regulatorios son pinchables: llevan a esa pista a lo largo del locus.',
       },
       waterfallSlot,
     ),

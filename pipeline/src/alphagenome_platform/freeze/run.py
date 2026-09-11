@@ -30,6 +30,7 @@ def build_locus(
     dist: pathlib.Path | None = None,
     max_workers: int = 4,
     with_signals: bool = True,
+    with_saturation: bool = True,
 ) -> dict[str, Any]:
     """Congela un locus completo. Devuelve su entrada de indice y mediciones."""
     from alphagenome.atlas import atlas
@@ -197,8 +198,31 @@ def build_locus(
                 "tracks": f"variants/{vid}/tracks.json",
                 "splice": None,
                 "contact": None,
+                "saturation": None,
             },
         }
+
+        # N1: mapa de saturacion. Solo para la variante que ancla el locus. Las
+        # tres variantes de una misma posicion comparten ventana, asi que
+        # repetirlo multiplicaria las sub-peticiones sin anadir nada.
+        if with_saturation and spec is specs[0]:
+            try:
+                saturation = bl.build_saturation(client, config, spec, atlas_prov)
+                measurements.append(
+                    {
+                        "kind": "saturation",
+                        "label": vid,
+                        **contract.write_json(
+                            vdir / "saturation.json",
+                            "saturation",
+                            saturation,
+                            label=vid,
+                        ),
+                    }
+                )
+                entry["artifacts"]["saturation"] = f"variants/{vid}/saturation.json"
+            except Exception as error:  # noqa: BLE001
+                _log.warning("[%s] sin mapa de saturacion: %s", config.id, error)
         if spec.note:
             entry["note"] = spec.note
 
@@ -266,6 +290,7 @@ def build_all(
     dist: pathlib.Path | None = None,
     max_workers: int = 4,
     with_signals: bool = True,
+    with_saturation: bool = True,
 ) -> dict[str, Any]:
     """Congela los loci pedidos y reescribe el indice."""
     dist = dist or contract.DIST
@@ -277,7 +302,11 @@ def build_all(
     measurements: list[dict[str, Any]] = []
     for config in wanted:
         outcome = build_locus(
-            config, dist=dist, max_workers=max_workers, with_signals=with_signals
+            config,
+            dist=dist,
+            max_workers=max_workers,
+            with_signals=with_signals,
+            with_saturation=with_saturation,
         )
         index_loci.append(outcome["index"])
         measurements.extend(outcome["measurements"])

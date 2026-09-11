@@ -15,7 +15,9 @@ import {
   SchemaVersionError,
   loadCard,
   loadIndex,
+  loadAnnotations,
   loadLocus,
+  loadSaturation,
   loadStudy,
   loadTracks,
 } from './lib/data';
@@ -24,6 +26,7 @@ import { renderVariantCard } from './views/variantCard';
 import { renderTissueHeatmap } from './views/tissueHeatmap';
 import { renderStudy } from './views/study';
 import { renderTrackBrowser } from './views/trackBrowser';
+import { renderSaturationMap } from './views/saturationMap';
 import { maybeStartTour } from './tour';
 import type { IndexDoc, LocusDoc } from './lib/types';
 
@@ -62,6 +65,23 @@ function parseRoute(): Route {
 
 export function href(route: string): string {
   return `#/${route}`;
+}
+
+/**
+ * Reescribe el hash SIN provocar una navegacion.
+ *
+ * `location.hash = x` dispara `hashchange`, que vuelve a enrutar y destruye la
+ * vista que acaba de publicar su estado. `history.replaceState` no lo dispara,
+ * asi que la URL sigue al visor en vez de reiniciarlo.
+ */
+function replaceHash(hash: string): void {
+  if (window.location.hash === hash) return;
+  try {
+    window.history.replaceState(null, '', hash);
+  } catch {
+    // Algunos navegadores limitan replaceState; perder el enlace compartible
+    // es mejor que reiniciar la vista en cada frame.
+  }
 }
 
 // --------------------------------------------------------------------------
@@ -249,6 +269,7 @@ async function renderVariant(
   locusId: string,
   variantId: string,
   view: string,
+  query: URLSearchParams,
 ): Promise<void> {
   const entry = index.loci.find((l) => l.id === locusId);
   if (!entry) {
@@ -280,6 +301,7 @@ async function renderVariant(
     tabFor('card', 'Ficha de variante'),
     tabFor('tracks', 'Tejido x modalidad'),
     tabFor('signal', 'Pistas de senal'),
+    ...(record.artifacts.saturation ? [tabFor('saturation', 'Mapa de saturacion')] : []),
     el(
       'a',
       { class: 'tabs__back', href: href(`locus/${locusId}`) },
@@ -292,9 +314,50 @@ async function renderVariant(
   main.append(slot);
 
   if (view === 'signal') {
+    const requested = (query.get('tracks') ?? '')
+      .split(',')
+      .map((t: string) => t.trim())
+      .filter(Boolean);
+    const windowText = query.get('win') ?? '';
+    const [winStart, winEnd] = windowText.split('-').map(Number);
+
     cleanup = renderTrackBrowser(
-      slot, locus, entry.path, record.variant, record.signals,
+      slot,
+      locus,
+      entry.path,
+      record.variant,
+      record.signals,
+      {
+        tracks: requested,
+        window:
+          Number.isFinite(winStart) && Number.isFinite(winEnd)
+            ? { start: winStart!, end: winEnd! }
+            : undefined,
+        publish: ({ tracks, start, end }) => {
+          const params = new URLSearchParams({ view: 'signal' });
+          if (tracks.length) params.set('tracks', tracks.join(','));
+          params.set('win', `${start}-${end}`);
+          replaceHash(`#/variant/${locusId}/${variantId}?${params.toString()}`);
+        },
+      },
     );
+  } else if (view === 'saturation') {
+    const path = record.artifacts.saturation;
+    if (!path) {
+      slot.append(emptyState('Esta variante no tiene mapa de saturacion congelado.'));
+      return;
+    }
+    slot.append(loadingState('el mapa de saturacion'));
+    const [doc, notes] = await Promise.all([
+      loadSaturation(entry.path, path),
+      locus.annotations
+        ? loadAnnotations(entry.path, locus.annotations).catch(() => null)
+        : Promise.resolve(null),
+    ]);
+    clear(slot);
+    cleanup = renderSaturationMap(slot, doc, locus, notes, (variantId) => {
+      window.location.hash = `/variant/${locusId}/${variantId}?view=card`;
+    });
   } else if (view === 'tracks') {
     const path = record.artifacts.tracks;
     if (!path) {
@@ -304,7 +367,10 @@ async function renderVariant(
     slot.append(loadingState('el mapa de calor'));
     const doc = await loadTracks(entry.path, path);
     clear(slot);
-    cleanup = renderTissueHeatmap(slot, doc);
+    cleanup = renderTissueHeatmap(slot, doc, (modality) => {
+      window.location.hash =
+        `/variant/${locusId}/${variantId}?view=signal&tracks=${modality}`;
+    });
   } else {
     const path = record.artifacts.card;
     if (!path) {
@@ -314,7 +380,10 @@ async function renderVariant(
     slot.append(loadingState('la ficha de variante'));
     const doc = await loadCard(entry.path, path);
     clear(slot);
-    cleanup = renderVariantCard(slot, doc);
+    cleanup = renderVariantCard(slot, doc, (modality) => {
+      window.location.hash =
+        `/variant/${locusId}/${variantId}?view=signal&tracks=${modality}`;
+    });
   }
 }
 
@@ -432,8 +501,11 @@ function warmUp(current: Route): void {
   const variantId = current.params['variant'];
   if (!variantId || current.name !== 'variant') return;
   const view = current.query.get('view') ?? 'card';
-  const file = view === 'tracks' ? 'tracks.json' : 'card.json';
-  if (view === 'card' || view === 'tracks') {
+  const file =
+    view === 'tracks' ? 'tracks.json' : view === 'saturation' ? 'saturation.json' : 'card.json';
+  if (view === 'saturation') {
+    loadSaturation(locusPath, `variants/${variantId}/${file}`).catch(() => {});
+  } else if (view === 'card' || view === 'tracks') {
     // `loadCard`/`loadTracks` resuelven la ruta relativa al locus, igual que
     // hara el render; la clave de cache coincide exactamente.
     const relative = `variants/${variantId}/${file}`;
@@ -484,6 +556,7 @@ async function route(): Promise<void> {
           current.params['locus'] ?? '',
           current.params['variant'] ?? '',
           current.query.get('view') ?? 'card',
+          current.query,
         );
         break;
       case 'study': {
