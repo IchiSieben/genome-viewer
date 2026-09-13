@@ -68,6 +68,66 @@ def test_el_validador_realmente_rechaza_un_documento_malo() -> None:
         contract.validate("card", {"schemaVersion": "1.0.0"}, label="incompleto")
 
 
+def _splice_doc(**overrides) -> dict:
+    """Documento minimo valido de splice.json (V4), para probar el esquema
+    sin depender de que data/dist/ tenga ya un locus con sashimi congelado."""
+    from alphagenome_platform import SCHEMA_VERSION
+
+    doc = {
+        "schemaVersion": SCHEMA_VERSION,
+        "variant": {
+            "id": "chr9-128226027-G-A",
+            "chromosome": "chr9",
+            "position": 128226027,
+            "ref": "G",
+            "alt": "A",
+        },
+        "provenance": {
+            "source": "model-api",
+            "clientVersion": "0.9.0",
+            "queriedAt": "2026-09-13T00:00:00Z",
+            "configHash": "0123456789abcdef",
+            "calibrationEpoch": "quantiles>=2026-06-18,indels>=2026-07-14",
+        },
+        "biosample": {"name": "glutamatergic neuron", "ontologyCurie": "CL:0000679"},
+        "interval": {"chromosome": "chr9", "start": 128221931, "end": 128230123},
+        "status": "ok",
+        "minValueShown": 0.01,
+        "totalJunctionsInWindow": 21,
+        "junctions": [
+            {"start": 128222860, "end": 128226028, "strand": "+", "ref": 0.032, "alt": 1.5985},
+        ],
+    }
+    doc.update(overrides)
+    return doc
+
+
+def test_splice_json_valido_pasa_el_esquema() -> None:
+    contract.validate("splice", _splice_doc())
+
+
+def test_splice_no_data_no_exige_uniones() -> None:
+    """El estado 'modalidad silenciosa' es junctions=[] con status explicito,
+    no un documento distinto ni un campo que falte."""
+    contract.validate(
+        "splice",
+        _splice_doc(status="no_data", totalJunctionsInWindow=0, junctions=[]),
+    )
+
+
+def test_splice_rechaza_un_status_inventado() -> None:
+    with pytest.raises(contract.ContractViolation):
+        contract.validate("splice", _splice_doc(status="empty"))
+
+
+def test_splice_rechaza_hebra_no_estandar() -> None:
+    """Una union de splicing SIEMPRE esta orientada; sin hebra no es una union."""
+    doc = _splice_doc()
+    doc["junctions"][0]["strand"] = "."
+    with pytest.raises(contract.ContractViolation):
+        contract.validate("splice", doc)
+
+
 def test_toda_proveniencia_declara_epoca_de_calibracion() -> None:
     """Sin esto, comparar cosechas distintas del AVI seria indetectable."""
     for kind, path in contract.iter_dist():
@@ -101,6 +161,114 @@ def test_lo_sintetico_se_declara_sintetico() -> None:
         if prov["source"] == "synthetic":
             assert "NO son predicciones" in (prov.get("notes") or ""), path
     assert vistos, "ningun artefacto declara origen"
+
+
+# --------------------------------------------------------------------------
+# Compuerta de proveniencia
+# --------------------------------------------------------------------------
+#
+# El test anterior solo exige que un artefacto sintetico lo confiese. Eso no
+# basta: el fallo de la sesion 2 fue un artefacto que decia la verdad en su JSON
+# y aun asi se dibujaba como si fuera real, porque nadie leia el JSON. Lo que
+# sigue prohibe que llegue al despliegue.
+
+
+def _escribir_dist(tmp: pathlib.Path, source: str) -> pathlib.Path:
+    """Copia data/dist a un temporal y le cambia el origen a una ficha."""
+    import shutil
+
+    destino = tmp / "dist"
+    shutil.copytree(DIST, destino)
+    ficha = next(destino.glob("loci/*/variants/*/card.json"))
+    document = json.loads(ficha.read_text(encoding="utf-8"))
+    document["provenance"]["source"] = source
+    ficha.write_text(json.dumps(document, ensure_ascii=False), encoding="utf-8")
+    return destino
+
+
+def test_dist_actual_pasa_la_compuerta_de_proveniencia() -> None:
+    """Lo que hoy se despliega viene de la API. Si no, no se despliega."""
+    exenciones = contract.assert_production_provenance()
+    # La unica exencion permitida hoy es la ficha del estudio planificado.
+    assert len(exenciones) <= 1, exenciones
+    for linea in exenciones:
+        assert "manifest.json" in linea, linea
+
+
+def test_una_ficha_sintetica_rompe_el_build(tmp_path: pathlib.Path) -> None:
+    """La compuerta tiene que poder fallar, o no prueba nada.
+
+    Es el analogo de `test_el_presupuesto_realmente_falla_cuando_se_pasa`: una
+    compuerta que nunca se ha visto decir no es fe, no una compuerta.
+    """
+    destino = _escribir_dist(tmp_path, "synthetic")
+    with pytest.raises(contract.SyntheticInProduction) as capturado:
+        contract.assert_production_provenance(destino)
+    mensaje = str(capturado.value)
+    assert "card.json" in mensaje, mensaje
+    assert "synthetic" in mensaje
+
+
+def test_la_compuerta_no_acepta_un_origen_inventado(tmp_path: pathlib.Path) -> None:
+    """`API_SOURCES` es un conjunto, no una prueba de subcadena.
+
+    Si la comprobacion fuera `"api" in source`, bastaria llamar al origen
+    "fake-api" para colarse. Este test es el que fija esa decision.
+    """
+    destino = _escribir_dist(tmp_path, "fake-api")
+    with pytest.raises(contract.SyntheticInProduction) as capturado:
+        contract.assert_production_provenance(destino)
+    assert "fake-api" in str(capturado.value)
+
+
+def test_un_artefacto_sin_sello_rompe_el_build(tmp_path: pathlib.Path) -> None:
+    """Sin sello no hay forma de saber de donde salieron los numeros."""
+    import shutil
+
+    destino = tmp_path / "dist"
+    shutil.copytree(DIST, destino)
+    ficha = next(destino.glob("loci/*/variants/*/card.json"))
+    document = json.loads(ficha.read_text(encoding="utf-8"))
+    del document["provenance"]
+    ficha.write_text(json.dumps(document, ensure_ascii=False), encoding="utf-8")
+    with pytest.raises(contract.SyntheticInProduction) as capturado:
+        contract.assert_production_provenance(destino)
+    assert "sin sello" in str(capturado.value)
+
+
+def test_la_exencion_del_estudio_planificado_es_estrecha(tmp_path: pathlib.Path) -> None:
+    """El plan de un estudio puede no venir de la API. Un RESULTADO, no.
+
+    La exencion se concede por propiedades del documento, no por su ruta: en
+    cuanto el estudio deja de ser un plan sin numeros, deja de estar exento.
+    """
+    import shutil
+
+    destino = tmp_path / "dist"
+    shutil.copytree(DIST, destino)
+    manifiesto = next(destino.glob("studies/*/manifest.json"))
+    document = json.loads(manifiesto.read_text(encoding="utf-8"))
+    assert document["provenance"]["source"] == "synthetic"
+    assert document["status"] == "planned"
+
+    # Tal cual, exento.
+    assert contract.assert_production_provenance(destino)
+
+    # Declararse concluyente lo saca de la exencion de inmediato.
+    document["status"] = "null"
+    manifiesto.write_text(json.dumps(document, ensure_ascii=False), encoding="utf-8")
+    with pytest.raises(contract.SyntheticInProduction) as capturado:
+        contract.assert_production_provenance(destino)
+    assert "manifest.json" in str(capturado.value)
+
+    # Y un panel con datos tambien, aunque siga diciendose planificado.
+    document["status"] = "planned"
+    document["panels"] = [
+        {"id": "x", "type": "bar", "title": "t", "data": {"values": [1, 2, 3]}}
+    ]
+    manifiesto.write_text(json.dumps(document, ensure_ascii=False), encoding="utf-8")
+    with pytest.raises(contract.SyntheticInProduction):
+        contract.assert_production_provenance(destino)
 
 
 def test_los_18_features_del_avi_estan_completos() -> None:
@@ -184,6 +352,109 @@ def test_las_rutas_del_indice_existen_en_disco() -> None:
                 assert blob.stat().st_size == ref["bytes"], modality
     for study in index["studies"]:
         assert (DIST / study["path"]).exists(), study["path"]
+
+
+def test_la_portada_apunta_a_artefactos_que_existen() -> None:
+    """La variante de portada se carga sola; si no esta, el 404 es lo primero.
+
+    El puntero lo deriva `contract.featured_pointer` de los propios locus.json,
+    asi que en teoria no puede desfasarse. Este test no confia en la teoria:
+    resuelve las rutas contra el disco, y ademas recalcula la derivacion para
+    cazar un `index.json` escrito por una version anterior del criterio.
+    """
+    index = json.loads((DIST / "index.json").read_text(encoding="utf-8"))
+    featured = index.get("featured")
+    assert featured == contract.featured_pointer(DIST), (
+        "index.featured no coincide con lo que la derivacion da hoy; "
+        "corre `python -m alphagenome_platform.cli reindex`"
+    )
+    if featured is None:
+        return
+    ids = {locus["id"] for locus in index["loci"]}
+    assert featured["locus"] in ids, featured["locus"]
+    base = DIST / "loci" / featured["locus"] / "variants" / featured["variant"]
+    assert (base / "card.json").exists(), f"{base}/card.json"
+    if featured.get("saturation"):
+        assert (base / "saturation.json").exists(), f"{base}/saturation.json"
+
+
+def _locus_doc(
+    variant_id: str,
+    *,
+    source: str = "atlas-api",
+    avi_phred: float = 20.0,
+    rsid: str | None = None,
+    saturation: bool = True,
+    card: bool = True,
+) -> dict:
+    """Documento minimo de locus.json, solo con lo que lee featured_pointer."""
+    return {
+        "id": f"locus-de-{variant_id}",
+        "provenance": {"source": source},
+        "variants": [
+            {
+                "variant": {"id": variant_id, "rsid": rsid},
+                "aviPhred": avi_phred,
+                "artifacts": {
+                    "saturation": "x/saturation.json" if saturation else None,
+                    "card": "x/card.json" if card else None,
+                },
+            }
+        ],
+    }
+
+
+def _escribir_locus(tmp: pathlib.Path, name: str, doc: dict) -> None:
+    carpeta = tmp / "dist" / "loci" / name
+    carpeta.mkdir(parents=True, exist_ok=True)
+    (carpeta / "locus.json").write_text(json.dumps(doc, ensure_ascii=False), encoding="utf-8")
+
+
+def test_el_heroe_no_exige_rsid_pero_si_un_piso_de_score(tmp_path: pathlib.Path) -> None:
+    """rsid es de presentacion, no de seleccion; el piso de score si excluye.
+
+    Antes la regla exigia rsid y perdia con eso justo las variantes sin
+    catalogar que el Atlas puede puntuar y dbSNP no conoce. Con la regla nueva
+    gana la de mejor score aunque no tenga rsid, y una con rsid pero por debajo
+    del piso (percentil 90, PHRED >= 10) queda fuera igual.
+    """
+    _escribir_locus(
+        tmp_path, "sin-rsid",
+        _locus_doc("sin-rsid-v1", avi_phred=25.96, rsid=None),
+    )
+    _escribir_locus(
+        tmp_path, "con-rsid-bajo",
+        _locus_doc("con-rsid-v1", avi_phred=5.0, rsid="rs123"),
+    )
+    resultado = contract.featured_pointer(tmp_path / "dist")
+    assert resultado == {
+        "locus": "locus-de-sin-rsid-v1",
+        "variant": "sin-rsid-v1",
+        "saturation": True,
+    }
+
+
+def test_el_heroe_no_featurea_nada_por_debajo_del_piso(tmp_path: pathlib.Path) -> None:
+    """Sin candidatos sobre el piso, la portada cae a su version sin heroe.
+
+    Es preferible a lo que hacia la regla vieja con un solo candidato: elegir
+    "el mas alto disponible" aunque el medidor lo rotule por debajo de la
+    mediana del genoma.
+    """
+    _escribir_locus(
+        tmp_path, "mediocre",
+        _locus_doc("mediocre-v1", avi_phred=0.25, rsid="rs884510"),
+    )
+    assert contract.featured_pointer(tmp_path / "dist") is None
+
+
+def test_el_heroe_ignora_loci_sinteticos(tmp_path: pathlib.Path) -> None:
+    """Un locus que no viene de la API no entra al sorteo, sin importar su score."""
+    _escribir_locus(
+        tmp_path, "sintetico",
+        _locus_doc("sintetico-v1", source="synthetic", avi_phred=99.0),
+    )
+    assert contract.featured_pointer(tmp_path / "dist") is None
 
 
 def test_el_estudio_declara_su_honestidad() -> None:
@@ -291,4 +562,39 @@ def test_no_hay_bloques_de_senal_huerfanos() -> None:
         f"{len(orphans)} bloques de senal sin referencia en data/dist: "
         f"{orphans[:5]}. Son peso muerto en el despliegue y, peor, candidatos "
         f"a que una ruta mal resuelta los muestre como si fueran los buenos."
+    )
+
+
+INSPECCION = (
+    pathlib.Path(__file__).resolve().parents[1]
+    / "src/alphagenome_platform/contract.py"
+).read_text(encoding="utf-8")
+"""Fuente de `iter_dist`, leida como texto para comparar los nombres de
+artefacto que conoce con los que conoce la compuerta de JS."""
+
+
+def test_la_porteria_de_JS_conoce_los_mismos_artefactos_que_la_de_python() -> None:
+    """Las dos compuertas de proveniencia tienen que reconocer lo mismo.
+
+    `check-provenance.mjs` clasifica por nombre de archivo y lo que no
+    reconoce lo SALTA. Un artefacto nuevo que se registre solo del lado de
+    Python pasa por delante de la compuerta del build sin que nadie lo mire, y
+    el build sigue diciendo "todos de la API" -solo que contando uno menos-.
+    Paso exactamente eso al anadir `contacts.json` en V5.
+    """
+    import re
+
+    fuente = (
+        pathlib.Path(__file__).resolve().parents[2] / "web/scripts/check-provenance.mjs"
+    ).read_text(encoding="utf-8")
+    js = set(re.findall(r"case '([a-z]+\.json)':", fuente))
+
+    py = set(re.findall(r'name == "([a-z]+\.json)"', INSPECCION))
+    py |= set(re.findall(r'name == "(index\.json)"', INSPECCION))
+
+    assert py, "no se pudo leer los nombres de artefacto de contract.py"
+    faltan = py - js
+    assert not faltan, (
+        f"check-provenance.mjs no conoce {sorted(faltan)}: esos artefactos se "
+        f"despliegan sin pasar por la compuerta de proveniencia."
     )

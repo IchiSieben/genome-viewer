@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ic7.dev/alphagenome/contracts/v1/splice.schema.json",
+  "title": "Uniones de empalme, REF y ALT (V4, sashimi)",
+  "description": "Arcos de union de splicing sobre un biosample especifico, ANTES (REF) y DESPUES (ALT) de la variante. Viene de una llamada a predict_variant aparte de la de V3: pedir SPLICE_JUNCTIONS junto a las senales generales usaria los ontology_terms por defecto del locus (sangre, pulmon, higado en H4), y en un biosample donde la variante no actua el grafico sale simetrico sin que nada falle. Por eso el contrato lleva su propio termino de ontologia declarado en 'biosample', no una lista compartida. Presupuesto: 64 KB.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "variant",
+    "provenance",
+    "biosample",
+    "interval",
+    "status",
+    "minValueShown",
+    "totalJunctionsInWindow",
+    "junctions"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "$ref": "common.schema.json#/$defs/schemaVersion"
+    },
+    "variant": {
+      "$ref": "common.schema.json#/$defs/variant"
+    },
+    "provenance": {
+      "$ref": "common.schema.json#/$defs/provenance"
+    },
+    "biosample": {
+      "type": "object",
+      "description": "El biosample que se pidio, no uno generico. Se muestra en pantalla junto a los arcos: sin esto una variante que no hace nada en sangre parece no hacer nada en ningun sitio.",
+      "required": [
+        "name",
+        "ontologyCurie"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "ontologyCurie": {
+          "type": "string",
+          "pattern": "^[A-Z]+:[0-9]+$"
+        }
+      }
+    },
+    "interval": {
+      "$ref": "common.schema.json#/$defs/interval",
+      "description": "Ventana mostrada alrededor de la variante, no la ventana de 1 Mb que se le da al modelo. Mismo ancho que el nivel `detail` de V3 (variante +-4096 pb): un sitio de splicing que la variante desplaza esta, por definicion, pegado a ella."
+    },
+    "status": {
+      "enum": [
+        "ok",
+        "no_data"
+      ],
+      "description": "'no_data' es el caso 'modalidad silenciosa': el Atlas devolvio CERO uniones para todo el biosample en la ventana de 1 Mb completa (n_obs==0 del lado del cliente), no que esta ventana en particular este vacia tras filtrar. Es el mismo patron que 'sin rsid catalogado': un estado explicito, no un array vacio sin explicacion."
+    },
+    "finding": {
+      "type": "string",
+      "maxLength": 900,
+      "description": "Hallazgo redactado a mano sobre ESTE artefacto: la frase que convierte un grafico de datos en un grafico de un hallazgo. Opcional; solo lo lleva la variante en la que alguien midio algo que merece decirse. Regla: el texto lleva la AFIRMACION, nunca las cifras. Las cifras las pinta la vista desde 'junctions', que es la unica manera de que no se queden viejas cuando el artefacto se regenere. La afirmacion en si la vigila un test del pipeline contra las uniones reales (test_splice_dnm1_finding_sigue_siendo_cierto)."
+    },
+    "minValueShown": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Piso de magnitud aplicado: solo se incluyen uniones cuyo REF o ALT lo alcancen. Medido sobre DNM1/glutamatergic neuron: el percentil 99 de todas las uniones del locus es 0,02 y el lado debil de la union que la variante desplaza es 0,03, asi que 0,01 deja fuera el ruido de fondo sin cortar la senal real. Declarado para que la vista pueda decir 'no se muestran uniones por debajo de X' en vez de fingir que el mapa esta completo."
+    },
+    "totalJunctionsInWindow": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Cuantas uniones hay en la ventana ANTES del piso de magnitud. Si es 0, no es lo mismo que status='no_data': aqui hubo uniones en el resto del locus, solo no en esta ventana estrecha."
+    },
+    "junctions": {
+      "type": "array",
+      "description": "Una entrada por union que pasa el piso. REF y ALT comparten el mismo conjunto de coordenadas -verificado en DNM1: mismas 5553 uniones a ambos lados-, asi que no hace falta reconciliar dos listas distintas.",
+      "items": {
+        "type": "object",
+        "required": [
+          "start",
+          "end",
+          "strand",
+          "ref",
+          "alt"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "start": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "0-based, como genome.Interval. El donante o el aceptor segun la hebra."
+          },
+          "end": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "strand": {
+            "enum": [
+              "+",
+              "-"
+            ]
+          },
+          "ref": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Valor predicho antes de la variante. Split-read count del modelo, no observado."
+          },
+          "alt": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Valor predicho despues de la variante, misma unidad que 'ref'."
+          }
+        }
+      }
+    }
+  }
+}

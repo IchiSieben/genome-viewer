@@ -154,7 +154,12 @@ def build_locus(
         per_scorer: dict[str, tuple[np.ndarray, Any]] = {}
         for scorer in bl.HEATMAP_SCORERS:
             ad = result.get(scorer)
-            if ad is None:
+            # Un scorer sin ninguna pista cerca (sin union de splicing, sin
+            # sitio de poliadenilacion) responde con n_obs=0 y por lo tanto
+            # SIN columna "variant": no es un error, es "no hay nada que
+            # decir aqui". Se descubrio con APOA1 (sin splicing/poliA en la
+            # ventana), no con una AnnData vacia inventada.
+            if ad is None or ad.n_obs == 0 or "variant" not in ad.obs.columns:
                 continue
             scorer_keys = [str(v) for v in ad.obs["variant"]]
             if key_text not in scorer_keys:
@@ -260,6 +265,91 @@ def build_locus(
             if levels:
                 entry["signals"] = levels
 
+        # ------------------------------------------------------- V4: sashimi
+        # Llamada APARTE de la de arriba: esa usa ONTOLOGY_TERMS (sangre,
+        # pulmon, higado), y en un biosample donde la variante no actua el
+        # sashimi saldria simetrico sin que nada falle. Solo se pide cuando la
+        # variante declara un termino; sin eso no hay artefacto (`splice`
+        # queda `None`), que es distinto de "sin uniones" (`status: "no_data"`
+        # dentro de un artefacto que si se pidio).
+        if model is not None and spec.sashimi_ontology:
+            biosample_name = bl.biosample_name_for(client, spec.sashimi_ontology)
+            _log.info(
+                "[%s] predict_variant SPLICE_JUNCTIONS (%s, %s) para %s",
+                config.id, spec.sashimi_ontology, biosample_name, vid,
+            )
+            splice_doc = bl.build_splice(
+                config.chromosome,
+                spec,
+                model,
+                genome.Interval(config.chromosome, start, end),
+                _provenance(
+                    "model-api",
+                    {
+                        "locus": config.id,
+                        "variant": vid,
+                        "output": "SPLICE_JUNCTIONS",
+                        "ontologyTerm": spec.sashimi_ontology,
+                    },
+                    notes="predict_variant aparte, con ontology_terms fijado al biosample declarado.",
+                ),
+                spec.sashimi_ontology,
+                biosample_name,
+                spec.sashimi_finding,
+            )
+            measurements.append(
+                {
+                    "kind": "splice",
+                    "label": vid,
+                    **contract.write_json(
+                        vdir / "splice.json", "splice", splice_doc, label=vid
+                    ),
+                }
+            )
+            entry["artifacts"]["splice"] = f"variants/{vid}/splice.json"
+
+        # -------------------------------------------- V5: diff de contactos
+        # Tercera llamada aparte, por lo mismo (D11): CONTACT_MAPS no esta en
+        # SIGNAL_OUTPUTS y su menu de ontologias no se parece al de las
+        # senales -28 tracks, todos de 4D Nucleome y todos lineas celulares-.
+        # Sin termino declarado no hay artefacto, que no es lo mismo que
+        # `status: "no_data"` dentro de uno que si se pidio.
+        if model is not None and spec.contacts_ontology:
+            biosample_name = bl.biosample_name_for(client, spec.contacts_ontology)
+            _log.info(
+                "[%s] predict_variant CONTACT_MAPS (%s, %s) para %s",
+                config.id, spec.contacts_ontology, biosample_name, vid,
+            )
+            contacts_doc = bl.build_contacts(
+                config.chromosome,
+                spec,
+                model,
+                genome.Interval(config.chromosome, start, end),
+                _provenance(
+                    "model-api",
+                    {
+                        "locus": config.id,
+                        "variant": vid,
+                        "output": "CONTACT_MAPS",
+                        "ontologyTerm": spec.contacts_ontology,
+                    },
+                    notes="predict_variant aparte, con ontology_terms fijado al biosample declarado.",
+                ),
+                spec.contacts_ontology,
+                biosample_name,
+                spec.contacts_finding,
+            )
+            measurements.append(
+                {
+                    "kind": "contacts",
+                    "label": vid,
+                    **contract.write_json(
+                        vdir / "contacts.json", "contacts", contacts_doc, label=vid
+                    ),
+                }
+            )
+            entry["artifacts"]["contact"] = f"variants/{vid}/contacts.json"
+
         entries.append(entry)
 
     # ------------------------------------------------------------- locus.json
@@ -332,10 +422,14 @@ def build_all(
     for entry in index_loci:
         existing[entry["id"]] = entry
 
+    # El puntero de portada se DERIVA de los locus.json recien escritos, no de
+    # un config: asi no puede sobrevivir al artefacto al que apunta.
+    featured = contract.featured_pointer(dist)
     index_doc = {
         "schemaVersion": SCHEMA_VERSION,
         "generated": provenance.Provenance(source="atlas-api", config={}).queried_at,
         "provenance": _provenance("atlas-api", {"loci": [c.id for c in wanted]}),
+        **({"featured": featured} if featured else {}),
         "loci": sorted(existing.values(), key=lambda e: e["id"]),
         "studies": studies,
     }

@@ -184,15 +184,35 @@ export const FAMILY_LABEL: Record<string, string> = {
  * familias mas siete de modalidad serian once colores compitiendo. Los indels
  * van en tinta apagada porque en un SNV siempre valen cero, y un color fuerte
  * para algo que nunca aporta es ruido.
+ *
+ * Las ranuras son 5, 6 y 7 porque son el mejor trio MEDIDO, no las primeras de
+ * la lista. Estas tres familias se comparan de un vistazo en la cascada, asi
+ * que su trio tiene que aguantar las cuatro visiones en los dos temas, y se
+ * puntua por el peor de los dos: el token es el mismo en claro y en oscuro.
+ * Con ese criterio 5-6-7 da dE2000 13,0 y es el unico trio que pasa el umbral
+ * de 12,0; el anterior 1-7-3 daba **1,7** —azul y violeta colapsan en
+ * protanopia con el tema oscuro, que es indistinguible en la practica. La
+ * ranura 8 queda fuera por reservada al estado critico, y excluirla no cuesta
+ * nada: 5-6-7 tambien gana incluyendola. Lo comprueba
+ * `pipeline/tools/validate_palette.py`, que LEE estas mismas ranuras de este
+ * archivo y falla si se desfasan o si la separacion cae; `test_palette.py` lo
+ * corre en cada pytest, asi que editar el `switch` de abajo sin medir rompe el
+ * build. La evidencia esta en `docs/evidence/palette-validation.txt`.
+ *
+ * Dentro del trio todos los pares quedan por encima del umbral, asi que cual
+ * de las tres familias recibe cual ranura es indiferente y no se discute.
+ * Coincide con las modalidades de splicing, cromatina-3D y poliadenilacion,
+ * que es la reutilizacion ya declarada arriba: viven en paneles distintos de
+ * la ficha y nunca comparten leyenda.
  */
 export function familyColor(family: string): string {
   switch (family) {
     case 'regulatory':
-      return slotColor(1);
+      return slotColor(5);
     case 'protein':
-      return slotColor(7);
+      return slotColor(6);
     case 'conservation':
-      return slotColor(3);
+      return slotColor(7);
     case 'indel':
       return token('--ink-faint');
     default:

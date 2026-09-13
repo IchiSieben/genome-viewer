@@ -22,6 +22,31 @@
     "provenance": {
       "$ref": "common.schema.json#/$defs/provenance"
     },
+    "featured": {
+      "type": "object",
+      "description": "Variante de portada. NO se escribe a mano: la deriva el pipeline de los propios locus.json emitidos, asi que no puede quedar apuntando a un artefacto que ya no existe. Opcional: sin datos congelados no hay portada que sembrar.",
+      "required": [
+        "locus",
+        "variant"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "locus": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$",
+          "description": "id de un locus presente en `loci`."
+        },
+        "variant": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "description": "id de la variante dentro de ese locus. El patron es el mismo que valida el script de precarga de `index.html` antes de construir una ruta con el."
+        },
+        "saturation": {
+          "type": "boolean",
+          "description": "Si la variante trae mapa de saturacion. La portada solo ofrece el enlace directo cuando es verdadero."
+        }
+      }
+    },
     "loci": {
       "type": "array",
       "items": {

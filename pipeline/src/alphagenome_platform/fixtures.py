@@ -166,7 +166,7 @@ LOCI: tuple[LocusSpec, ...] = (
         center=54582115,
         genes=("PPP1R1A", "PDE1B"),
         variants=(
-            (54578515, "T", "C", "rs884510"),
+            (54578515, "C", "T", "rs884510"),
             (54580210, "G", "A", "rs10876566"),
             (54584902, "C", "T", "rs7954532"),
         ),
@@ -666,10 +666,14 @@ def generate(dist: pathlib.Path | None = None) -> dict[str, Any]:
         ),
     )
 
+    # El puntero de portada se DERIVA de los locus.json recien escritos, no de
+    # un config: asi no puede sobrevivir al artefacto al que apunta.
+    featured = contract.featured_pointer(dist)
     index_doc = {
         "schemaVersion": SCHEMA_VERSION,
         "generated": provenance.Provenance(source="synthetic", config={}).queried_at,
         "provenance": provenance.synthetic(0).to_dict(),
+        **({"featured": featured} if featured else {}),
         "loci": index_loci,
         "studies": [
             {

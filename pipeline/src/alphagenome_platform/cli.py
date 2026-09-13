@@ -5,6 +5,7 @@ Comandos::
     python -m alphagenome_platform.cli fixtures   # genera data/dist/ sintetico
     python -m alphagenome_platform.cli validate   # valida esquema y presupuesto
     python -m alphagenome_platform.cli budget     # tabla de uso de presupuesto
+    python -m alphagenome_platform.cli reindex    # refresca lo derivado del indice
     python -m alphagenome_platform.cli probe      # UNA consulta real al Atlas
 
 ``probe`` es el unico comando que gasta cuota, y gasta exactamente una variante.
@@ -66,12 +67,25 @@ def _cmd_validate(_: argparse.Namespace) -> int:
     if not counted:
         print("data/dist/ esta vacio. Corre primero el comando fixtures.")
         return 1
+
+    # La compuerta de proveniencia va DESPUES del esquema: un documento que no
+    # valida puede no tener ni el campo que se va a leer.
+    exemptions: list[str] = []
+    try:
+        exemptions = contract.assert_production_provenance()
+    except contract.SyntheticInProduction as error:
+        problems.append(str(error))
+
     if problems:
         for problem in problems:
             print(f"\n{problem}")
         print(f"\n{len(problems)} problemas en {counted} artefactos.")
         return 1
-    print(f"{counted} artefactos: esquema y presupuesto correctos.")
+    print(f"{counted} artefactos: esquema, presupuesto y proveniencia correctos.")
+    for line in exemptions:
+        # Las excepciones se imprimen siempre. Una excepcion silenciosa deja de
+        # ser una excepcion y pasa a ser un agujero.
+        print(f"  excepcion de proveniencia -> {line}")
     return 0
 
 
@@ -99,6 +113,36 @@ def _cmd_budget(_: argparse.Namespace) -> int:
     print("\nRazon de cada tope:")
     for kind, budget in sorted(contract.BUDGETS.items()):
         print(f"  {kind:<13}{budget.rationale}")
+    return 0
+
+
+def _cmd_reindex(_: argparse.Namespace) -> int:
+    """Recalcula las partes DERIVADAS de ``index.json`` sin tocar la API.
+
+    Hoy eso es solo ``featured``. Existe porque la derivacion puede cambiar
+    —criterio nuevo, variante nueva con saturacion— y volver a congelar los loci
+    para refrescar un puntero costaria cuota real sin traer un solo dato nuevo.
+
+    Lo que NO hace: inventar proveniencia. El sello y la fecha del indice en
+    disco se conservan tal cual, porque describen la corrida que trajo los
+    datos, y esta no trae ninguno.
+    """
+    index_path = contract.DIST / "index.json"
+    if not index_path.exists():
+        print(f"no existe {index_path}")
+        return 1
+    doc = json.loads(index_path.read_text(encoding="utf-8"))
+    antes = doc.get("featured")
+    featured = contract.featured_pointer()
+    if featured:
+        doc["featured"] = featured
+    else:
+        doc.pop("featured", None)
+    contract.write_json(index_path, "index", doc, label="index")
+    if antes == doc.get("featured"):
+        print(f"featured sin cambios: {antes}")
+    else:
+        print(f"featured: {antes} -> {doc.get('featured')}")
     return 0
 
 
@@ -194,7 +238,7 @@ def _cmd_probe(args: argparse.Namespace) -> int:
 
 
 def _variant_parts(text: str) -> tuple[str, int, str, str]:
-    """Convierte ``chr12:54578515:T>C`` en sus partes.
+    """Convierte ``chr12:54578515:C>T`` en sus partes.
 
     El Atlas usa ``>`` entre alelos y no acepta rsIDs.
     """
@@ -205,7 +249,7 @@ def _variant_parts(text: str) -> tuple[str, int, str, str]:
     except ValueError as error:
         raise argparse.ArgumentTypeError(
             f"Formato invalido: {text!r}. Se espera chr:pos:ref>alt, "
-            "por ejemplo chr12:54578515:T>C. El Atlas no acepta rsIDs."
+            "por ejemplo chr12:54578515:C>T. El Atlas no acepta rsIDs."
         ) from error
 
 
@@ -246,12 +290,18 @@ def main(argv: list[str] | None = None) -> int:
     )
     p.set_defaults(func=_cmd_build_locus)
 
+    p = sub.add_parser(
+        "reindex",
+        help="recalcula lo derivado de index.json (no gasta cuota)",
+    )
+    p.set_defaults(func=_cmd_reindex)
+
     p = sub.add_parser("probe", help="UNA consulta real al Atlas (gasta cuota)")
     p.add_argument(
         "--variant",
         dest="variant_parts",
         type=_variant_parts,
-        default=("chr12", 54578515, "T", "C"),
+        default=("chr12", 54578515, "C", "T"),
         help="variante en formato chr:pos:ref>alt (por defecto rs884510)",
     )
     p.add_argument(

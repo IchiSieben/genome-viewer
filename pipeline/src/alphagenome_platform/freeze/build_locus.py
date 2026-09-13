@@ -6,11 +6,22 @@ Coste por locus, medido en H0 y no estimado:
     variantes existen de verdad sin inventar la base de referencia.
   * 1 llamada a ``query_variants`` para todas las variantes del locus a la vez,
     con todos los scorers pedidos. Da V1 y V2.
-  * 1 llamada a ``predict_variant`` POR VARIANTE. Da V3, V4 y V5 de una vez.
+  * 1 llamada a ``predict_variant`` POR VARIANTE para los perfiles de V3.
+  * 1 llamada a ``predict_variant`` MAS por variante con sashimi (V4), porque
+    lleva su propio termino de ontologia. Ver abajo.
   * 1 peticion a Ensembl por locus, para el carril de genes.
 
 `predict_variant` construye una sola peticion, verificado en el codigo fuente:
 no hay troceo. El troceo de 32 pb es exclusivo de ``atlas.query_interval``.
+
+Una llamada NO sirve para todas las modalidades
+-----------------------------------------------
+Esta cabecera decia que la llamada de V3 daba "V3, V4 y V5 de una vez". Es
+cierto para los *outputs* y falso para lo que sirve: esa llamada fija
+``ontology_terms=ONTOLOGY_TERMS`` (sangre, pulmon, higado), asi que pedirle
+SPLICE_JUNCTIONS habria dibujado el splicing de DNM1 en sangre -simetrico, sin
+error y sin aviso-. Cada familia de modalidad se pide aparte, con el curie que
+corresponde a la biologia que se enseña. Ver D11 en docs/01-architecture.md.
 """
 
 from __future__ import annotations
@@ -23,7 +34,7 @@ from typing import Any, Sequence
 import numpy as np
 
 from alphagenome_platform import SCHEMA_VERSION, avi, contract, provenance, quantize
-from alphagenome_platform.acquire import atlas_source, ensembl
+from alphagenome_platform.acquire import atlas_source, ensembl, ucsc
 from alphagenome_platform.loci import LocusConfig, VariantSpec
 
 _log = logging.getLogger(__name__)
@@ -229,6 +240,24 @@ def resolve_variants(
             resolved.append(
                 dataclass_replace(spec, ref=chosen[1], alt=chosen[2])
             )
+
+    # ------------------------------------------------- enriquecimiento de rsid
+    # Solo cuando `loci.py` no trae uno ya verificado a mano (por ejemplo,
+    # rs884510 contra la fuente primaria). No es una compuerta: dbSNP no tiene
+    # entrada para la mayoria de los ~9 000 millones de SNVs posibles, y eso
+    # no dice nada del efecto que el Atlas predice, asi que un fallo o una
+    # ausencia aqui no descarta la variante, solo la deja sin identificador
+    # pegable en dbSNP.
+    for i, spec in enumerate(resolved):
+        if spec.rsid:
+            continue
+        rsid = ucsc.lookup_rsid(config.chromosome, spec.position, spec.ref, spec.alt)
+        if rsid:
+            _log.info(
+                "%s:%d:%s>%s -> %s (UCSC dbSnp155)",
+                config.chromosome, spec.position, spec.ref, spec.alt, rsid,
+            )
+            resolved[i] = dataclass_replace(spec, rsid=rsid)
 
     return resolved
 
@@ -720,4 +749,430 @@ def build_saturation(
         "raw": raw_grid,
         "maxPhred": round(max(values), 3) if values else None,
         "coverage": round(filled / possible, 4) if possible else None,
+    }
+
+
+# --------------------------------------------------------------------------
+# V4: uniones de splicing, REF vs ALT, sobre un biosample declarado
+# --------------------------------------------------------------------------
+
+SASHIMI_HALF_WIDTH = DETAIL_HALF_WIDTH
+"""Mismo ancho que el nivel `detail` de V3 (variante +-4096 pb). Un sitio de
+splicing que la variante desplaza esta, por definicion, pegado a ella; no hay
+motivo para inventar una tercera medida de ventana."""
+
+SASHIMI_MIN_VALUE = 0.01
+"""Piso de magnitud para incluir una union en el artefacto.
+
+Medido sobre DNM1/glutamatergic neuron (CL:0000679), no supuesto: de las 5553
+uniones que el Atlas conoce en la ventana de 1 Mb, el percentil 99 es 0,0207 y
+el 98,7 % no llega a 0,02. El lado debil de la union que esta variante
+desplaza -el efecto real que la vista existe para mostrar- vale 0,03, tres
+veces el piso. 0,01 deja fuera el ruido de fondo con margen sin arriesgar la
+senal."""
+
+
+def biosample_name_for(client: Any, ontology_curie: str) -> str:
+    """Nombre legible de un termino de ontologia, leido del servidor.
+
+    No se hardcodea el nombre junto al curie en `loci.py`: `scorer_metadata()`
+    es una consulta de metadata (lista de tracks disponibles), no una
+    prediccion, asi que verificar el nombre en cada build no cuesta cuota de
+    la misma clase que `query_variants`/`predict_variant`. Si el curie no
+    aparece en ningun track de SPLICE_JUNCTIONS, se devuelve el propio curie:
+    mejor un identificador tecnico visible que un nombre inventado.
+    """
+    try:
+        meta = client.scorer_metadata().get("SPLICE_JUNCTIONS")
+        if meta is not None and "ontology_curie" in meta.track_metadata.columns:
+            match = meta.track_metadata[
+                meta.track_metadata["ontology_curie"] == ontology_curie
+            ]
+            if len(match):
+                return str(match.iloc[0]["biosample_name"])
+    except Exception as error:  # noqa: BLE001 - metadata es un enriquecimiento
+        _log.warning("no se pudo leer el nombre de %s: %s", ontology_curie, error)
+    return ontology_curie
+
+
+def build_splice(
+    chromosome: str,
+    spec: VariantSpec,
+    model: Any,
+    interval: Any,
+    prov: dict[str, Any],
+    ontology_term: str,
+    biosample_name: str,
+    finding: str | None = None,
+    *,
+    half_width: int = SASHIMI_HALF_WIDTH,
+    min_value: float = SASHIMI_MIN_VALUE,
+) -> dict[str, Any]:
+    """Arcos REF/ALT de splicing (V4) para UN biosample declarado.
+
+    Llamada a ``predict_variant`` APARTE de la que arma V3: pedir
+    SPLICE_JUNCTIONS en esa misma llamada usaria ``ONTOLOGY_TERMS`` (sangre,
+    pulmon, higado en H4), y en un biosample donde la variante no actua el
+    grafico sale simetrico sin que nada falle. El biosample viene declarado por
+    quien llama, no por un default compartido.
+
+    ``status: "no_data"`` es el caso "modalidad silenciosa": el Atlas devolvio
+    CERO uniones en TODA la ventana de 1 Mb para este biosample (no solo en la
+    ventana estrecha que se muestra). Es distinto de una ventana estrecha vacia
+    tras el piso de magnitud, que es ``status: "ok"`` con ``junctions: []``.
+    """
+    from alphagenome.data import genome
+    from alphagenome.models import dna_output
+
+    output = model.predict_variant(
+        interval=interval,
+        variant=genome.Variant(chromosome, spec.position, spec.ref, spec.alt),
+        requested_outputs=[dna_output.OutputType.SPLICE_JUNCTIONS],
+        ontology_terms=[ontology_term],
+    )
+    ref_jd = output.reference.splice_junctions
+    alt_jd = output.alternate.splice_junctions
+    biosample = {"name": biosample_name, "ontologyCurie": ontology_term}
+
+    # Un curie NO garantiza un solo track. Medido en los metadatos de
+    # CONTACT_MAPS para V5: EFO:0003042 (H1-hESC) y EFO:0003045 (H9) traen
+    # seis tracks cada uno bajo el mismo termino. Aqui abajo se lee `values[i, 0]`, que con varios tracks
+    # devolveria el primero en silencio y dibujaria un sashimi de un ensayo
+    # sin decir cual. Agregar seria una decision de modelado que nadie tomo:
+    # se para y se nombran los tracks para que quien elija el curie elija.
+    for name, jd in (("reference", ref_jd), ("alternate", alt_jd)):
+        if jd is None or len(jd.values) == 0:
+            continue
+        n_tracks = jd.values.shape[1]
+        if n_tracks != 1:
+            meta = getattr(jd, "metadata", None)
+            tracks = [] if meta is None else list(meta.get("name", []))
+            raise ValueError(
+                f"SPLICE_JUNCTIONS devolvio {n_tracks} tracks para "
+                f"{ontology_term} ({name}); el contrato asume uno. "
+                f"Tracks: {tracks}. Elige un curie de un solo track o decide "
+                f"explicitamente como agregarlos."
+            )
+
+    if ref_jd is None or alt_jd is None or (len(ref_jd) == 0 and len(alt_jd) == 0):
+        return {
+            "schemaVersion": SCHEMA_VERSION,
+            "variant": {
+                "id": variant_id(chromosome, spec.position, spec.ref, spec.alt),
+                "chromosome": chromosome,
+                "position": spec.position,
+                "ref": spec.ref,
+                "alt": spec.alt,
+                "rsid": spec.rsid,
+            },
+            "provenance": prov,
+            "biosample": biosample,
+            "interval": {
+                "chromosome": chromosome,
+                "start": spec.position - half_width,
+                "end": spec.position + half_width,
+            },
+            "status": "no_data",
+            "minValueShown": min_value,
+            "totalJunctionsInWindow": 0,
+            "junctions": [],
+        }
+
+    # REF y ALT pueden, en principio, no compartir el mismo conjunto exacto de
+    # coordenadas -verificado que SI lo comparten en DNM1, pero no se asume
+    # para cualquier variante futura-, asi que se reconcilian por clave en vez
+    # de dar por hecho que las filas estan alineadas.
+    win_start = spec.position - half_width
+    win_end = spec.position + half_width
+
+    def _in_window(j: Any) -> bool:
+        return j.start < win_end and j.end > win_start
+
+    ref_map: dict[tuple[int, int, str], float] = {
+        (j.start, j.end, j.strand): float(ref_jd.values[i, 0])
+        for i, j in enumerate(ref_jd.junctions)
+        if _in_window(j)
+    }
+    alt_map: dict[tuple[int, int, str], float] = {
+        (j.start, j.end, j.strand): float(alt_jd.values[i, 0])
+        for i, j in enumerate(alt_jd.junctions)
+        if _in_window(j)
+    }
+    keys = set(ref_map) | set(alt_map)
+    total_in_window = len(keys)
+
+    junctions = []
+    for start, end, strand in sorted(keys):
+        r = ref_map.get((start, end, strand), 0.0)
+        a = alt_map.get((start, end, strand), 0.0)
+        if max(r, a) < min_value:
+            continue
+        junctions.append(
+            {
+                "start": int(start),
+                "end": int(end),
+                "strand": strand,
+                "ref": round(r, 4),
+                "alt": round(a, 4),
+            }
+        )
+
+    return {
+        "schemaVersion": SCHEMA_VERSION,
+        "variant": {
+            "id": variant_id(chromosome, spec.position, spec.ref, spec.alt),
+            "chromosome": chromosome,
+            "position": spec.position,
+            "ref": spec.ref,
+            "alt": spec.alt,
+            "rsid": spec.rsid,
+        },
+        "provenance": prov,
+        "biosample": biosample,
+        **({"finding": finding} if finding else {}),
+        "interval": {"chromosome": chromosome, "start": win_start, "end": win_end},
+        "status": "ok",
+        "minValueShown": min_value,
+        "totalJunctionsInWindow": total_in_window,
+        "junctions": junctions,
+    }
+
+
+# --------------------------------------------------------------------------
+# V5: diff de mapas de contacto, REF vs ALT, sobre un biosample declarado
+# --------------------------------------------------------------------------
+
+CONTACT_DOMAIN = 1.0
+"""Dominio ABSOLUTO y FIJO del color del diff. No se autoescala jamas.
+
+La prueba que separa un dominio fijo de un autoescalado disfrazado: *si el
+dominio cambia cuando cambian los datos, es autoescalado*, por mucho que se
+vista de constante redondeada. Un "redondo por encima del grueso de |delta|"
+cambia con cada variante; este no.
+
+Por que 1 y no otro fijo: el mapa que devuelve el modelo ya viene en espacio
+logaritmico (ver `CONTACT_VALUES_ARE_LOG`), asi que 1 es del orden de duplicar
+o partir por la mitad el contacto -exactamente el doble si la base es 2, que es
+la premisa de partida; la base NO se pudo medir y el SDK no la documenta-. Esa
+es la magnitud de un cambio estructural de verdad -un limite de TAD que se
+rompe, un bucle de CTCF que se pierde-, de modo que saturacion plena significa
+"esto reorganizo el locus".
+El ancla es externa a los datos e identica en todos los loci: dos variantes se
+comparan mirando dos mapas, sin leer dos leyendas distintas.
+
+Consecuencia medida y buscada: en CELSR2/rs12740374 el cambio maximo es 0,0391,
+un 3,9 % del dominio. El mapa sale casi plano. Eso ES el resultado. Lo que la
+vista no puede hacer es callar el color Y el numero a la vez, asi que la
+leyenda marca donde cae el maximo observado dentro del dominio fijo y el texto
+lo dice con cifras."""
+
+CONTACT_VISIBLE_FRACTION = 0.1
+"""Fraccion del dominio por debajo de la cual se declara "no se ve".
+
+Un cambio menor que el 10 % del dominio no llega a un paso de color
+distinguible en la escala divergente (siete paradas). Si `maxAbsDelta` no
+llega aqui, el artefacto lo dice y la vista lo escribe en palabras: el usuario
+no tiene que deducir de un mapa blanco si no paso nada o si fallo la carga."""
+
+CONTACT_HALF_BINS = 64
+"""Semiventana del recorte, en bins de 2048 pb (+-131 kb).
+
+Medido contra la biologia del caso, no elegido redondo: el TSS de SORT1 -el
+gen diana publicado de rs12740374, y por tanto el unico sitio de la ventana
+donde un cambio de contacto significaria algo- cae 61 bins rio abajo de la
+variante. +-32 y +-48 no lo alcanzan. +-64 lo alcanza con tres bins de
+margen. Recortar importa: la matriz completa es 512x512, que en JSON no cabe
+en ningun presupuesto razonable."""
+
+CONTACT_REF_SCALE = 0.001
+CONTACT_DELTA_SCALE = 0.00001
+"""Escalas de cuantizacion para guardar enteros en vez de decimales.
+
+El modelo ya entrega valores cuantizados -835 valores distintos de |delta| en
+las 262 144 celdas-, asi que guardar decimales largos seria guardar ruido de
+punto flotante. Enteros: 26,0 KB para el delta frente a 53,9 KB en decimales,
+con error maximo de 5e-6 contra un maximo de 0,039."""
+
+CONTACT_VALUES_ARE_LOG = """El mapa NO viene en probabilidades.
+
+El docstring del SDK dice "probability that two DNA bases are in contact", y
+la medicion lo desmiente: el 79,1 % de los valores de REF son NEGATIVOS -el
+97,9 % en la diagonal principal-, el rango es -0,746 a 1,938, y exp(REF) no
+decae como ley de potencias con la distancia: se queda rondando 1. El propio
+test del SDK genera contact maps con `np.random.normal(0, 1, ...)`.
+
+Es decir: el mapa ya viene en espacio logaritmico y con el decaimiento por
+distancia retirado, del tipo log(observado/esperado). Tres consecuencias, y
+las tres van contra lo que uno haria por defecto:
+
+1. `ALT - REF` YA ES el log del cociente. No hay que dividir, y por tanto no
+   hace falta pseudoconteo: no hay denominador que se vaya a cero.
+2. No hay celdas "sin contacto" que enmascarar. Las 262 144 tienen valor
+   finito, y un valor bajo significa DEPLECION, no ausencia. Una mascara
+   contra un suelo inexistente pintaria una afirmacion falsa.
+3. No hay que normalizar por distancia. Se cancelaria en la resta de todos
+   modos -mismo locus en REF y en ALT-, y encima el modelo ya lo hizo."""
+
+
+def build_contacts(
+    chromosome: str,
+    spec: VariantSpec,
+    model: Any,
+    interval: Any,
+    prov: dict[str, Any],
+    ontology_term: str,
+    biosample_name: str,
+    finding: str | None = None,
+    *,
+    half_bins: int = CONTACT_HALF_BINS,
+    domain: float = CONTACT_DOMAIN,
+) -> dict[str, Any]:
+    """Diff de mapa de contacto REF vs ALT (V5) para UN biosample declarado.
+
+    Llamada a ``predict_variant`` APARTE, por la misma razon que
+    ``build_splice``: CONTACT_MAPS no esta en ``SIGNAL_OUTPUTS`` y su menu de
+    ontologias no se parece en nada al de las senales. Los 28 tracks de
+    CONTACT_MAPS son TODOS de 4D Nucleome y TODOS lineas celulares: cero
+    tejido primario, cero neuronal. El biosample lo declara quien llama.
+
+    Ver ``CONTACT_VALUES_ARE_LOG`` para por que el diff es una resta a secas.
+    """
+    import numpy as np
+    from alphagenome.data import genome
+    from alphagenome.models import dna_output
+
+    output = model.predict_variant(
+        interval=interval,
+        variant=genome.Variant(chromosome, spec.position, spec.ref, spec.alt),
+        requested_outputs=[dna_output.OutputType.CONTACT_MAPS],
+        ontology_terms=[ontology_term],
+    )
+    ref_td = output.reference.contact_maps
+    alt_td = output.alternate.contact_maps
+    base = {
+        "schemaVersion": SCHEMA_VERSION,
+        "variant": {
+            "id": variant_id(chromosome, spec.position, spec.ref, spec.alt),
+            "chromosome": chromosome,
+            "position": spec.position,
+            "ref": spec.ref,
+            "alt": spec.alt,
+            "rsid": spec.rsid,
+        },
+        "provenance": prov,
+        "biosample": {"name": biosample_name, "ontologyCurie": ontology_term},
+    }
+
+    if ref_td is None or alt_td is None or ref_td.values.size == 0:
+        return {**base, "status": "no_data"}
+
+    # Un curie NO garantiza un solo track: EFO:0003042 (H1-hESC) y EFO:0003045
+    # (H9) traen seis cada uno. En un mapa de contacto los tracks son el ULTIMO
+    # eje -la forma es (bins, bins, tracks)-, no el segundo como en una senal
+    # 1D. Coger `[:, :, 0]` con varios tracks dibujaria un ensayo sin decir
+    # cual. Se para y se nombran, igual que en build_splice.
+    for name, td in (("reference", ref_td), ("alternate", alt_td)):
+        n_tracks = td.values.shape[-1]
+        if n_tracks != 1:
+            meta = getattr(td, "metadata", None)
+            tracks = [] if meta is None else list(meta.get("name", []))
+            raise ValueError(
+                f"CONTACT_MAPS devolvio {n_tracks} tracks para "
+                f"{ontology_term} ({name}); el contrato asume uno. "
+                f"Tracks: {tracks}. Elige un curie de un solo track o decide "
+                f"explicitamente como agregarlos."
+            )
+
+    ref_m = np.asarray(ref_td.values[:, :, 0], dtype=np.float64)
+    alt_m = np.asarray(alt_td.values[:, :, 0], dtype=np.float64)
+    if ref_m.shape[0] != ref_m.shape[1] or ref_m.shape != alt_m.shape:
+        raise ValueError(
+            f"mapa no cuadrado o desalineado: {ref_m.shape} vs {alt_m.shape}"
+        )
+
+    # La simetria se COMPRUEBA, no se supone: de ella depende guardar solo el
+    # triangulo superior, que es la mitad de los bytes.
+    for name, m in (("reference", ref_m), ("alternate", alt_m)):
+        if not np.array_equal(m, m.T):
+            raise ValueError(
+                f"el mapa {name} no es simetrico (max|m-m.T| = "
+                f"{np.abs(m - m.T).max():.3e}); el artefacto guarda solo el "
+                f"triangulo superior y eso dejaria de ser reversible."
+            )
+
+    n_full = ref_m.shape[0]
+    resolution = (interval.end - interval.start) // n_full
+    full_bin = (spec.position - 1 - interval.start) // resolution
+    lo = max(0, min(full_bin - half_bins, n_full - (2 * half_bins + 1)))
+    hi = lo + 2 * half_bins
+    ref_w = ref_m[lo : hi + 1, lo : hi + 1]
+    alt_w = alt_m[lo : hi + 1, lo : hi + 1]
+    delta_w = alt_w - ref_w
+    n = ref_w.shape[0]
+    vbin = full_bin - lo
+
+    iu = np.triu_indices(n)
+    ref_q = np.round(ref_w[iu] / CONTACT_REF_SCALE).astype(int).tolist()
+    delta_q = np.round(delta_w[iu] / CONTACT_DELTA_SCALE).astype(int).tolist()
+
+    # El maximo se mide sobre la VENTANA COMPLETA de 1 Mb, no sobre el recorte:
+    # afirmar "el cambio maximo es X" mirando solo lo que se dibuja seria
+    # afirmarlo sobre una muestra elegida por conveniencia.
+    delta_full = alt_m - ref_m
+    flat = np.abs(delta_full)
+    fi, fj = np.unravel_index(int(flat.argmax()), flat.shape)
+    max_abs = float(flat[fi, fj])
+
+    # La cruz que midio el AVI: "all interactions involving the
+    # variant-containing bin". Como la matriz es simetrica, fila y columna son
+    # el mismo conjunto, asi que la cruz del AVI es literalmente UNA fila.
+    row_mean_abs = float(np.abs(delta_full[full_bin, :]).mean())
+
+    return {
+        **base,
+        **({"finding": finding} if finding else {}),
+        "status": "ok",
+        "interval": {
+            "chromosome": chromosome,
+            "start": interval.start + lo * resolution,
+            "end": interval.start + (hi + 1) * resolution,
+        },
+        "predictedInterval": {
+            "chromosome": chromosome,
+            "start": interval.start,
+            "end": interval.end,
+        },
+        "resolution": int(resolution),
+        "bins": int(n),
+        "variantBin": int(vbin),
+        "domain": domain,
+        "visibleThreshold": round(domain * CONTACT_VISIBLE_FRACTION, 6),
+        "maxAbsDelta": round(max_abs, 6),
+        "maxAbsDeltaAt": {
+            # En coordenadas de la matriz COMPLETA, no del recorte: por eso se
+            # llama `fullBin` y no `bin`. `variantBin`, en cambio, va en
+            # coordenadas del recorte porque es donde la vista lo dibuja.
+            # Mezclar los dos marcos sin decirlo es como se construye una
+            # frase cierta que el dibujo no respalda.
+            "fullBin": int(fj if fi == full_bin else fi),
+            # El maximo se mide sobre el megabase entero, asi que puede caer
+            # FUERA de lo que se dibuja. Si la vista no lo supiera, diria "el
+            # mayor cambio esta en la cruz" y el lector recorreria la fila
+            # resaltada sin encontrarlo nunca.
+            "insideDrawnWindow": bool(lo <= int(fi) <= hi and lo <= int(fj) <= hi),
+            "involvesVariantBin": bool(full_bin in (int(fi), int(fj))),
+            "separationBp": int(abs(int(fi) - int(fj)) * resolution),
+            "ref": round(float(ref_m[fi, fj]), 6),
+            "alt": round(float(alt_m[fi, fj]), 6),
+        },
+        "variantRowMeanAbsDelta": round(row_mean_abs, 6),
+        "referenceRange": {
+            "min": round(float(ref_m.min()), 6),
+            "max": round(float(ref_m.max()), 6),
+            "p1": round(float(np.percentile(ref_m, 1)), 6),
+            "p99": round(float(np.percentile(ref_m, 99)), 6),
+        },
+        "scales": {"reference": CONTACT_REF_SCALE, "delta": CONTACT_DELTA_SCALE},
+        "reference": ref_q,
+        "delta": delta_q,
     }

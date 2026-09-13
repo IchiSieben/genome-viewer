@@ -1,12 +1,16 @@
 """Contrato de datos: validacion de esquema y presupuesto de bytes.
 
-Dos invariantes, y las dos se prueban en ``tests/``:
+Tres invariantes, y las tres se prueban en ``tests/``:
 
 1. **Todo artefacto valida contra su JSON Schema** de ``contracts/v1/``. Se usa
    un validador real (``jsonschema``), no confianza.
 2. **Todo artefacto cabe en su presupuesto de bytes.** Un visor que tarda en
    cargar no es un visor, asi que el presupuesto es parte del contrato y su
    incumplimiento rompe el build.
+3. **Todo artefacto de produccion viene de la API.** Ver
+   ``assert_production_provenance``. Es la unica defensa mecanica contra un
+   artefacto sintetico desplegado con el sello del Atlas encima, que no da ni un
+   404 ni un error de consola y por eso no se detecta mirando.
 """
 
 from __future__ import annotations
@@ -89,6 +93,20 @@ BUDGETS: dict[str, Budget] = {
         "annotations",
         128 * 1024,
         "Genes y transcritos de 1 Mb, con exones en coordenadas GRCh38 absolutas.",
+    ),
+    "contacts": Budget(
+        "contacts",
+        96 * 1024,
+        "Triangulo superior de 129x129 (8 385 celdas) x 2 matrices -referencia "
+        "y delta- en enteros cuantizados. Medido en CELSR2/HepG2: 69 KB. La "
+        "ventana la fija el TSS de SORT1, a 61 bins de la variante.",
+    ),
+    "splice": Budget(
+        "splice",
+        64 * 1024,
+        "Medido en DNM1/glutamatergic neuron: 21 uniones sobre el piso de "
+        "magnitud son unos 2 KB. La holgura cubre una ventana mas cargada de "
+        "uniones reales sin acercarse al tope.",
     ),
 }
 
@@ -268,5 +286,207 @@ def iter_dist(dist: pathlib.Path | None = None) -> Iterator[tuple[str, pathlib.P
             yield "annotations", path
         elif name == "saturation.json":
             yield "saturation", path
+        elif name == "splice.json":
+            yield "splice", path
+        elif name == "contacts.json":
+            yield "contacts", path
         elif path.suffix == ".bin":
             yield "signal", path
+
+
+# --------------------------------------------------------------------------
+# Puntero de portada: derivado, nunca escrito a mano
+# --------------------------------------------------------------------------
+
+
+FEATURED_MIN_PHRED = 10.0
+"""Piso del heroe: percentil 90 en la escala del medidor (``PHRED_AXIS_MAX`` en
+``variantCard.ts``, donde 10 = top 10 %). Por debajo de esto el medidor mismo
+rotula la variante "por debajo de la mediana del genoma", y featurear algo que
+la propia pantalla llama mediocre es peor que no featurear nada.
+"""
+
+
+def featured_pointer(dist: pathlib.Path | None = None) -> dict[str, Any] | None:
+    """Elige la variante que la portada muestra ya cargada.
+
+    Se DERIVA de los ``locus.json`` que el pipeline acaba de emitir, en vez de
+    fijarse en un config. Es el mismo patron que la compuerta de proveniencia y
+    que ``test_palette``: la comprobacion lee el valor que el codigo usa de
+    verdad. Un puntero escrito a mano sobrevive al artefacto al que apunta y la
+    portada se rompe en la cara del primer visitante; uno derivado no puede
+    quedar desfasado porque se recalcula cada vez que los datos cambian.
+
+    Compuertas (no seleccionan, solo excluyen):
+
+    1. Que el locus venga de la API (``provenance.source`` en ``API_SOURCES``).
+       Ningun locus sintetico entra al sorteo del heroe.
+    2. Que tenga **card** y **mapa de saturacion**. La portada promete acceso
+       directo al mapa, y una promesa que lleva a un 404 es peor que no
+       hacerla.
+    3. Que el ``aviPhred`` alcance ``FEATURED_MIN_PHRED``. Por debajo de eso el
+       propio medidor dice "por debajo de la mediana": la regla vieja elegia
+       "el mas alto disponible" y con un solo candidato eso podia ser 0,25.
+
+    Entre las que pasan las tres, gana el **aviPhred mas alto**.
+
+    El rsid NO es compuerta. dbSNP no tiene entrada para la enorme mayoria de
+    los SNVs que el Atlas puede puntuar -es justo el punto del Atlas-, y exigir
+    rsid descartaba sistematicamente a las variantes mas interesantes de
+    ensenar: sin catalogar y con un efecto predicho alto es el mejor argumento
+    del visor, no una razon para ocultarlas. El rsid sigue viajando en el
+    artefacto para mostrarse cuando existe.
+
+    Devuelve ``None`` si nada pasa las tres compuertas: el indice sale sin
+    ``featured`` y la portada cae a su version sin heroe. Es preferible a
+    featurear una variante que el propio medidor calificaria de mediocre.
+    """
+    dist = dist or DIST
+    candidatos: list[tuple[float, str, str]] = []
+    for tipo, path in iter_dist(dist):
+        if tipo != "locus":
+            continue
+        doc = json.loads(path.read_text(encoding="utf-8"))
+        locus_id = doc.get("id")
+        if not locus_id:
+            continue
+        if (doc.get("provenance") or {}).get("source") not in API_SOURCES:
+            continue
+        for entrada in doc.get("variants", []):
+            artifacts = entrada.get("artifacts") or {}
+            if not artifacts.get("saturation") or not artifacts.get("card"):
+                continue
+            variante = entrada.get("variant") or {}
+            if not variante.get("id"):
+                continue
+            phred = entrada.get("aviPhred")
+            if not isinstance(phred, (int, float)) or phred < FEATURED_MIN_PHRED:
+                continue
+            candidatos.append((float(phred), locus_id, str(variante["id"])))
+    if not candidatos:
+        return None
+    # Orden total y estable: phred, y el par (locus, id) como desempate para
+    # que dos corridas sobre los mismos datos den siempre el mismo puntero.
+    _phred, locus_id, variant_id = max(candidatos, key=lambda c: (c[0], c[1], c[2]))
+    return {"locus": locus_id, "variant": variant_id, "saturation": True}
+
+
+# --------------------------------------------------------------------------
+# Compuerta de proveniencia: ningun dato sintetico en produccion
+# --------------------------------------------------------------------------
+
+API_SOURCES = frozenset({"atlas-api", "model-api"})
+"""Los unicos origenes que cuentan como "de la API".
+
+Se escribe como CONJUNTO EXPLICITO y no como ``"api" in source``. La prueba por
+subcadena diria que si a cualquier valor futuro que contenga esas tres letras
+-- ``"fake-api"``, ``"api-mock"`` -- y una compuerta que se puede burlar
+escribiendo un nombre nuevo no es una compuerta.
+"""
+
+
+class SyntheticInProduction(Exception):
+    """Un artefacto de produccion no viene de la API. Rompe el build a proposito.
+
+    Existe por el peor fallo de la sesion 2: el navegador de tracks dibujaba
+    bloques SINTETICOS de una corrida anterior con el sello del Atlas encima, sin
+    un 404 ni un error de consola. Un artefacto viejo en el sitio equivocado se
+    ve exactamente igual que uno correcto, asi que la unica defensa que sirve es
+    mecanica y en el build.
+    """
+
+
+def _non_api_exemption(kind: str, document: Any) -> str | None:
+    """Dice si un artefacto SIN origen de API es legitimo, y por que.
+
+    La regla es de PROPIEDAD, no una lista de rutas: el artefacto se describe a
+    si mismo y no hay un segundo archivo que mantener sincronizado. Un unico caso
+    es legitimo hoy: la ficha de un estudio **planificado que no trae ningun
+    numero**. Publicar el plan de un estudio antes de correrlo es precisamente lo
+    que este proyecto dice querer hacer; lo que no es legitimo es que ese
+    documento lleve cifras inventadas.
+
+    Args:
+      kind: Tipo de artefacto segun ``iter_dist``.
+      document: El documento ya deserializado.
+
+    Returns:
+      El motivo de la excepcion si aplica, o ``None`` si no hay excepcion y el
+      artefacto tiene que venir de la API.
+    """
+    if kind != "study":
+        return None
+    if document.get("status") != "planned":
+        return None
+    panels = document.get("panels") or []
+    if any(panel.get("type") != "note" for panel in panels):
+        return None
+    return (
+        f"estudio 'planned' con {len(panels)} panel(es) de tipo 'note' y ningun "
+        f"numero: es un plan publicado, no un resultado disfrazado"
+    )
+
+
+def assert_production_provenance(dist: pathlib.Path | None = None) -> list[str]:
+    """Exige que todo artefacto de produccion venga de la API.
+
+    Se aplica sobre ``data/dist/`` entero, que es lo que se despliega, y no sobre
+    lo que el generador acaba de escribir: da igual quien dejo ahi el archivo.
+
+    Args:
+      dist: Directorio a revisar. Por defecto ``data/dist``.
+
+    Returns:
+      Las excepciones concedidas, una linea por artefacto, para que queden a la
+      vista en la salida del build en vez de pasar en silencio.
+
+    Raises:
+      SyntheticInProduction: Si algun artefacto declara un origen que no esta en
+        ``API_SOURCES`` sin cumplir la excepcion, o si un artefacto que deberia
+        llevar sello no lo lleva.
+    """
+    dist = dist or DIST
+    problems: list[str] = []
+    exemptions: list[str] = []
+    seen = 0
+
+    for kind, path in iter_dist(dist):
+        if path.suffix != ".json":
+            continue
+        label = str(path.relative_to(dist)).replace("\\", "/")
+        document = json.loads(path.read_text(encoding="utf-8"))
+        provenance = document.get("provenance")
+        if provenance is None:
+            # index y study lo tienen como opcional en el esquema; el resto no.
+            # Aqui se exige de todas formas: sin sello no hay forma de saber de
+            # donde salieron los numeros, y eso es el fallo que se quiere evitar.
+            problems.append(f"{label}: sin sello de proveniencia")
+            continue
+        seen += 1
+        source = provenance.get("source")
+        if source in API_SOURCES:
+            continue
+        reason = _non_api_exemption(kind, document)
+        if reason:
+            exemptions.append(f"{label}: origen '{source}', permitido porque es {reason}")
+            continue
+        problems.append(
+            f"{label}: declara origen '{source}', que no es de la API "
+            f"({', '.join(sorted(API_SOURCES))})"
+        )
+
+    if not seen and not problems:
+        problems.append(
+            f"{dist} no tiene ningun artefacto con sello: no hay nada que verificar"
+        )
+
+    if problems:
+        raise SyntheticInProduction(
+            "Artefactos de produccion que no vienen de la API de AlphaGenome:\n"
+            + "\n".join(f"  - {p}" for p in problems)
+            + "\n\nUn artefacto sintetico desplegado se ve igual que uno real. "
+            "Regenera con `cli build-locus` (necesita la llave) o borra el "
+            "artefacto de data/dist/. La unica excepcion permitida es la ficha "
+            "de un estudio 'planned' sin ningun numero."
+        )
+    return exemptions

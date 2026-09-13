@@ -10,18 +10,23 @@ Que hace
    en cada dicromacia. CIEDE2000 se acerca a la percepcion; la distancia
    euclidiana en RGB no, y por eso no se usa aqui.
 3. Informa del par mas cercano de cada caso y falla si baja del umbral.
+4. Mide **Okabe-Ito** con el mismo metodo, para tener una referencia externa y
+   no una afirmacion de catalogo.
+5. Comprueba el trio que la interfaz usa de verdad (`AVI_TRIO`) contra el
+   umbral de comparacion simultanea, en los dos temas y en las cuatro visiones.
 
-Umbral
-------
-Para series CATEGORICAS que hay que distinguir de un vistazo se exige
-dE2000 >= 15. Es mas estricto que el limite de "diferencia perceptible"
-(~2,3) porque aqui los colores aparecen en cuadros pequenos y separados, no
-lado a lado en bloques grandes.
+Umbrales
+--------
+Dos, porque el problema es distinto segun cuantas series compiten a la vez:
+`NORMAL_THRESHOLD` para las ocho en vision normal, `SIMULTANEOUS_THRESHOLD`
+para el trio, exigido tambien en las tres dicromacias. Ambos son mas estrictos
+que el limite de "diferencia perceptible" (~2,3) porque aqui los colores
+aparecen en cuadros pequenos y separados, no lado a lado en bloques grandes.
 
 Uso::
 
     python pipeline/tools/validate_palette.py
-    python pipeline/tools/validate_palette.py --slots 3   # solo las 3 primeras
+    python pipeline/tools/validate_palette.py --triples   # ranking de trios
 """
 
 from __future__ import annotations
@@ -29,7 +34,9 @@ from __future__ import annotations
 import argparse
 import itertools
 import math
+import re
 import sys
+from pathlib import Path
 
 # Paleta categorica, en el orden fijo en que se asigna. Los valores son los que
 # el encargo especifica; si alguno cambia, este validador tiene que volver a
@@ -56,6 +63,31 @@ DARK: list[tuple[str, str]] = [
     ("8 rojo", "#e66767"),
 ]
 
+# Referencia externa: la paleta de Okabe-Ito (2008), la mas usada en ciencia
+# para daltonismo. No se copia —su negro es tinta en los dos temas de este
+# visor, no una serie— pero sirve para medir contra algo que no es de casa.
+OKABE_ITO: list[tuple[str, str]] = [
+    ("1 naranja", "#e69f00"),
+    ("2 celeste", "#56b4e9"),
+    ("3 verde azulado", "#009e73"),
+    ("4 amarillo", "#f0e442"),
+    ("5 azul", "#0072b2"),
+    ("6 bermellon", "#d55e00"),
+    ("7 purpura", "#cc79a7"),
+    ("8 negro", "#000000"),
+]
+
+# Ranuras (1-8) que la interfaz asigna a las familias de AVI —las tres series
+# que se comparan simultaneamente en la ficha de variante. Ver `familyColor`
+# en web/src/lib/color.ts. Este validador comprueba precisamente este trio: si
+# alguien lo cambia alli y no aqui, el numero que se imprime deja de describir
+# lo que se pinta.
+AVI_TRIO = (5, 6, 7)
+
+# La ranura 8 (rojo) queda fuera del ranking de trios: esta reservada para el
+# color de estado critico y usarla como serie la haria ambigua.
+RESERVED_SLOTS = (8,)
+
 NORMAL_THRESHOLD = 10.0
 """Umbral en vision normal para la paleta categorica completa.
 
@@ -71,10 +103,10 @@ ahi si es alcanzable.
 
 Por que no se exige lo mismo a las ocho: NINGUNA paleta de ocho categorias
 mantiene separacion alta en protanopia, deuteranopia y tritanopia a la vez. Es
-un limite del numero de categorias, no de los hex elegidos. Medido contra
-Okabe-Ito, la paleta para daltonismo mas usada en ciencia: su peor par en las
-cuatro visiones da 0,6, mientras que esta paleta da 0,9 en claro y 0,8 en
-oscuro. Es decir, esta paleta es algo MEJOR que la referencia del campo.
+un limite del numero de categorias, no de los hex elegidos. Okabe-Ito, la
+referencia del campo, esta medida aqui abajo con este mismo codigo y tampoco
+lo consigue. Leer esa comparacion entera antes de citarla: esta paleta gana en
+el peor par de las ocho y pierde por mucho en el mejor trio.
 
 La consecuencia de diseno, que ya esta en las reglas del encargo: la identidad
 nunca puede depender solo del color. Leyenda siempre, etiqueta directa con
@@ -249,19 +281,103 @@ def check(name: str, palette: list[tuple[str, str]], threshold: float) -> bool:
     return ok
 
 
+VISIONS = ("normal", "protanopia", "deuteranopia", "tritanopia")
+
+
+def worst_pair(
+    palette: list[tuple[str, str]], indices: tuple[int, ...], kind: str
+) -> tuple[float, str, str]:
+    """Par mas cercano del subconjunto `indices`, en una vision."""
+    subset = [palette[i] for i in indices]
+    labs = {label: lab_of(value, kind) for label, value in subset}
+    return min(
+        (ciede2000(labs[a], labs[b]), a, b)
+        for (a, _), (b, _) in itertools.combinations(subset, 2)
+    )
+
+
+def worst_over_visions(
+    palette: list[tuple[str, str]], indices: tuple[int, ...]
+) -> tuple[float, str, str, str]:
+    """Peor par del subconjunto en la peor de las cuatro visiones."""
+    return min(
+        (*worst_pair(palette, indices, kind), kind) for kind in VISIONS
+    )  # type: ignore[return-value]
+
+
 def rank_triples(palette: list[tuple[str, str]]) -> list[tuple[float, tuple[int, ...]]]:
     """Ordena los trios de ranuras por su peor par en la peor vision."""
-    rows = []
-    for combo in itertools.combinations(range(len(palette)), 3):
-        subset = [palette[i] for i in combo]
-        worst = 1e9
-        for kind in ("normal", "protanopia", "deuteranopia", "tritanopia"):
-            labs = {label: lab_of(value, kind) for label, value in subset}
-            for (la, _), (lb, _) in itertools.combinations(subset, 2):
-                worst = min(worst, ciede2000(labs[la], labs[lb]))
-        rows.append((worst, combo))
+    rows = [
+        (worst_over_visions(palette, combo)[0], combo)
+        for combo in itertools.combinations(range(len(palette)), 3)
+    ]
     rows.sort(reverse=True)
     return rows
+
+
+def rank_triples_joint() -> list[tuple[float, tuple[int, ...]]]:
+    """Ordena los trios por `min(claro, oscuro)`, excluidas las ranuras reservadas.
+
+    Rankear cada tema por separado da dos ganadores distintos y ninguno sirve:
+    el color de una familia es el mismo token en los dos temas, asi que el trio
+    tiene que aguantar el peor de los dos. Por eso el criterio es el minimo, no
+    el promedio.
+    """
+    usable = [i for i in range(len(LIGHT)) if (i + 1) not in RESERVED_SLOTS]
+    rows = [
+        (
+            min(
+                worst_over_visions(LIGHT, combo)[0],
+                worst_over_visions(DARK, combo)[0],
+            ),
+            combo,
+        )
+        for combo in itertools.combinations(usable, 3)
+    ]
+    rows.sort(reverse=True)
+    return rows
+
+
+COLOR_TS = Path(__file__).resolve().parents[2] / "web" / "src" / "lib" / "color.ts"
+
+
+def slots_in_familycolor() -> tuple[int, ...] | None:
+    """Lee del visor las ranuras que `familyColor` asigna de verdad.
+
+    Sin esto, `AVI_TRIO` seria una copia que puede quedarse vieja en silencio y
+    el validador acabaria bendiciendo un trio que nadie pinta. Devuelve `None`
+    si el archivo no esta —el pipeline puede correr sin el arbol de la web— y
+    en ese caso solo se avisa.
+    """
+    try:
+        source = COLOR_TS.read_text(encoding="utf-8")
+    except OSError:
+        return None
+    match = re.search(
+        r"export function familyColor\b.*?\n\}", source, re.DOTALL
+    )
+    if not match:
+        return None
+    slots = re.findall(r"slotColor\((\d+)\)", match.group(0))
+    return tuple(sorted(int(s) for s in slots)) if slots else None
+
+
+def report_palette(name: str, palette: list[tuple[str, str]]) -> float:
+    """Imprime el bloque de una paleta completa y devuelve su peor par normal."""
+    print()
+    print(f"=== {name}: paleta categorica completa ({len(palette)} colores) ===")
+    every = tuple(range(len(palette)))
+    normal = worst_pair(palette, every, "normal")
+    status = "OK   " if normal[0] >= NORMAL_THRESHOLD else "FALLA"
+    print(f"  {status} vision normal, par mas cercano: {normal[1]} / {normal[2]}"
+          f"  dE2000 = {normal[0]:.1f}  (umbral {NORMAL_THRESHOLD})")
+    for kind in VISIONS[1:]:
+        w = worst_pair(palette, every, kind)
+        print(f"  info  {kind:<13} par mas cercano: {w[1]} / {w[2]}"
+              f"  dE2000 = {w[0]:.1f}")
+    print("        (con ocho categorias ninguna paleta separa en las tres")
+    print("         dicromacias: por eso la identidad nunca va solo en el color)")
+    return normal[0]
 
 
 def main() -> int:
@@ -274,49 +390,72 @@ def main() -> int:
 
     ok = True
     for name, palette in (("tema claro", LIGHT), ("tema oscuro", DARK)):
-        print()
-        print(f"=== {name}: paleta categorica completa ({len(palette)} colores) ===")
-        labs = {label: lab_of(value, "normal") for label, value in palette}
-        worst = min(
-            (ciede2000(labs[a], labs[b]), a, b)
-            for (a, _), (b, _) in itertools.combinations(palette, 2)
-        )
-        status = "OK   " if worst[0] >= NORMAL_THRESHOLD else "FALLA"
-        print(f"  {status} vision normal, par mas cercano: {worst[1]} / {worst[2]}"
-              f"  dE2000 = {worst[0]:.1f}  (umbral {NORMAL_THRESHOLD})")
-        ok = ok and worst[0] >= NORMAL_THRESHOLD
-
-        for kind in ("protanopia", "deuteranopia", "tritanopia"):
-            labs = {label: lab_of(value, kind) for label, value in palette}
-            w = min(
-                (ciede2000(labs[a], labs[b]), a, b)
-                for (a, _), (b, _) in itertools.combinations(palette, 2)
-            )
-            print(f"  info  {kind:<13} par mas cercano: {w[1]} / {w[2]}"
-                  f"  dE2000 = {w[0]:.1f}")
-        print("        (con ocho categorias ninguna paleta separa en las tres")
-        print("         dicromacias: por eso la identidad nunca va solo en el color)")
-
+        ok = report_palette(name, palette) >= NORMAL_THRESHOLD and ok
         best = rank_triples(palette)
         top_score, top_combo = best[0]
-        first_three = next(s for s, c in best if c == (0, 1, 2))
         print()
-        print(f"Trio para comparacion simultanea (umbral {SIMULTANEOUS_THRESHOLD}):")
-        print(f"    mejor disponible: ranuras {tuple(c + 1 for c in top_combo)} "
-              f"-> {top_score:.1f}")
-        print(f"    las tres primeras: ranuras (1, 2, 3) -> {first_three:.1f}"
-              f"  {'OK' if first_three >= SIMULTANEOUS_THRESHOLD else 'POR DEBAJO'}")
+        print(f"  Mejor trio de este tema por separado: "
+              f"ranuras {tuple(c + 1 for c in top_combo)} -> {top_score:.1f}")
         if args.triples:
             for score, combo in best[:5]:
                 labels = " + ".join(palette[i][0] for i in combo)
                 print(f"      {score:5.1f}  {tuple(c + 1 for c in combo)}  {labels}")
 
+    # Referencia externa, medida con el mismo codigo.
+    report_palette("Okabe-Ito (referencia externa)", OKABE_ITO)
+    oi_score, oi_combo = rank_triples(OKABE_ITO)[0]
+    print()
+    print(f"  Mejor trio de Okabe-Ito: ranuras {tuple(c + 1 for c in oi_combo)} "
+          f"-> {oi_score:.1f}  "
+          f"({' + '.join(OKABE_ITO[i][0] for i in oi_combo)})")
+    print("  Ese trio incluye el negro, que aqui es la tinta de los dos temas y")
+    print("  no puede ser una serie. La ventaja de Okabe-Ito en trios es real y")
+    print("  viene sobre todo de ahi.")
+
+    # --- Trio de comparacion simultanea: el que la interfaz usa de verdad ---
+    joint = rank_triples_joint()
+    in_code = slots_in_familycolor()
+    if in_code is None:
+        print()
+        print(f"  aviso  no se pudo leer {COLOR_TS.name}; se valida AVI_TRIO a ciegas")
+    elif in_code != AVI_TRIO:
+        print()
+        print(f"  FALLA  familyColor usa las ranuras {in_code} y aqui esta declarado")
+        print(f"         {AVI_TRIO}. Uno de los dos miente; el codigo manda.")
+        ok = False
+    combo = tuple(s - 1 for s in AVI_TRIO)
+    score = next(s for s, c in joint if c == combo)
+    rank = next(i for i, (_, c) in enumerate(joint, 1) if c == combo)
+    top_score, top_combo = joint[0]
+
+    print()
+    print(f"=== Trio de comparacion simultanea (umbral {SIMULTANEOUS_THRESHOLD}) ===")
+    print(f"  Criterio: peor par en las cuatro visiones, peor de los dos temas.")
+    print(f"  Ranuras reservadas, fuera del ranking: {RESERVED_SLOTS}")
+    passes = score >= SIMULTANEOUS_THRESHOLD
+    print(f"  {'OK   ' if passes else 'FALLA'} en uso (familyColor): ranuras {AVI_TRIO}"
+          f" -> {score:.1f}   puesto {rank} de {len(joint)}")
+    for theme, palette in (("claro", LIGHT), ("oscuro", DARK)):
+        for kind in VISIONS:
+            w = worst_pair(palette, combo, kind)
+            print(f"        {theme:<7}{kind:<13} {w[0]:5.1f}  ({w[1]} / {w[2]})")
+    if not passes:
+        print(f"  Mejor disponible: ranuras {tuple(c + 1 for c in top_combo)}"
+              f" -> {top_score:.1f}")
+    ok = ok and passes
+    if args.triples:
+        print("  Ranking conjunto:")
+        for s, c in joint[:5]:
+            labels = " + ".join(LIGHT[i][0] for i in c)
+            print(f"      {s:5.1f}  {tuple(i + 1 for i in c)}  {labels}")
+
     print()
     if ok:
-        print("La paleta pasa en vision normal y su limitacion en dicromacias esta")
-        print("medida y declarada. Ver docs/03-visual-system.md.")
+        print("La paleta pasa en vision normal, el trio simultaneo pasa en las")
+        print("cuatro visiones y en los dos temas, y la limitacion de las ocho")
+        print("categorias esta medida y declarada. Ver docs/03-visual-system.md.")
         return 0
-    print("La paleta NO pasa en vision normal; hay que ajustar los hex.")
+    print("La paleta NO pasa. Hay que ajustar los hex o el trio de familyColor.")
     return 1
 
 

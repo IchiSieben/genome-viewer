@@ -1,0 +1,192 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ic7.dev/alphagenome/contracts/v1/contacts.schema.json",
+  "title": "Diff de mapa de contacto, ALT menos REF (V5)",
+  "description": "Mapa de contacto tridimensional sobre un biosample especifico, ANTES (REF) y DESPUES (ALT) de la variante, guardado como la matriz de referencia mas la matriz de diferencia. Viene de una llamada a predict_variant aparte: CONTACT_MAPS no esta en SIGNAL_OUTPUTS y su menu de ontologias es otro mundo -28 tracks, TODOS de 4D Nucleome y TODOS lineas celulares, cero tejido primario y cero neuronal-, asi que el biosample correcto casi nunca coincide con el de las demas modalidades de la misma variante. AVISO SOBRE LAS UNIDADES: los valores NO son probabilidades pese a lo que dice el docstring del SDK. El 79 % de los de REF son negativos y exp(REF) no decae con la distancia, de modo que el mapa ya viene en espacio logaritmico con el decaimiento retirado. Consecuencia: 'delta' ya ES un log-cociente, sin division, sin pseudoconteo y sin normalizar por distancia. Presupuesto: 96 KB.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "variant",
+    "provenance",
+    "biosample",
+    "status"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "$ref": "common.schema.json#/$defs/schemaVersion"
+    },
+    "variant": {
+      "$ref": "common.schema.json#/$defs/variant"
+    },
+    "provenance": {
+      "$ref": "common.schema.json#/$defs/provenance"
+    },
+    "biosample": {
+      "type": "object",
+      "description": "El biosample que se pidio. Aqui pesa mas que en ninguna otra vista: como el menu no tiene tejido primario, el biosample dibujado casi nunca es el tejido donde la variante actua, y la vista tiene que decirlo en pantalla.",
+      "required": [
+        "name",
+        "ontologyCurie"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "ontologyCurie": {
+          "type": "string",
+          "pattern": "^[A-Za-z]+:[0-9]+$"
+        }
+      }
+    },
+    "status": {
+      "enum": [
+        "ok",
+        "no_data"
+      ],
+      "description": "'no_data' es el caso de modalidad silenciosa duro: el Atlas no devolvio mapa para este biosample. Es DISTINTO de un diff cerca de cero, que es status 'ok' con maxAbsDelta pequeno: eso no es ausencia de dato, es la medicion de que la estructura no se movio, y es un resultado."
+    },
+    "finding": {
+      "type": "string",
+      "maxLength": 1200,
+      "description": "Hallazgo redactado a mano sobre ESTE artefacto. Misma regla que en splice.schema.json: el texto lleva la AFIRMACION, nunca las cifras; las cifras las pinta la vista desde el propio artefacto. Ademas, por los Output Terms (R3), el texto se queda en lo que el modelo predice y no entra en terminos clinicos ni de fenotipo: eso lo vigila test_findings_wording.py, que recorre el catalogo entero y no depende de que los artefactos esten congelados."
+    },
+    "interval": {
+      "$ref": "common.schema.json#/$defs/interval",
+      "description": "La ventana RECORTADA que se dibuja, no la que se predijo."
+    },
+    "predictedInterval": {
+      "$ref": "common.schema.json#/$defs/interval",
+      "description": "La ventana de 1 Mb sobre la que se predijo. Importa porque 'maxAbsDelta' se mide sobre ESTA y no sobre el recorte: afirmar 'el cambio maximo es X' mirando solo lo que se dibuja seria afirmarlo sobre una muestra elegida por conveniencia."
+    },
+    "resolution": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Pares de bases por bin. 2048 en el modelo actual. Es la razon principal de que una SNV rara vez mueva nada aqui: el cambio de una base se promedia con otras 2047."
+    },
+    "bins": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Lado de la matriz recortada. 129 = 2 x 64 + 1."
+    },
+    "variantBin": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Indice del bin que contiene la variante DENTRO del recorte. Su fila es la cruz que la vista resalta y es exactamente lo que midio el feature del AVI: 'all interactions involving the variant-containing bin'. Como la matriz es simetrica, fila y columna son el mismo conjunto contado dos veces."
+    },
+    "domain": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Dominio ABSOLUTO del color: el diff se pinta en [-domain, +domain] y jamas se autoescala al rango de los datos. La prueba que separa un dominio fijo de un autoescalado disfrazado es si cambia cuando cambian los datos; este no, es la constante CONTACT_DOMAIN del pipeline y un test lo comprueba. Vale 1 porque en espacio logaritmico 1 es del orden de duplicar o partir por la mitad el contacto -exactamente el doble si la base es 2, premisa de partida que NO se pudo medir-, la magnitud de un cambio estructural real, asi que saturacion plena significa 'esto reorganizo el locus'. Ancla externa a los datos e identica en todos los loci: dos variantes se comparan mirando dos mapas."
+    },
+    "visibleThreshold": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Por debajo de esto el cambio no alcanza un paso de color distinguible. Existe para que la vista pueda escribir en palabras 'el cambio maximo esta por debajo del umbral visible' en vez de dejar un mapa en blanco que lo mismo significa 'no paso nada' que 'fallo la carga'."
+    },
+    "maxAbsDelta": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Mayor |ALT - REF| de la ventana PREDICHA. Se imprime siempre en la leyenda, con una marca de donde cae dentro del dominio fijo: es lo que carga la informacion cuando el color, correctamente, no carga ninguna."
+    },
+    "maxAbsDeltaAt": {
+      "type": "object",
+      "description": "Donde esta ese maximo. Sirve para dos afirmaciones que la vista tiene que poder hacer sin mentir: si el mayor cambio del locus involucra o no al bin de la variante, y si cae o no dentro del recorte que se dibuja. ATENCION A LOS MARCOS: 'fullBin' va en coordenadas de la matriz COMPLETA, mientras que 'variantBin' va en coordenadas del recorte.",
+      "required": [
+        "fullBin",
+        "insideDrawnWindow",
+        "involvesVariantBin",
+        "separationBp",
+        "ref",
+        "alt"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "fullBin": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "insideDrawnWindow": {
+          "type": "boolean"
+        },
+        "involvesVariantBin": {
+          "type": "boolean"
+        },
+        "separationBp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ref": {
+          "type": "number"
+        },
+        "alt": {
+          "type": "number"
+        }
+      }
+    },
+    "variantRowMeanAbsDelta": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Media de |ALT - REF| sobre la fila del bin de la variante. Es la reconstruccion local de lo que mide ContactMapScorer del AVI, que es sin signo, diferencia cruda y solo esa fila. Se guarda para que la vista pueda ensenar lado a lado el numero del AVI y el que dibuja, que no son la misma magnitud: la vista es CON signo, log-cociente y matriz entera."
+    },
+    "referenceRange": {
+      "type": "object",
+      "description": "Rango del mapa REF: el relieve que la estructura YA tiene. Es la referencia contra la que se lee el diff, y sin el la frase 'el cambio maximo es 0,0391' no significa nada. Medido en CELSR2/HepG2: la estructura abarca 2,684 y el cambio mayor es el 1,5 % de eso.",
+      "required": [
+        "min",
+        "max",
+        "p1",
+        "p99"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "p1": {
+          "type": "number"
+        },
+        "p99": {
+          "type": "number"
+        }
+      }
+    },
+    "scales": {
+      "type": "object",
+      "description": "Factor por el que hay que multiplicar los enteros guardados. Se guardan enteros porque el modelo ya entrega valores cuantizados: decimales largos serian ruido de punto flotante ocupando bytes.",
+      "required": [
+        "reference",
+        "delta"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "reference": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "delta": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "reference": {
+      "type": "array",
+      "description": "Triangulo superior de la matriz REF, por filas, incluida la diagonal, en enteros a multiplicar por scales.reference. Va en el artefacto aunque la vista principal sea el diff: un diff plano sobre un fondo vacio no dice nada, y sobre la estructura real dice 'esto es lo que hay y esto es lo poco que cambio'. Solo el triangulo porque la simetria se comprueba al congelar.",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "delta": {
+      "type": "array",
+      "description": "Triangulo superior de ALT menos REF, mismo orden y misma regla, en enteros a multiplicar por scales.delta. Como el mapa ya viene en log, esta resta ya es un log-cociente: no se divide, no se anade pseudoconteo y no se normaliza por distancia -el decaimiento se cancela entre REF y ALT y ademas el modelo ya lo retiro-.",
+      "items": {
+        "type": "integer"
+      }
+    }
+  }
+}

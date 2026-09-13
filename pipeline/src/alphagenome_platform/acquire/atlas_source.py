@@ -278,6 +278,11 @@ def _split_by_variant(
         key = f"{variant[0]}:{variant[1]}:{variant[2]}>{variant[3]}"
         per_scorer: dict[str, Any] = {}
         for scorer, adata in result.items():
+            # Mismo caso que en freeze/run.py: un scorer sin ninguna pista
+            # cerca responde n_obs=0 y sin columna "variant". No es un lote
+            # corrupto, es que no hay nada que reportar para esa modalidad.
+            if adata.n_obs == 0 or "variant" not in adata.obs.columns:
+                continue
             mask = [str(v) == key for v in adata.obs["variant"]]
             if not any(mask):
                 continue
