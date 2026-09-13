@@ -45,18 +45,17 @@ _dist/
 /web/public/data/
 
 # Artefactos congelados: se versiona TODO, incluidos los bloques de senal.
+# Son salida real de la API, no fixtures, asi que sin llave no se regeneran.
 #
-# Estuvieron ignorados con la nota de que eran "regenerables de forma
-# determinista con `cli fixtures`". Las dos mitades de esa frase eran falsas y
-# la comprobacion cuesta un comando: los 88 bloques que hay pertenecen a nueve
-# loci cuyo tracks.json declara source='atlas-api', los escribe
-# freeze/build_locus.py durante un congelado real que gasta cuota, y
-# `cli fixtures` no los toca -solo genera egln1 y epas1, que son otros loci-.
-# O sea: sin llave y sin cuota no se regeneran, y el repo no era autocontenido.
-#
-# 8,4 MB es trivial para git y a cambio el clon reproduce exactamente lo que
-# esta desplegado, la suite pasa en limpio y desaparece un paso de arranque que
-# no estaba escrito en ningun sitio.
+# Aqui NO va la justificacion, y es a proposito: la version anterior de este
+# comentario afirmaba un tamano y una forma de regenerarlos, las dos cosas
+# resultaron falsas, y como un comentario no se ejecuta nadie se entero hasta
+# que hubo dano. Lo que se afirma sobre este arbol vive en
+# pipeline/tests/test_dos_mundos.py, que si se ejecuta.
+
+# Salida de `cli fixtures`: sintetica, deterministica y regenerable sin cuota
+# -esta si-. No se versiona porque no es producto.
+/data/fixtures/
 
 # Sistema operativo / editores
 .DS_Store

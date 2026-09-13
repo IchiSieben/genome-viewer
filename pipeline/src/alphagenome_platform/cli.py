@@ -2,7 +2,7 @@
 
 Comandos::
 
-    python -m alphagenome_platform.cli fixtures   # genera data/dist/ sintetico
+    python -m alphagenome_platform.cli fixtures   # genera data/fixtures/ sintetico
     python -m alphagenome_platform.cli validate   # valida esquema y presupuesto
     python -m alphagenome_platform.cli budget     # tabla de uso de presupuesto
     python -m alphagenome_platform.cli reindex    # refresca lo derivado del indice
@@ -24,13 +24,25 @@ from alphagenome_platform import contract, fixtures
 
 
 def _cmd_fixtures(args: argparse.Namespace) -> int:
-    """Genera el arbol completo de fixtures sinteticas."""
-    dist = pathlib.Path(args.out) if args.out else contract.DIST
-    report = fixtures.generate(dist)
-    print(f"{len(report['artifacts'])} artefactos escritos en {dist}\n")
+    """Genera el arbol completo de fixtures sinteticas en data/fixtures/.
+
+    NO es el camino de arranque de un clon: `data/dist/` ya viene congelado
+    desde la API, bloques de senal incluidos. Esto es una herramienta de
+    desarrollo sin cuota, y por eso escribe en un arbol aparte.
+    """
+    out = pathlib.Path(args.out) if args.out else contract.FIXTURES
+    try:
+        report = fixtures.generate(out)
+    except fixtures.DestinoConDatosReales as error:
+        print(f"ERROR: {error}", file=sys.stderr)
+        return 1
+    print(f"{len(report['artifacts'])} artefactos escritos en {out}")
+    print()
     _print_budget_table(report["worst"])
+    print()
     print(
-        "\nTodos llevan source='synthetic'. NO son predicciones de AlphaGenome."
+        "Todos llevan source='synthetic' y su id empieza por 'demo-'. NO son "
+        "predicciones de AlphaGenome, y no pueden colisionar con un locus real."
     )
     return 0
 
@@ -263,8 +275,10 @@ def main(argv: list[str] | None = None) -> int:
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
-    p = sub.add_parser("fixtures", help="genera fixtures sinteticas")
-    p.add_argument("--out", help="directorio de salida (por defecto data/dist)")
+    p = sub.add_parser(
+        "fixtures", help="genera fixtures sinteticas en data/fixtures/ (sin cuota)"
+    )
+    p.add_argument("--out", help="directorio de salida (por defecto data/fixtures)")
     p.set_defaults(func=_cmd_fixtures)
 
     p = sub.add_parser("validate", help="valida esquema y presupuesto")

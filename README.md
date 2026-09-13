@@ -73,15 +73,30 @@ Las dos capas se tocan solo por `contracts/v1/*.schema.json`.
 
 ## Cómo correrlo
 
-Sin llave, que es el camino por defecto:
+Sin llave, que es el camino por defecto. **No hay paso de arranque**: el clon
+ya trae `data/dist/` entero —los JSON del contrato y los bloques de senal—,
+porque son salida real de la API y sin llave no se regeneran.
 
 ```bash
 python -m pip install -e "pipeline[dev]"
-python -m alphagenome_platform.cli fixtures     # genera data/dist/
 python -m alphagenome_platform.cli validate     # esquema + presupuesto
 
 cd web && npm install && npm run dev            # http://localhost:5173
 ```
+
+Las fixtures sinteticas **no** son ese camino. Son una herramienta de
+desarrollo sin cuota —para tocar el visor sin datos reales delante— y escriben
+en un arbol aparte, `data/fixtures/`, que no se versiona:
+
+```bash
+python -m alphagenome_platform.cli fixtures     # -> data/fixtures/, ids demo-*
+```
+
+Los dos mundos no comparten ni directorio ni nombres: todo locus sintetico
+lleva el prefijo `demo-`. Antes compartian ambas cosas, y `fixtures` llego a
+sobreescribir artefactos reales que habian costado cuota. Lo que este parrafo
+afirma esta comprobado en `pipeline/tests/test_dos_mundos.py`, no solo escrito
+aqui.
 
 Con llave, cuando la haya. Va en `~/.env`, **nunca** en el repositorio:
 
@@ -100,7 +115,7 @@ python -m alphagenome_platform.cli build-locus rpl13a   # solo uno
 Tests y verificación:
 
 ```bash
-PYTHONPATH=pipeline/src python -m pytest pipeline/tests -q   # 54 tests
+PYTHONPATH=pipeline/src python -m pytest pipeline/tests -q   # 110 tests
 cd web && npm run build
 npm run verify         # 16 escenarios en Chromium, dos temas, ancho de movil
 npm run verify:links   # enlace cruzado y estado en la URL

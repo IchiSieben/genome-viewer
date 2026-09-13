@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import dataclasses
 import hashlib
+import json
 import pathlib
 from typing import Any
 
@@ -160,7 +161,7 @@ DETAIL_HALF_WIDTH = 4096
 
 LOCI: tuple[LocusSpec, ...] = (
     LocusSpec(
-        id="ppp1r1a-pde1b",
+        id="demo-ppp1r1a-pde1b",
         label="PPP1R1A / PDE1B",
         chromosome="chr12",
         center=54582115,
@@ -172,7 +173,7 @@ LOCI: tuple[LocusSpec, ...] = (
         ),
     ),
     LocusSpec(
-        id="egln1",
+        id="demo-egln1",
         label="EGLN1",
         chromosome="chr1",
         center=231391154,
@@ -183,7 +184,7 @@ LOCI: tuple[LocusSpec, ...] = (
         ),
     ),
     LocusSpec(
-        id="epas1",
+        id="demo-epas1",
         label="EPAS1",
         chromosome="chr2",
         center=46340184,
@@ -514,13 +515,53 @@ def _build_annotations(spec: LocusSpec, start: int, end: int) -> dict[str, Any]:
 # --------------------------------------------------------------------------
 
 
-def generate(dist: pathlib.Path | None = None) -> dict[str, Any]:
-    """Genera el arbol completo de fixtures en ``data/dist/``.
+class DestinoConDatosReales(RuntimeError):
+    """Se intento escribir fixtures encima de artefactos de la API."""
+
+
+def _exigir_destino_limpio(out: pathlib.Path) -> None:
+    """Aborta si el destino contiene artefactos que vinieron de una API.
+
+    Con `out` por defecto esto no puede dispararse -los dos arboles son
+    distintos-, y esa es justamente la intencion: la asercion no sostiene el
+    diseno, lo comprueba. Cubre el unico hueco que queda abierto, que es que
+    alguien apunte `--out` a `data/dist/` a mano.
+
+    No hay `--force`. Lo que habria al otro lado del force son predicciones
+    que costaron cuota y no se regeneran sin llave.
+    """
+    if not out.exists():
+        return
+    for ruta in sorted(out.rglob("*.json")):
+        try:
+            doc = json.loads(ruta.read_text(encoding="utf-8"))
+        except (ValueError, OSError):
+            continue
+        origen = (doc.get("provenance") or {}).get("source")
+        if origen in contract.API_SOURCES:
+            raise DestinoConDatosReales(
+                f"{out} contiene artefactos de la API "
+                f"({ruta.relative_to(out)} declara source={origen!r}). "
+                f"Las fixtures son sinteticas y sobreescribirlos destruiria "
+                f"predicciones que costaron cuota y no se regeneran sin llave. "
+                f"Las fixtures van a {contract.FIXTURES}."
+            )
+
+
+def generate(out: pathlib.Path | None = None) -> dict[str, Any]:
+    """Genera el arbol completo de fixtures en ``data/fixtures/``.
+
+    NO escribe en ``data/dist/``: ese arbol es la salida del producto y viene
+    congelado desde la API en el propio clon. Ver ``contract.FIXTURES``.
 
     Returns:
       Resumen con las mediciones de presupuesto de cada artefacto escrito.
+
+    Raises:
+      DestinoConDatosReales: si el destino contiene artefactos de la API.
     """
-    dist = dist or contract.DIST
+    dist = out or contract.FIXTURES
+    _exigir_destino_limpio(dist)
     report: dict[str, Any] = {"artifacts": [], "worst": {}}
 
     def record(kind: str, label: str, measured: dict[str, Any]) -> None:

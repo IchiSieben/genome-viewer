@@ -13,16 +13,9 @@ import pathlib
 
 import pytest
 
-from alphagenome_platform import contract, fixtures
+from alphagenome_platform import contract
 
 DIST = contract.DIST
-
-
-@pytest.fixture(scope="session", autouse=True)
-def _ensure_fixtures() -> None:
-    """Genera las fixtures si no existen, para que la suite corra en limpio."""
-    if not (DIST / "index.json").exists():
-        fixtures.generate()
 
 
 def _dist_files(kind: str) -> list[pathlib.Path]:

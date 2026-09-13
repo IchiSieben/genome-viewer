@@ -27,6 +27,13 @@ ROOT = pathlib.Path(__file__).resolve().parents[3]
 CONTRACTS = ROOT / "contracts" / "v1"
 DIST = ROOT / "data" / "dist"
 
+# Los dos mundos no comparten directorio. `dist` es la SALIDA DEL PRODUCTO: lo
+# que se despliega y lo que el clon trae ya congelado desde la API. `fixtures`
+# es una herramienta de DESARROLLO sin cuota, y una herramienta de desarrollo
+# que escribe en la salida del producto esta mal aunque se vigile. Separarlos
+# quita el defecto en vez de ponerle un guardia.
+FIXTURES = ROOT / "data" / "fixtures"
+
 
 # --------------------------------------------------------------------------
 # Presupuesto de bytes
