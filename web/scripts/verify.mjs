@@ -24,7 +24,7 @@ mkdirSync(OUT, { recursive: true });
 const browser = await chromium.launch();
 let failures = 0;
 
-async function visit(name, hash, { width = 1280, height = 900, theme = 'light', checks = [] } = {}) {
+async function visit(name, hash, { width = 1280, height = 900, theme = 'light', checks = [], sourceWarn = false } = {}) {
   const context = await browser.newContext({
     viewport: { width, height },
     deviceScaleFactor: 2,
@@ -67,6 +67,32 @@ async function visit(name, hash, { width = 1280, height = 900, theme = 'light', 
     () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
   );
   if (scroll) { failures++; results.push('FALLA la pagina se desplaza en horizontal'); }
+
+  // Toda vista declara de donde salieron sus numeros, y lo declara ARRIBA. Esto
+  // no se comprueba por vista sino aqui, para que una vista nueva que se olvide
+  // del sello falle sola sin que nadie tenga que acordarse de anadir el check.
+  const chips = await page.locator('.source-chip').count();
+  if (!chips) {
+    failures++;
+    results.push('FALLA sin marca de origen (.source-chip) en la vista');
+  } else {
+    const warn = await page.locator('.source-chip--warn').count();
+    const texts = [...new Set(await page.locator('.source-chip__text').allInnerTexts())];
+    // Con `data/dist` real, un aviso ambar significa que se colo un artefacto
+    // que no viene de la API. La excepcion es la ficha del estudio planificado,
+    // donde el aviso es la respuesta CORRECTA: ahi se EXIGE, no se dispensa.
+    if (sourceWarn && !warn) {
+      failures++;
+      results.push(`FALLA se esperaba aviso de origen y no hay: ${texts.join(' | ')}`);
+    } else if (!sourceWarn && warn) {
+      failures++;
+      results.push(`FALLA marca de origen en aviso: ${texts.join(' | ')}`);
+    } else {
+      results.push(
+        `OK   marca de origen${sourceWarn ? ' (aviso esperado)' : ''}: ${texts.join(' | ')}`,
+      );
+    }
+  }
 
   await page.screenshot({ path: `${OUT}/${name}.png`, fullPage: true });
 
@@ -131,7 +157,12 @@ await visit('06-mapa-calor-oscuro', '#/variant/ppp1r1a-pde1b/chr12-54578515-C-T?
   checks: [{ selector: '.heatmap__cell', min: 300, label: 'celdas del mapa' }],
 });
 
+// La ficha del estudio planificado es el UNICO artefacto que no viene de la API
+// (ver la compuerta en docs/02-data-contract.md). Aqui se exige que lo grite: si
+// algun dia trae numeros reales y sigue en ambar, o al contrario deja de avisar
+// siendo sintetico, esto falla.
 await visit('07-estudio', '#/study/atlas-andino', {
+  sourceWarn: true,
   checks: [
     { selector: '.status--planned', label: 'estado declarado' },
     { selector: '.honesty__limits li', min: 5, label: 'limitaciones declaradas' },
@@ -197,6 +228,77 @@ await visit('16-saturacion-movil', '#/variant/ppp1r1a-pde1b/chr12-54578515-C-T?v
   width: 390,
   height: 844,
   checks: [{ selector: '.saturation__canvas', label: 'canvas del mapa' }],
+});
+
+await visit('17-sashimi', '#/variant/dnm1/chr9-128226027-G-A?view=splice', {
+  checks: [
+    { selector: '.sashimi__plot', label: 'svg del sashimi' },
+    { selector: '.sashimi__arc', min: 5, label: 'arcos de union' },
+    { selector: '.sashimi__lane-label', min: 2, label: 'etiquetas REF/ALT' },
+    { selector: '.sashimi__variant-mark', label: 'marca de la variante' },
+    { selector: '.legend', label: 'leyenda de grosor' },
+    { selector: '.card__chip', min: 1, label: 'chip de biosample' },
+    // El resalte es la respuesta a que las etiquetas caian en arcos
+    // constitutivos: sin esto, nada impide que vuelva a pasar en silencio.
+    // Seis y no cuatro: son las CUATRO uniones reciprocas, pero de dos de
+    // ellas solo se dibuja el lado REF porque su ALT (0,006) queda bajo el
+    // piso de 0,01. Que el numero exacto este aqui es el punto: si cambia,
+    // alguien tiene que mirar por que.
+    { selector: '.sashimi__arc--touching', min: 6, label: 'arcos que tocan la variante' },
+    { selector: '.sashimi__arc--muted', min: 10, label: 'arcos atenuados' },
+    // Las etiquetas van por |ALT - REF|: las dos uniones reciprocas de DNM1
+    // tienen que quedar escritas, mas una sola sobre el arco constitutivo
+    // mayor como referencia de escala.
+    { selector: '.sashimi__label', min: 5, label: 'etiquetas directas' },
+    { selector: '.finding__text', label: 'el hallazgo redactado' },
+    { selector: '.finding__table tbody tr', min: 4, label: 'filas medidas del hallazgo' },
+  ],
+});
+
+await visit('18-sashimi-oscuro', '#/variant/dnm1/chr9-128226027-G-A?view=splice', {
+  theme: 'dark',
+  checks: [{ selector: '.sashimi__plot', label: 'svg del sashimi' }],
+});
+
+await visit('19-sashimi-movil', '#/variant/dnm1/chr9-128226027-G-A?view=splice', {
+  width: 390,
+  height: 844,
+  checks: [{ selector: '.sashimi__plot', label: 'svg del sashimi' }],
+});
+
+const CONTACTOS = '#/variant/celsr2-psrc1/chr1-109274968-G-T?view=contact';
+
+await visit('20-contactos', CONTACTOS, {
+  checks: [
+    { selector: '.contacts__canvas', label: 'lienzo del diff' },
+    // El veredicto va ANTES del mapa: cuando el resultado es "no cambia
+    // nada", el numero tiene que llegar antes que el color.
+    { selector: '.contacts__verdict-lead', label: 'cambio maximo declarado' },
+    { selector: '.contacts__verdict-detail', min: 2, label: 'detalle medido' },
+    // DOS leyendas: la estructura tiene escala propia y el diff la fija. Si
+    // alguna vez se fundieran en una, el diff heredaria un dominio que sale
+    // de los datos, que es justo lo que esta vista no puede hacer.
+    { selector: '.contacts__legend', min: 2, label: 'leyenda de cada mitad' },
+    // Las dos marcas del maximo observado, una a cada lado del cero. Son lo
+    // que hace VISIBLE la pequenez en vez de solo escribirla.
+    { selector: '.contacts__mark', min: 2, label: 'marca del maximo en la leyenda' },
+    { selector: '.contacts__magnify', label: 'boton de magnificacion etiquetado' },
+    { selector: '.contacts__bridge-text', min: 2, label: 'puente con el numero del AVI' },
+    { selector: '.contacts__biosample', label: 'aviso de linea celular' },
+    { selector: '.finding__text', label: 'el hallazgo redactado' },
+    { selector: '.source-chip', min: 1, label: 'chip de origen' },
+  ],
+});
+
+await visit('21-contactos-oscuro', CONTACTOS, {
+  theme: 'dark',
+  checks: [{ selector: '.contacts__canvas', label: 'lienzo del diff' }],
+});
+
+await visit('22-contactos-movil', CONTACTOS, {
+  width: 390,
+  height: 844,
+  checks: [{ selector: '.contacts__canvas', label: 'lienzo del diff' }],
 });
 
 await browser.close();

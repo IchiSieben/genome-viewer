@@ -20,7 +20,7 @@
 import { clear, el, onResize, onThemeChange, setupCanvas, svg, token } from '../lib/dom';
 import * as fmt from '../lib/format';
 import { MODALITY_ORDER, modalityColor } from '../lib/color';
-import { emptyState, errorState, loadingState, panel, predictionNotice, provenanceStrip, tooltip } from '../lib/ui';
+import { emptyState, errorState, loadingState, panel, predictionNotice, provenanceStrip, sourceChip, tooltip } from '../lib/ui';
 import { altOf } from '../lib/signal';
 import type { DecodedBlock, DecodedTrack } from '../lib/signal';
 import { loadAnnotations, loadSignal } from '../lib/data';
@@ -902,6 +902,9 @@ export function renderTrackBrowser(
       {
         title: 'Navegador de tracks',
         subtitle: 'Senal predicha REF contra ALT a lo largo del locus',
+        // La marca de origen viaja con el panel porque esta vista no tiene
+        // titulo propio: el sello del pie queda a 900 px de scroll.
+        actions: [sourceChip(locus.provenance)],
         hint:
           'La linea gris es REF y la de color es ALT. El area sombreada entre ' +
           'las dos es la diferencia: naranja donde la variante sube la senal, ' +

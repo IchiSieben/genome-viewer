@@ -29,6 +29,60 @@ export function fixed2(value: number): string {
   return FIX2.format(value);
 }
 
+const FIX3 = new Intl.NumberFormat(ES, {
+  minimumFractionDigits: 3,
+  maximumFractionDigits: 3,
+});
+
+/**
+ * Dos decimales, salvo cuando eso convertiria un residuo en un cero redondo.
+ *
+ * El lado debil del intercambio de aceptor de DNM1 vale 0,0058: con dos
+ * decimales sale "0.01", que es justo el piso declarado del artefacto y se lee
+ * como "esto no se mostro" en vez de "esto casi desaparecio". Por debajo del
+ * piso se pasa a tres decimales.
+ */
+export function residual(value: number): string {
+  return value > 0 && value < 0.01 ? FIX3.format(value) : FIX2.format(value);
+}
+
+const FIX4 = new Intl.NumberFormat(ES, {
+  minimumFractionDigits: 4,
+  maximumFractionDigits: 4,
+});
+const SIGNED4 = new Intl.NumberFormat(ES, {
+  minimumFractionDigits: 4,
+  maximumFractionDigits: 4,
+  signDisplay: 'always',
+});
+
+/**
+ * Cuatro decimales. Para el diff de contactos, donde dos no bastan.
+ *
+ * El cambio maximo que mide V5 vale 0,0391: con dos decimales sale "0.04", que
+ * pierde justo la cifra que permite compararlo con el umbral visible. La
+ * pequenez del numero ES el resultado, asi que el numero tiene que poder
+ * escribirse entero.
+ */
+export function fixed4(value: number): string {
+  return FIX4.format(value);
+}
+
+/** Cuatro decimales con signo. Para celdas de un diff, donde el signo manda. */
+export function signed4(value: number): string {
+  return SIGNED4.format(value);
+}
+
+/** Porcentaje con un decimal. Para "el cambio es el 1,5 % del relieve". */
+export function percent1(fraction: number): string {
+  return `${FIX1.format(fraction * 100)} %`;
+}
+
+const FIX1 = new Intl.NumberFormat(ES, {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+});
+
 /** Dos decimales con signo siempre visible. Para diferencias y contribuciones. */
 export function signed2(value: number): string {
   return SIGNED2.format(value);
@@ -110,7 +164,7 @@ export function timestamp(iso: string): string {
   }).format(date) + ' UTC';
 }
 
-/** Texto de una variante tal como se muestra: `chr12:54 578 515 T>C`. */
+/** Texto de una variante tal como se muestra: `chr12:54 578 515 C>T`. */
 export function variantLabel(v: {
   chromosome: string;
   position: number;

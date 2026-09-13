@@ -2,13 +2,13 @@
  * Cascaron de la aplicacion: navegacion, enrutado y montaje de vistas.
  *
  * El enrutado va por hash. En hosting compartido una ruta profunda como
- * `/variant/chr12-54578515-T-C` devuelve 404 al recargar salvo que se agregue
+ * `/variant/chr12-54578515-C-T` devuelve 404 al recargar salvo que se agregue
  * reescritura en `.htaccess`, y la restriccion del proyecto es archivos
  * estaticos y nada mas. Con hash cada estado del visor es un enlace que se
  * puede compartir y que sobrevive a la recarga en cualquier servidor.
  */
 
-import { clear, el } from './lib/dom';
+import { clear, el, onResize } from './lib/dom';
 import * as fmt from './lib/format';
 import {
   DataError,
@@ -18,15 +18,27 @@ import {
   loadAnnotations,
   loadLocus,
   loadSaturation,
+  loadContacts,
+  loadSplice,
   loadStudy,
   loadTracks,
 } from './lib/data';
-import { emptyState, errorState, loadingState, panel } from './lib/ui';
-import { renderVariantCard } from './views/variantCard';
+import {
+  emptyState,
+  errorState,
+  loadingState,
+  panel,
+  provenanceStrip,
+  rsidChip,
+  sourceChip,
+} from './lib/ui';
+import { aviGauge, renderVariantCard } from './views/variantCard';
 import { renderTissueHeatmap } from './views/tissueHeatmap';
 import { renderStudy } from './views/study';
 import { renderTrackBrowser } from './views/trackBrowser';
 import { renderSaturationMap } from './views/saturationMap';
+import { renderContactDiff } from './views/contactDiff';
+import { renderSpliceSashimi } from './views/spliceSashimi';
 import { maybeStartTour } from './tour';
 import type { IndexDoc, LocusDoc } from './lib/types';
 
@@ -88,7 +100,140 @@ function replaceHash(hash: string): void {
 // Paginas
 // --------------------------------------------------------------------------
 
-function renderHome(main: HTMLElement, index: IndexDoc): void {
+/**
+ * El bloque de portada con una variante real ya cargada.
+ *
+ * El puntero lo trae `index.featured`, que el pipeline DERIVA de los propios
+ * `locus.json` emitidos. La portada no elige la variante ni la lleva escrita: si
+ * los datos congelados cambian, el heroe cambia con ellos, y si no hay ninguna
+ * variante con mapa de saturacion el indice sale sin `featured` y esta funcion
+ * devuelve `null` — la portada entonces es la de siempre, sin heroe, que es lo
+ * que corresponde cuando no hay nada que ensenar.
+ *
+ * Los dos enlaces se construyen y quedan pulsables ANTES de que la ficha
+ * cargue. Son la parte que el encargo pide ("acceso directo al mapa de
+ * saturacion") y no tienen por que esperar a una descarga que puede fallar.
+ *
+ * Devuelve su propia limpieza: el medidor se redibuja al cambiar el ancho
+ * porque `.gauge` no lleva `height: auto` y escalarlo por CSS lo aplastaria.
+ */
+function featuredHero(index: IndexDoc): { node: HTMLElement; stop: () => void } | null {
+  const featured = index.featured;
+  if (!featured) return null;
+
+  const variantRoute = `variant/${featured.locus}/${featured.variant}`;
+  const slot = el(
+    'div',
+    { class: 'hero__slot' },
+    el('p', { class: 'hero__waiting', text: 'Cargando la variante...' }),
+  );
+
+  const node = el(
+    'section',
+    { class: 'hero__featured' },
+    el('p', { class: 'hero__kicker', text: 'Una variante real, ya cargada' }),
+    slot,
+    // Una linea que es cierta con cualquier score. La lectura del numero la da
+    // el propio medidor, derivada del cuantil; repetirla aqui a mano seria la
+    // forma mas facil de que la portada envejezca diciendo algo falso.
+    el('p', {
+      class: 'hero__note',
+      text:
+        'El score situa a la variante entre todas las del genoma. Es una ' +
+        'prediccion de efecto regulatorio, no un diagnostico.',
+    }),
+    el(
+      'div',
+      { class: 'hero__actions' },
+      el(
+        'a',
+        { class: 'button', href: href(variantRoute) },
+        'Ver la ficha completa',
+      ),
+      featured.saturation
+        ? el(
+            'a',
+            {
+              class: 'button button--quiet',
+              href: href(`${variantRoute}?view=saturation`),
+            },
+            'Mapa de saturacion',
+          )
+        : null,
+    ),
+  );
+
+  let cancelled = false;
+  let stopResize: (() => void) | null = null;
+
+  void loadCard(
+    `loci/${featured.locus}/locus.json`,
+    `variants/${featured.variant}/card.json`,
+  )
+    .then((card) => {
+      if (cancelled) return;
+      const gaugeSlot = el('div', { class: 'hero__gauge' });
+      clear(slot);
+      slot.append(
+        el(
+          'div',
+          { class: 'hero__identity' },
+          el('h2', { class: 'hero__variant', text: fmt.variantLabel(card.variant) }),
+          el(
+            'p',
+            { class: 'card__meta' },
+            rsidChip(card.variant.rsid),
+            card.variant.gene
+              ? el('span', { class: 'card__chip', text: card.variant.gene })
+              : null,
+            el('span', { class: 'card__chip card__chip--quiet', text: 'GRCh38' }),
+            // Tambien aqui el sello: ninguna vista muestra un numero sin decir
+            // de donde salio.
+            sourceChip(card.provenance),
+          ),
+        ),
+        gaugeSlot,
+      );
+      const draw = (width: number) => {
+        clear(gaugeSlot);
+        gaugeSlot.append(
+          aviGauge(card, Math.min(Math.max(240, width), 520), { compact: true }),
+        );
+      };
+      draw(gaugeSlot.clientWidth || 480);
+      stopResize = onResize(gaugeSlot, draw);
+    })
+    .catch(() => {
+      if (cancelled) return;
+      clear(slot);
+      slot.append(
+        el('p', {
+          class: 'hero__waiting',
+          text: 'La ficha no cargo. Los enlaces de abajo siguen sirviendo.',
+        }),
+      );
+    });
+
+  return {
+    node,
+    stop: () => {
+      cancelled = true;
+      stopResize?.();
+    },
+  };
+}
+
+/**
+ * Portada.
+ *
+ * Lo primero que se ve tiene que decir que es esto y por que importa sin que
+ * haya que desplazarse: titulo, una frase que nombra AlphaGenome y el Atlas, y
+ * una variante real con su medidor. El catalogo, que antes ocupaba ese sitio,
+ * baja: un listado de loci no le dice nada a quien llega de fuera.
+ *
+ * Devuelve limpieza cuando hay heroe, porque su medidor observa el ancho.
+ */
+function renderHome(main: HTMLElement, index: IndexDoc): (() => void) | undefined {
   const loci = el(
     'ul',
     { class: 'catalog' },
@@ -138,18 +283,25 @@ function renderHome(main: HTMLElement, index: IndexDoc): void {
       )
     : emptyState('Todavia no hay estudios publicados.');
 
+  const hero = featuredHero(index);
+
   main.append(
     el(
       'div',
       { class: 'hero' },
-      el('h1', { class: 'hero__title', text: 'Visor de predicciones de AlphaGenome' }),
+      el('h1', {
+        class: 'hero__title',
+        text: 'Que le hace una variante al genoma, predicho',
+      }),
       el('p', {
         class: 'hero__lead',
         text:
-          'Efectos de variante predichos por AlphaGenome, en el navegador y sin ' +
-          'servidor. Los datos se congelan en un pipeline local y esta pagina ' +
-          'solo lee archivos: nunca llama a la API.',
+          'AlphaGenome es el modelo de DeepMind que predice como una variante ' +
+          'cambia la lectura del ADN, y el Atlas de Variantes es su catalogo de ' +
+          'esas predicciones ya calculadas; este visor las lee congeladas en ' +
+          'archivos estaticos y nunca llama a la API.',
       }),
+      ...(hero ? [hero.node] : [el('p', { class: 'card__meta' }, sourceChip(index.provenance))]),
     ),
     panel(
       {
@@ -165,7 +317,12 @@ function renderHome(main: HTMLElement, index: IndexDoc): void {
       },
       studies,
     ),
+    // La portada era la unica vista sin sello. Un catalogo tambien es un
+    // artefacto: declara su version de esquema, su fecha y su origen.
+    ...(index.provenance ? [provenanceStrip(index.provenance)] : []),
   );
+
+  return hero ? hero.stop : undefined;
 }
 
 function statusLabel(status: string): string {
@@ -239,12 +396,14 @@ function renderLocus(main: HTMLElement, locus: LocusDoc): void {
         ...(locus.genes ?? []).map((gene) =>
           el('span', { class: 'card__chip', text: gene }),
         ),
+        sourceChip(locus.provenance),
       ),
     ),
     panel(
       { title: 'Variantes', subtitle: 'Elige una para ver su ficha y su mapa de calor' },
       el('ul', { class: 'catalog' }, ...rows),
     ),
+    provenanceStrip(locus.provenance),
   );
 
   const first = locus.variants[0];
@@ -302,6 +461,8 @@ async function renderVariant(
     tabFor('tracks', 'Tejido x modalidad'),
     tabFor('signal', 'Pistas de senal'),
     ...(record.artifacts.saturation ? [tabFor('saturation', 'Mapa de saturacion')] : []),
+    ...(record.artifacts.splice ? [tabFor('splice', 'Splicing (sashimi)')] : []),
+    ...(record.artifacts.contact ? [tabFor('contact', 'Contactos 3D')] : []),
     el(
       'a',
       { class: 'tabs__back', href: href(`locus/${locusId}`) },
@@ -358,6 +519,26 @@ async function renderVariant(
     cleanup = renderSaturationMap(slot, doc, locus, notes, (variantId) => {
       window.location.hash = `/variant/${locusId}/${variantId}?view=card`;
     });
+  } else if (view === 'splice') {
+    const path = record.artifacts.splice;
+    if (!path) {
+      slot.append(emptyState('Esta variante no tiene sashimi de splicing congelado.'));
+      return;
+    }
+    slot.append(loadingState('el sashimi de splicing'));
+    const doc = await loadSplice(entry.path, path);
+    clear(slot);
+    cleanup = renderSpliceSashimi(slot, doc);
+  } else if (view === 'contact') {
+    const path = record.artifacts.contact;
+    if (!path) {
+      slot.append(emptyState('Esta variante no tiene diff de contactos congelado.'));
+      return;
+    }
+    slot.append(loadingState('el diff de contactos 3D'));
+    const doc = await loadContacts(entry.path, path);
+    clear(slot);
+    cleanup = renderContactDiff(slot, doc);
   } else if (view === 'tracks') {
     const path = record.artifacts.tracks;
     if (!path) {
@@ -393,6 +574,7 @@ function renderAbout(main: HTMLElement, index: IndexDoc): void {
       'div',
       { class: 'card__identity' },
       el('h1', { class: 'card__title', text: 'Sobre estos datos' }),
+      el('p', { class: 'card__meta' }, sourceChip(index.provenance)),
     ),
     panel(
       { title: 'Como se produjo esto' },
@@ -502,9 +684,21 @@ function warmUp(current: Route): void {
   if (!variantId || current.name !== 'variant') return;
   const view = current.query.get('view') ?? 'card';
   const file =
-    view === 'tracks' ? 'tracks.json' : view === 'saturation' ? 'saturation.json' : 'card.json';
+    view === 'tracks'
+      ? 'tracks.json'
+      : view === 'saturation'
+        ? 'saturation.json'
+        : view === 'splice'
+          ? 'splice.json'
+          : view === 'contact'
+            ? 'contacts.json'
+            : 'card.json';
   if (view === 'saturation') {
     loadSaturation(locusPath, `variants/${variantId}/${file}`).catch(() => {});
+  } else if (view === 'splice') {
+    loadSplice(locusPath, `variants/${variantId}/${file}`).catch(() => {});
+  } else if (view === 'contact') {
+    loadContacts(locusPath, `variants/${variantId}/${file}`).catch(() => {});
   } else if (view === 'card' || view === 'tracks') {
     // `loadCard`/`loadTracks` resuelven la ruta relativa al locus, igual que
     // hara el render; la clave de cache coincide exactamente.
@@ -532,7 +726,7 @@ async function route(): Promise<void> {
 
     switch (current.name) {
       case 'home':
-        renderHome(main, indexDoc);
+        cleanup = renderHome(main, indexDoc) ?? null;
         break;
       case 'about':
         renderAbout(main, indexDoc);

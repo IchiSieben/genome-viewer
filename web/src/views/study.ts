@@ -13,7 +13,7 @@
 
 import { el } from '../lib/dom';
 import * as fmt from '../lib/format';
-import { panel, emptyState, provenanceStrip, predictionNotice } from '../lib/ui';
+import { panel, emptyState, provenanceStrip, predictionNotice, sourceChip } from '../lib/ui';
 import type { StudyDoc } from '../lib/types';
 
 const STATUS_LABEL: Record<string, string> = {
@@ -175,6 +175,7 @@ export function renderStudy(container: HTMLElement, study: StudyDoc): () => void
     'div',
     { class: 'card__identity' },
     el('h1', { class: 'card__title', text: study.label }),
+    el('p', { class: 'card__meta' }, sourceChip(study.provenance)),
     study.summary ? el('p', { class: 'card__lead', text: study.summary }) : null,
   );
 

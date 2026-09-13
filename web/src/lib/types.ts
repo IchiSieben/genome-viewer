@@ -60,6 +60,18 @@ export interface IndexDoc {
   schemaVersion: string;
   generated: string;
   provenance?: Provenance;
+  /**
+   * Variante que la portada muestra ya cargada.
+   *
+   * La deriva el pipeline de los `locus.json` emitidos, no un config, asi que
+   * no puede quedar apuntando a un artefacto borrado. Opcional porque un
+   * `data/dist/` sin variantes con saturacion no tiene portada que sembrar.
+   */
+  featured?: {
+    locus: string;
+    variant: string;
+    saturation?: boolean;
+  };
   loci: Array<{
     id: string;
     label: string;
@@ -252,4 +264,107 @@ export interface SaturationDoc {
   raw?: Array<Array<number | null>>;
   maxPhred?: number | null;
   coverage?: number | null;
+}
+
+export interface SpliceJunction {
+  /** 0-based, como genome.Interval. Donante o aceptor segun la hebra. */
+  start: number;
+  end: number;
+  strand: '+' | '-';
+  /** Valor predicho antes de la variante. Split-read count del modelo. */
+  ref: number;
+  /** Valor predicho despues de la variante, misma unidad que `ref`. */
+  alt: number;
+}
+
+/**
+ * V5 — Diff de mapa de contacto, ALT menos REF, sobre un biosample declarado.
+ *
+ * AVISO SOBRE LAS UNIDADES: los valores NO son probabilidades, pese a lo que
+ * dice el docstring del SDK. El 79 % de los de REF son negativos: el mapa ya
+ * viene en espacio logaritmico y con el decaimiento por distancia retirado.
+ * Por eso `delta` es una RESTA y ya es un log-cociente: no hay division, no
+ * hace falta pseudoconteo y no hay que normalizar por distancia.
+ */
+export interface ContactsDoc {
+  schemaVersion: string;
+  variant: Variant;
+  provenance: Provenance;
+  biosample: { name: string; ontologyCurie: string };
+  /**
+   * 'no_data' = no hubo mapa. NO es lo mismo que un diff cerca de cero, que
+   * es 'ok' con `maxAbsDelta` pequeno: eso no es un dato que falta, es la
+   * medicion de que la estructura no se movio.
+   */
+  status: 'ok' | 'no_data';
+  finding?: string;
+  /** Ventana recortada que se dibuja. */
+  interval?: Interval;
+  /** Ventana de 1 Mb sobre la que se predijo; es donde se midio el maximo. */
+  predictedInterval?: Interval;
+  resolution?: number;
+  bins?: number;
+  /** Bin de la variante dentro del recorte: su fila es la cruz del AVI. */
+  variantBin?: number;
+  /**
+   * Dominio ABSOLUTO del color. La vista lo usa tal cual y jamas lo recalcula
+   * desde los datos: si el dominio cambiara con los datos seria autoescalado,
+   * que es exactamente la forma de pintar un patron dramatico a partir de
+   * ruido sin que ningun test falle.
+   */
+  domain?: number;
+  visibleThreshold?: number;
+  maxAbsDelta?: number;
+  maxAbsDeltaAt?: {
+    /** OJO: en coordenadas de la matriz COMPLETA, no del recorte dibujado. */
+    fullBin: number;
+    /**
+     * Si el maximo cae dentro de lo que la vista dibuja. Puede no caer: el
+     * maximo se mide sobre el megabase entero. Sin esta bandera la vista
+     * diria "ese maximo toca la cruz" y el lector recorreria la fila
+     * resaltada sin encontrarlo nunca.
+     */
+    insideDrawnWindow: boolean;
+    involvesVariantBin: boolean;
+    separationBp: number;
+    ref: number;
+    alt: number;
+  };
+  /** Reconstruccion local de lo que mide ContactMapScorer del AVI. */
+  variantRowMeanAbsDelta?: number;
+  /** Relieve que la estructura YA tiene, contra el que se lee el diff. */
+  referenceRange?: { min: number; max: number; p1: number; p99: number };
+  scales?: { reference: number; delta: number };
+  /** Triangulo superior por filas, diagonal incluida, en enteros. */
+  reference?: number[];
+  delta?: number[];
+}
+
+export interface SpliceDoc {
+  schemaVersion: string;
+  variant: Variant;
+  provenance: Provenance;
+  /** El biosample que se pidio explicitamente, no uno generico. */
+  biosample: { name: string; ontologyCurie: string };
+  /** Ventana mostrada; NO la de 1 Mb que se le da al modelo. */
+  interval: Interval;
+  /**
+   * 'no_data' = modalidad silenciosa: el Atlas devolvio CERO uniones en TODO
+   * el locus para este biosample (no solo en esta ventana). Distinto de una
+   * ventana vacia tras el piso de magnitud, que es 'ok' con `junctions: []`.
+   */
+  status: 'ok' | 'no_data';
+  /**
+   * Hallazgo redactado a mano sobre este artefacto, sin cifras dentro.
+   *
+   * Las cifras las pinta la vista desde `junctions`: prosa congelada con
+   * numeros dentro es prosa que miente en cuanto el artefacto se regenere.
+   */
+  finding?: string;
+  /** Piso de magnitud aplicado: solo entran uniones con ref o alt >= esto. */
+  minValueShown: number;
+  /** Uniones en la ventana ANTES del piso. Si es 0 con status 'ok', la
+   * ventana esta vacia de verdad, no es que falten datos. */
+  totalJunctionsInWindow: number;
+  junctions: SpliceJunction[];
 }

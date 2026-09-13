@@ -50,21 +50,91 @@ async function timeToInteractive(label, hash, selector, throttle) {
   await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => r(null))));
   const ms = Date.now() - started;
 
-  const transferred = await page.evaluate(() =>
-    performance
-      .getEntriesByType('resource')
-      .reduce((sum, e) => sum + (e.transferSize || e.encodedBodySize || 0), 0),
-  );
+  const timing = await page.evaluate(() => {
+    const nav = performance.getEntriesByType('navigation')[0];
+    const rows = performance.getEntriesByType('resource').map((e) => ({
+      name: e.name.split('/alphagenome/').pop(),
+      start: Math.round(e.startTime),
+      end: Math.round(e.responseEnd),
+      bytes: e.transferSize || e.encodedBodySize || 0,
+      initiator: e.initiatorType,
+    }));
+    return {
+      documentEnd: nav ? Math.round(nav.responseEnd) : 0,
+      rows: rows.sort((a, b) => a.start - b.start),
+    };
+  });
 
+  const transferred = timing.rows.reduce((sum, r) => sum + r.bytes, 0);
   await context.close();
-  return { ms, transferredBytes: transferred };
+  return {
+    ms,
+    transferredBytes: transferred,
+    documentEndMs: timing.documentEnd,
+    requests: timing.rows,
+    waves: waves(timing),
+  };
 }
 
+/**
+ * Profundidad de cadena: cuantos viajes de red hay EN SERIE antes de pintar.
+ *
+ * Es el numero que manda con 400 ms de latencia, y NO se puede leer del codigo
+ * con confianza: hay que medirlo. Una peticion abre oleada nueva si arranca
+ * DESPUES de que acabara la ultima de la oleada anterior; si arranca antes, iba
+ * en paralelo y no cuesta un viaje extra. El umbral de 120 ms absorbe el jitter
+ * del emulador sin llegar a fundir dos oleadas separadas por 400 ms de latencia.
+ *
+ * El documento HTML cuenta como primera oleada: tambien es un viaje.
+ */
+function waves(timing) {
+  const TOLERANCE_MS = 120;
+  const groups = [];
+  let frontier = timing.documentEnd;
+  let current = null;
+  for (const row of timing.rows) {
+    if (!current || row.start > frontier + TOLERANCE_MS) {
+      if (current) frontier = current.end;
+      current = { end: row.end, names: [row.name] };
+      groups.push(current);
+    } else {
+      current.names.push(row.name);
+      current.end = Math.max(current.end, row.end);
+    }
+  }
+  return {
+    depth: groups.length + 1,
+    detail: [
+      { names: ['index.html'], endMs: timing.documentEnd },
+      ...groups.map((g) => ({ names: g.names, endMs: g.end })),
+    ],
+  };
+}
+
+// La portada se mide DOS VECES a proposito, con dos selectores que no son la
+// misma cosa.
+//
+// `.catalog__item` es el selector con el que se midio la portada antes del
+// heroe, cuando el catalogo era lo primero de la pagina. Se conserva para que
+// el antes/despues sea comparable, pero ojo: ahora el catalogo esta DEBAJO del
+// heroe, asi que ese numero ya no mide "cuando el visitante ve algo", mide
+// "cuando termina de montarse el listado". Son dos preguntas distintas.
+//
+// `.hero__featured .gauge` es lo que de verdad importa desde el encargo de la
+// portada: el momento en que hay una variante real dibujada arriba del todo.
+// Ese elemento espera a `card.json`, que el catalogo no espera, asi que es el
+// numero honesto para el heroe y va a salir mas alto. Los dos se reportan.
 report.runs.homeFast = await timeToInteractive('portada', '', '.catalog__item', null);
+report.runs.homeHeroFast = await timeToInteractive(
+  'portada heroe', '', '.hero__featured .gauge', null,
+);
 report.runs.cardFast = await timeToInteractive('ficha', `${VARIANT}?view=card`, '.waterfall__bar', null);
 report.runs.browserFast = await timeToInteractive('navegador', `${VARIANT}?view=signal`, '.browser__canvas', null);
 
 report.runs.homeSlow3G = await timeToInteractive('portada 3G', '', '.catalog__item', SLOW_3G);
+report.runs.homeHeroSlow3G = await timeToInteractive(
+  'portada heroe 3G', '', '.hero__featured .gauge', SLOW_3G,
+);
 report.runs.cardSlow3G = await timeToInteractive('ficha 3G', `${VARIANT}?view=card`, '.waterfall__bar', SLOW_3G);
 report.runs.browserSlow3G = await timeToInteractive('navegador 3G', `${VARIANT}?view=signal`, '.browser__canvas', SLOW_3G);
 
@@ -138,12 +208,30 @@ mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, JSON.stringify(report, null, 2) + '\n');
 
 const row = (k, r) =>
-  `  ${k.padEnd(16)}${String(r.ms).padStart(6)} ms   ${(r.transferredBytes / 1024).toFixed(0).padStart(6)} KiB`;
+  `  ${k.padEnd(16)}${String(r.ms).padStart(6)} ms   ` +
+  `${(r.transferredBytes / 1024).toFixed(0).padStart(6)} KiB   ` +
+  `${String(r.waves.depth).padStart(5)} saltos`;
 console.log('\nTiempo hasta interactivo');
-console.log('  vista            tiempo      transferido');
-for (const k of ['homeFast', 'cardFast', 'browserFast']) console.log(row(k, report.runs[k]));
+console.log('  vista            tiempo      transferido   en serie');
+for (const k of ['homeFast', 'homeHeroFast', 'cardFast', 'browserFast'])
+  console.log(row(k, report.runs[k]));
 console.log('  --- red estrangulada a 3G lento (400 kbps, 400 ms de latencia) ---');
-for (const k of ['homeSlow3G', 'cardSlow3G', 'browserSlow3G']) console.log(row(k, report.runs[k]));
+for (const k of ['homeSlow3G', 'homeHeroSlow3G', 'cardSlow3G', 'browserSlow3G'])
+  console.log(row(k, report.runs[k]));
+
+// El desglose de la cadena es lo que permite ver QUE viaje sobra. Sin esto el
+// numero de saltos es una cifra sin agarre.
+console.log('\nCadena en 3G lento: oleadas EN SERIE, con lo que trae cada una');
+for (const k of ['homeSlow3G', 'homeHeroSlow3G', 'cardSlow3G', 'browserSlow3G']) {
+  console.log(`  ${k}`);
+  for (const [n, w] of report.runs[k].waves.detail.entries()) {
+    const names =
+      w.names.length > 4
+        ? `${w.names.slice(0, 4).join(', ')} +${w.names.length - 4} mas`
+        : w.names.join(', ');
+    console.log(`    ${n + 1}. hasta ${String(w.endMs).padStart(5)} ms   ${names}`);
+  }
+}
 
 const i = report.runs.interaction;
 console.log('\nInteraccion');

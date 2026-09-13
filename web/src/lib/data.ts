@@ -14,6 +14,8 @@ import type {
   IndexDoc,
   LocusDoc,
   SaturationDoc,
+  ContactsDoc,
+  SpliceDoc,
   StudyDoc,
   TracksDoc,
 } from './types';
@@ -103,8 +105,48 @@ async function fetchJson<T extends { schemaVersion: string }>(url: string): Prom
   return promise;
 }
 
+/**
+ * Lee el catalogo incrustado en el HTML, si esta.
+ *
+ * El build lo mete en `<script type="application/json" id="agp-index">`
+ * (scripts/inline-index.mjs) para ahorrar un viaje de red. En `vite dev` ese
+ * hueco contiene `null` y esto devuelve `null`, con lo que se pide por red.
+ *
+ * Cualquier problema de forma devuelve `null` en vez de lanzar: el archivo
+ * suelto sigue existiendo y es la fuente autoritativa. Pero una version de
+ * esquema incompatible SI lanza, igual que por red — ahi el dato existe y es
+ * del contrato equivocado, que es un error de verdad y no una ausencia.
+ */
+function inlineIndex(url: string): IndexDoc | null {
+  const node = document.getElementById('agp-index');
+  if (!node?.textContent) return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(node.textContent);
+  } catch {
+    return null;
+  }
+  if (!parsed || typeof parsed !== 'object') return null;
+  const document_ = parsed as IndexDoc;
+  if (typeof document_.schemaVersion !== 'string') return null;
+  checkSchemaVersion(document_.schemaVersion, url);
+  return document_;
+}
+
 export function loadIndex(): Promise<IndexDoc> {
-  return fetchJson<IndexDoc>(`${ROOT}index.json`);
+  const url = `${ROOT}index.json`;
+  const cached = cache.get(url);
+  if (cached) return cached as Promise<IndexDoc>;
+
+  // Se guarda bajo la MISMA clave que usaria la descarga: asi nadie mas puede
+  // acabar pidiendo por red un catalogo que ya esta en la pagina.
+  const inline = inlineIndex(url);
+  if (inline) {
+    const promise = Promise.resolve(inline);
+    cache.set(url, promise);
+    return promise;
+  }
+  return fetchJson<IndexDoc>(url);
 }
 
 export function loadLocus(path: string): Promise<LocusDoc> {
@@ -131,6 +173,20 @@ export function loadSaturation(
   relative: string,
 ): Promise<SaturationDoc> {
   return fetchJson<SaturationDoc>(resolveRelative(locusPath, relative));
+}
+
+export function loadSplice(
+  locusPath: string,
+  relative: string,
+): Promise<SpliceDoc> {
+  return fetchJson<SpliceDoc>(resolveRelative(locusPath, relative));
+}
+
+export function loadContacts(
+  locusPath: string,
+  relative: string,
+): Promise<ContactsDoc> {
+  return fetchJson<ContactsDoc>(resolveRelative(locusPath, relative));
 }
 
 export function loadStudy(path: string): Promise<StudyDoc> {

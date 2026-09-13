@@ -16,7 +16,7 @@
 import { clear, el, onResize, onThemeChange, svg } from '../lib/dom';
 import * as fmt from '../lib/format';
 import { FAMILY_LABEL, FAMILY_ORDER, familyColor, modalityColor } from '../lib/color';
-import { panel, predictionNotice, provenanceStrip, tooltip } from '../lib/ui';
+import { panel, predictionNotice, provenanceStrip, rsidChip, sourceChip, tooltip } from '../lib/ui';
 import type { AviFeature, CardDoc } from '../lib/types';
 
 /**
@@ -62,8 +62,20 @@ interface WaterfallRow {
  * El PHRED sin interpretacion es un numero que nadie sabe leer, asi que la
  * escala lleva marcas con su significado: 10 = top 10 %, 20 = top 1 %,
  * 30 = top 0,1 %.
+ *
+ * Se exporta porque la portada lo reutiliza. Lo que la portada NO reutiliza es
+ * `renderVariantCard`: esa monta cuatro paneles y el aviso de prediccion, y en
+ * un heroe eso es media pantalla de cosas que nadie pidio todavia.
+ *
+ * @param compact Omite la linea de la formula. En la ficha esa linea es la
+ *   prueba de que el numero se puede rehacer a mano; en el heroe es una formula
+ *   antes de que el visitante sepa siquiera que esta mirando.
  */
-function aviGauge(card: CardDoc, width: number): HTMLElement {
+export function aviGauge(
+  card: CardDoc,
+  width: number,
+  { compact = false }: { compact?: boolean } = {},
+): HTMLElement {
   const height = 74;
   const padLeft = 4;
   const padRight = 4;
@@ -171,14 +183,16 @@ function aviGauge(card: CardDoc, width: number): HTMLElement {
     ),
     root as unknown as HTMLElement,
     el('p', { class: 'gauge-block__legend', text: fmt.PHRED_LEGEND }),
-    el(
-      'p',
-      { class: 'gauge-block__formula' },
-      'PHRED = -10 · log₁₀(1 - cuantil)',
-      card.avi.rawScore !== null && card.avi.rawScore !== undefined
-        ? `   ·   score crudo ${fmt.signed2(card.avi.rawScore)}`
-        : '',
-    ),
+    compact
+      ? null
+      : el(
+          'p',
+          { class: 'gauge-block__formula' },
+          'PHRED = -10 · log₁₀(1 - cuantil)',
+          card.avi.rawScore !== null && card.avi.rawScore !== undefined
+            ? `   ·   score crudo ${fmt.signed2(card.avi.rawScore)}`
+            : '',
+        ),
   );
 }
 
@@ -527,13 +541,12 @@ export function renderVariantCard(
     el(
       'p',
       { class: 'card__meta' },
-      card.variant.rsid
-        ? el('span', { class: 'card__chip', text: card.variant.rsid })
-        : null,
+      rsidChip(card.variant.rsid),
       card.variant.gene
         ? el('span', { class: 'card__chip', text: card.variant.gene })
         : null,
       el('span', { class: 'card__chip card__chip--quiet', text: 'GRCh38' }),
+      sourceChip(card.provenance),
     ),
   );
 

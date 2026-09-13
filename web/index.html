@@ -10,10 +10,105 @@
     />
     <meta name="color-scheme" content="light dark" />
 
-    <!-- El catalogo se pide EN PARALELO con la descarga del script, no
-         despues de ejecutarlo. Con 400 ms de latencia, cada viaje en serie que
-         se elimina vale mas que cualquier recorte de bytes. -->
-    <link rel="preload" href="data/index.json" as="fetch" crossorigin="anonymous" />
+    <!-- El catalogo completo son 978 B. Se incrusta aqui durante el build
+         (scripts/inline-index.mjs); en `vite dev` se queda en `null` y el visor
+         lo pide por red. Incrustarlo ahorra un viaje en la portada y, sobre
+         todo, deja que el script de abajo sepa cual es la variante destacada
+         sin esperar a nadie. Va ANTES del script porque un script clasico se
+         ejecuta al llegar el parser: lo que necesita leer ya tiene que
+         existir. -->
+    <script type="application/json" id="agp-index">null</script>
+
+    <!-- Especulacion de descarga, antes del bundle.
+         Medido en 3G lento: un enlace profundo a una ficha costaba TRES oleadas
+         en serie (html -> bundle -> locus.json + card.json). La tercera existia
+         solo porque nadie sabia que pedir hasta que el bundle se descargaba y
+         se ejecutaba. Pero la ruta de esos artefactos es CONTRATO, no dato, y
+         se puede calcular leyendo `location.hash`. Aqui se calcula y se emite
+         el `<link rel=preload>` mientras el bundle sigue viajando: la oleada 3
+         se funde con la 2.
+         Tres cosas que no son accidentales:
+         - Script CLASICO, no modulo: un modulo se difiere hasta despues del
+           parseo, que es justo el retraso que se quiere evitar (y Vite lo
+           empaquetaria, con lo que dejaria de ser inline).
+         - Los ids se validan contra [A-Za-z0-9_-]+ antes de construir la URL.
+           El hash lo escribe quien visita; sin eso, un `../` pediria fuera del
+           arbol de datos.
+         - `crossorigin="anonymous"` se copia del `fetch()` real. Un juego de
+           atributos distinto hace que el navegador descargue DOS veces y el
+           preload salga contraproducente.
+         Una especulacion equivocada no puede cambiar lo que se pinta: solo
+         desperdicia una peticion. Por eso todo va en try/catch. -->
+    <script id="agp-boot">
+      (function () {
+        'use strict';
+        var SAFE = /^[A-Za-z0-9_-]+$/;
+
+        function preload(path) {
+          var link = document.createElement('link');
+          link.rel = 'preload';
+          link.as = 'fetch';
+          link.crossOrigin = 'anonymous';
+          link.href = path;
+          document.head.appendChild(link);
+        }
+
+        // Que archivo va a pedir cada vista. Es contrato, no dato.
+        // `signal` no tiene JSON propio: sus bloques .bin salen de locus.json,
+        // asi que ahi no hay nada mas que adelantar por convencion.
+        function artifactOf(view) {
+          if (view === 'tracks') return 'tracks.json';
+          if (view === 'saturation') return 'saturation.json';
+          if (view === 'splice') return 'splice.json';
+          if (view === 'signal') return null;
+          return 'card.json';
+        }
+
+        try {
+          var raw = String(location.hash || '').replace(/^#\/?/, '');
+          var half = raw.split('?');
+          var parts = half[0].split('/').filter(Boolean);
+          var query = new URLSearchParams(half[1] || '');
+
+          if (!parts.length || parts[0] === 'about') {
+            // Portada: el catalogo ya viene incrustado. Lo unico que se puede
+            // adelantar es la variante destacada, y el propio indice dice cual
+            // es, para que cambiarla no obligue a tocar este script.
+            // Solo `card.json`: la portada NO pide el `locus.json` de ese locus.
+            // `loadCard(locusPath, relativa)` usa la primera ruta unicamente
+            // para resolver el directorio, no la descarga. Adelantarlo costaba
+            // 4,8 kB de ruta critica en 3G lento a cambio de nada.
+            var node = document.getElementById('agp-index');
+            var seed = node ? JSON.parse(node.textContent) : null;
+            var featured = seed && seed.featured;
+            if (!featured || !SAFE.test(featured.locus) || !SAFE.test(featured.variant)) return;
+            preload(
+              'data/loci/' + featured.locus + '/variants/' + featured.variant + '/card.json'
+            );
+            return;
+          }
+
+          if (parts[0] === 'study') {
+            if (SAFE.test(parts[1] || '')) preload('data/studies/' + parts[1] + '/manifest.json');
+            return;
+          }
+
+          if (parts[0] !== 'locus' && parts[0] !== 'variant') return;
+          var locus = parts[1];
+          if (!SAFE.test(locus || '')) return;
+          preload('data/loci/' + locus + '/locus.json');
+
+          if (parts[0] !== 'variant') return;
+          var variant = parts[2];
+          if (!SAFE.test(variant || '')) return;
+          var file = artifactOf(query.get('view') || 'card');
+          if (file) preload('data/loci/' + locus + '/variants/' + variant + '/' + file);
+        } catch (error) {
+          // Sin preloads el visor funciona igual, solo con un viaje mas. Un
+          // fallo aqui no puede romper la pagina.
+        }
+      })();
+    </script>
   </head>
   <body>
     <a class="skip-link" href="#main">Saltar al contenido</a>

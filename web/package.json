@@ -7,7 +7,7 @@
   "scripts": {
     "sync": "node scripts/sync-data.mjs",
     "dev": "npm run sync && vite",
-    "build": "npm run sync && tsc --noEmit && vite build && node scripts/inline-css.mjs",
+    "build": "npm run sync && tsc --noEmit && vite build && node scripts/inline-css.mjs && node scripts/inline-index.mjs",
     "preview": "vite preview",
     "check": "tsc --noEmit",
     "verify": "node scripts/serve-subfolder.mjs --run \"node scripts/verify.mjs\"",

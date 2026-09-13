@@ -198,13 +198,82 @@ export function errorState(title: string, detail?: string, retry?: () => void): 
  * que leerse en pantalla, no solo en el JSON. Es la diferencia entre una demo
  * honesta y una figura que engana.
  */
+/** Los unicos origenes que cuentan como "de la API". Espejo de `contract.API_SOURCES`. */
+const API_SOURCES = new Set(['atlas-api', 'model-api']);
+
+/** Etiqueta corta del origen, la que se lee sin detenerse a leer. */
+export function sourceLabel(source: string): string {
+  switch (source) {
+    case 'atlas-api':
+      return 'Atlas API';
+    case 'model-api':
+      return 'Model API';
+    case 'synthetic':
+      return 'Datos sinteticos';
+    default:
+      // Un origen que no conocemos no se traduce a algo tranquilizador.
+      return `Origen no declarado: ${source}`;
+  }
+}
+
+/**
+ * Marca de origen, arriba y en cada vista.
+ *
+ * `provenanceStrip` ya existia, pero vive al PIE de la vista: hay que
+ * desplazarse hasta el final para saber de donde salieron los numeros que se
+ * estan mirando. Esta marca va junto al titulo, donde no se puede no verla.
+ *
+ * Lo que esta marca NO puede hacer, y conviene decirlo para no confiarse: no
+ * habria cazado el fallo de la sesion 2. Los bloques `.bin` de senal no llevan
+ * sello propio, asi que un bloque viejo en el sitio equivocado se dibuja bajo el
+ * sello del locus correcto. Contra eso sirven el test de `.bin` huerfanos y la
+ * compuerta de proveniencia del build, no la interfaz. La interfaz sirve para el
+ * caso mas comun: que alguien mire una figura y sepa, sin preguntar, si es una
+ * prediccion o una fixture.
+ */
+export function sourceChip(provenance: Provenance | undefined | null): HTMLElement {
+  const source = provenance?.source ?? '';
+  const trusted = API_SOURCES.has(source);
+  return el(
+    'span',
+    {
+      class: trusted ? 'source-chip' : 'source-chip source-chip--warn',
+      title: trusted
+        ? `Prediccion congelada desde ${sourceLabel(source)}. ` +
+          `Calibracion ${provenance?.calibrationEpoch ?? 'sin declarar'}.`
+        : 'Este artefacto NO viene de la API de AlphaGenome. No son predicciones.',
+    },
+    el('span', { class: 'source-chip__dot', 'aria-hidden': 'true' }),
+    el('span', {
+      class: 'source-chip__text',
+      text: provenance ? sourceLabel(source) : 'Sin sello de origen',
+    }),
+  );
+}
+
+/**
+ * Chip de rsid, o su ausencia declarada.
+ *
+ * dbSNP no tiene entrada para la gran mayoria de los SNVs que el Atlas puede
+ * puntuar -es justo el punto del Atlas-, asi que "sin rsid" no es un hueco en
+ * los datos, es informacion: nadie la ha catalogado todavia. Ocultarlo cuando
+ * falta perderia el argumento; por eso se muestra siempre, con o sin valor.
+ */
+export function rsidChip(rsid: string | null | undefined): HTMLElement {
+  return rsid
+    ? el('span', { class: 'card__chip', text: rsid })
+    : el('span', {
+        class: 'card__chip card__chip--quiet',
+        text: 'sin rsid catalogado',
+        title: 'dbSNP no tiene entrada en esta posicion. El Atlas puntua cualquier variante, catalogada o no.',
+      });
+}
+
 export function provenanceStrip(provenance: Provenance): HTMLElement {
-  const synthetic = provenance.source === 'synthetic';
-  const label = synthetic
-    ? 'Datos sinteticos de desarrollo'
-    : provenance.source === 'atlas-api'
-      ? 'Atlas API'
-      : 'Model API';
+  // `synthetic` no es el unico origen que no vale: cualquiera que no este en
+  // API_SOURCES tiene que verse como aviso, incluido uno que no conozcamos.
+  const synthetic = !API_SOURCES.has(provenance.source);
+  const label = sourceLabel(provenance.source);
 
   return el(
     'div',

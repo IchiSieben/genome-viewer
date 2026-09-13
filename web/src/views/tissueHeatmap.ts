@@ -14,7 +14,7 @@
 import { clear, el, onResize, onThemeChange, svg } from '../lib/dom';
 import * as fmt from '../lib/format';
 import { divergingScale, modalityColor } from '../lib/color';
-import { panel, predictionNotice, provenanceStrip, tooltip } from '../lib/ui';
+import { panel, predictionNotice, provenanceStrip, rsidChip, sourceChip, tooltip } from '../lib/ui';
 import type { TracksDoc } from '../lib/types';
 
 const ROW_HEIGHT = 17;
@@ -376,11 +376,12 @@ export function renderTissueHeatmap(
       el(
         'p',
         { class: 'card__meta' },
-        doc.variant.rsid ? el('span', { class: 'card__chip', text: doc.variant.rsid }) : null,
+        rsidChip(doc.variant.rsid),
         el('span', {
           class: 'card__chip card__chip--quiet',
           text: `${doc.biosamples.length} biosamples · ${doc.modalities.length} modalidades`,
         }),
+        sourceChip(doc.provenance),
       ),
     ),
     provenanceStrip(doc.provenance),

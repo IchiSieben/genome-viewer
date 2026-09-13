@@ -78,8 +78,34 @@ const STEPS: Step[] = [
 
 let active = false;
 
+/**
+ * Los pasos que existen en esta pagina, en el ORDEN EN QUE ESTAN EN EL DOM.
+ *
+ * El orden de `STEPS` es el de la narracion, no el de la pagina, y las dos
+ * cosas coincidian por casualidad mientras cada vista tenia sus anclas y nada
+ * mas. La portada las mezclo: ahora lleva un `.gauge-block` en el heroe, arriba
+ * del todo, que en la lista va DESPUES de `.catalog` y de `.provenance`. Seguir
+ * la lista tal cual haria que el recorrido bajara al catalogo, bajara al sello
+ * y luego subiera de golpe al principio.
+ *
+ * Ordenar por posicion real cuesta una comparacion y no hay que acordarse de
+ * nada al agregar un paso. Los pasos sin ancla se quedan al frente: son la
+ * introduccion, y una introduccion no tiene sitio en la pagina al que saltar.
+ */
 function stepsFor(): Step[] {
-  return STEPS.filter((step) => !step.target || document.querySelector(step.target));
+  const found = STEPS.map((step) => ({
+    step,
+    node: step.target ? document.querySelector(step.target) : null,
+  })).filter((entry) => !entry.step.target || entry.node);
+
+  const intro = found.filter((entry) => !entry.node).map((entry) => entry.step);
+  const anchored = found.filter((entry) => entry.node);
+  anchored.sort((a, b) =>
+    a.node!.compareDocumentPosition(b.node!) & Node.DOCUMENT_POSITION_FOLLOWING
+      ? -1
+      : 1,
+  );
+  return [...intro, ...anchored.map((entry) => entry.step)];
 }
 
 /** Lanza el recorrido. Publico para el boton "Como se usa". */

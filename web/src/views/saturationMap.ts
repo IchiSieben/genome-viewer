@@ -25,7 +25,7 @@
 import { clear, el, onResize, onThemeChange, setupCanvas, svg, token } from '../lib/dom';
 import * as fmt from '../lib/format';
 import { nucleotideColor, sequentialScale } from '../lib/color';
-import { panel, predictionNotice, provenanceStrip, tooltip } from '../lib/ui';
+import { panel, predictionNotice, provenanceStrip, sourceChip, tooltip } from '../lib/ui';
 import type { AnnotationsDoc, LocusDoc, SaturationDoc } from '../lib/types';
 
 const ROW_HEIGHT = 26;
@@ -444,6 +444,7 @@ export function renderSaturationMap(
       {
         title: 'Mapa de saturacion',
         subtitle: 'El AVI de las tres bases alternativas en cada posicion',
+        actions: [sourceChip(doc.provenance)],
         hint:
           'Cada columna es una posicion y cada fila una base alternativa. Cuanto ' +
           'mas oscura la celda, mas alto el AVI. Una columna oscura entera ' +
