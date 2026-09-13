@@ -1,40 +1,376 @@
 {
-  "measuredAt": "2026-09-11T12:29:51.736Z",
+  "measuredAt": "2026-09-12T20:42:45.247Z",
   "runs": {
     "homeFast": {
-      "ms": 120,
-      "transferredBytes": 19113
+      "ms": 145,
+      "transferredBytes": 24622,
+      "documentEndMs": 17,
+      "requests": [
+        {
+          "name": "assets/index-zLPhh567.js",
+          "start": 21,
+          "end": 35,
+          "bytes": 22625,
+          "initiator": "script"
+        },
+        {
+          "name": "data/loci/apoa1/variants/chr11-116837649-T-G/card.json",
+          "start": 25,
+          "end": 34,
+          "bytes": 1997,
+          "initiator": "link"
+        }
+      ],
+      "waves": {
+        "depth": 2,
+        "detail": [
+          {
+            "names": [
+              "index.html"
+            ],
+            "endMs": 17
+          },
+          {
+            "names": [
+              "assets/index-zLPhh567.js",
+              "data/loci/apoa1/variants/chr11-116837649-T-G/card.json"
+            ],
+            "endMs": 35
+          }
+        ]
+      }
+    },
+    "homeHeroFast": {
+      "ms": 123,
+      "transferredBytes": 24622,
+      "documentEndMs": 8,
+      "requests": [
+        {
+          "name": "assets/index-zLPhh567.js",
+          "start": 11,
+          "end": 25,
+          "bytes": 22625,
+          "initiator": "script"
+        },
+        {
+          "name": "data/loci/apoa1/variants/chr11-116837649-T-G/card.json",
+          "start": 15,
+          "end": 28,
+          "bytes": 1997,
+          "initiator": "link"
+        }
+      ],
+      "waves": {
+        "depth": 2,
+        "detail": [
+          {
+            "names": [
+              "index.html"
+            ],
+            "endMs": 8
+          },
+          {
+            "names": [
+              "assets/index-zLPhh567.js",
+              "data/loci/apoa1/variants/chr11-116837649-T-G/card.json"
+            ],
+            "endMs": 28
+          }
+        ]
+      }
     },
     "cardFast": {
-      "ms": 154,
-      "transferredBytes": 22224
+      "ms": 139,
+      "transferredBytes": 25812,
+      "documentEndMs": 9,
+      "requests": [
+        {
+          "name": "assets/index-zLPhh567.js",
+          "start": 13,
+          "end": 28,
+          "bytes": 22625,
+          "initiator": "script"
+        },
+        {
+          "name": "data/loci/ppp1r1a-pde1b/locus.json",
+          "start": 16,
+          "end": 31,
+          "bytes": 1266,
+          "initiator": "link"
+        },
+        {
+          "name": "data/loci/ppp1r1a-pde1b/variants/chr12-54578515-C-T/card.json",
+          "start": 17,
+          "end": 32,
+          "bytes": 1921,
+          "initiator": "link"
+        }
+      ],
+      "waves": {
+        "depth": 2,
+        "detail": [
+          {
+            "names": [
+              "index.html"
+            ],
+            "endMs": 9
+          },
+          {
+            "names": [
+              "assets/index-zLPhh567.js",
+              "data/loci/ppp1r1a-pde1b/locus.json",
+              "data/loci/ppp1r1a-pde1b/variants/chr12-54578515-C-T/card.json"
+            ],
+            "endMs": 32
+          }
+        ]
+      }
     },
     "browserFast": {
-      "ms": 161,
-      "transferredBytes": 421192
+      "ms": 134,
+      "transferredBytes": 358908,
+      "documentEndMs": 8,
+      "requests": [
+        {
+          "name": "assets/index-zLPhh567.js",
+          "start": 11,
+          "end": 25,
+          "bytes": 22625,
+          "initiator": "script"
+        },
+        {
+          "name": "data/loci/ppp1r1a-pde1b/locus.json",
+          "start": 14,
+          "end": 23,
+          "bytes": 1266,
+          "initiator": "link"
+        },
+        {
+          "name": "data/loci/ppp1r1a-pde1b/annotations.json",
+          "start": 55,
+          "end": 60,
+          "bytes": 2413,
+          "initiator": "fetch"
+        },
+        {
+          "name": "data/loci/ppp1r1a-pde1b/variants/chr12-54578515-C-T/signals/overview/RNA_SEQ.bin",
+          "start": 91,
+          "end": 103,
+          "bytes": 132948,
+          "initiator": "fetch"
+        },
+        {
+          "name": "data/loci/ppp1r1a-pde1b/variants/chr12-54578515-C-T/signals/overview/CAGE.bin",
+          "start": 91,
+          "end": 108,
+          "bytes": 132876,
+          "initiator": "fetch"
+        },
+        {
+          "name": "data/loci/ppp1r1a-pde1b/variants/chr12-54578515-C-T/signals/overview/ATAC.bin",
+          "start": 91,
+          "end": 109,
+          "bytes": 66780,
+          "initiator": "fetch"
+        }
+      ],
+      "waves": {
+        "depth": 2,
+        "detail": [
+          {
+            "names": [
+              "index.html"
+            ],
+            "endMs": 8
+          },
+          {
+            "names": [
+              "assets/index-zLPhh567.js",
+              "data/loci/ppp1r1a-pde1b/locus.json",
+              "data/loci/ppp1r1a-pde1b/annotations.json",
+              "data/loci/ppp1r1a-pde1b/variants/chr12-54578515-C-T/signals/overview/RNA_SEQ.bin",
+              "data/loci/ppp1r1a-pde1b/variants/chr12-54578515-C-T/signals/overview/CAGE.bin",
+              "data/loci/ppp1r1a-pde1b/variants/chr12-54578515-C-T/signals/overview/ATAC.bin"
+            ],
+            "endMs": 109
+          }
+        ]
+      }
     },
     "homeSlow3G": {
-      "ms": 1336,
-      "transferredBytes": 19113
+      "ms": 1503,
+      "transferredBytes": 24622,
+      "documentEndMs": 589,
+      "requests": [
+        {
+          "name": "data/loci/apoa1/variants/chr11-116837649-T-G/card.json",
+          "start": 483,
+          "end": 979,
+          "bytes": 1997,
+          "initiator": "link"
+        },
+        {
+          "name": "assets/index-zLPhh567.js",
+          "start": 483,
+          "end": 1414,
+          "bytes": 22625,
+          "initiator": "script"
+        }
+      ],
+      "waves": {
+        "depth": 2,
+        "detail": [
+          {
+            "names": [
+              "index.html"
+            ],
+            "endMs": 589
+          },
+          {
+            "names": [
+              "data/loci/apoa1/variants/chr11-116837649-T-G/card.json",
+              "assets/index-zLPhh567.js"
+            ],
+            "endMs": 1414
+          }
+        ]
+      }
+    },
+    "homeHeroSlow3G": {
+      "ms": 1489,
+      "transferredBytes": 24622,
+      "documentEndMs": 595,
+      "requests": [
+        {
+          "name": "data/loci/apoa1/variants/chr11-116837649-T-G/card.json",
+          "start": 472,
+          "end": 970,
+          "bytes": 1997,
+          "initiator": "link"
+        },
+        {
+          "name": "assets/index-zLPhh567.js",
+          "start": 472,
+          "end": 1406,
+          "bytes": 22625,
+          "initiator": "script"
+        }
+      ],
+      "waves": {
+        "depth": 2,
+        "detail": [
+          {
+            "names": [
+              "index.html"
+            ],
+            "endMs": 595
+          },
+          {
+            "names": [
+              "data/loci/apoa1/variants/chr11-116837649-T-G/card.json",
+              "assets/index-zLPhh567.js"
+            ],
+            "endMs": 1406
+          }
+        ]
+      }
     },
     "cardSlow3G": {
-      "ms": 2140,
-      "transferredBytes": 22224
+      "ms": 1556,
+      "transferredBytes": 25812,
+      "documentEndMs": 616,
+      "requests": [
+        {
+          "name": "data/loci/ppp1r1a-pde1b/locus.json",
+          "start": 506,
+          "end": 946,
+          "bytes": 1266,
+          "initiator": "link"
+        },
+        {
+          "name": "data/loci/ppp1r1a-pde1b/variants/chr12-54578515-C-T/card.json",
+          "start": 506,
+          "end": 1038,
+          "bytes": 1921,
+          "initiator": "link"
+        },
+        {
+          "name": "assets/index-zLPhh567.js",
+          "start": 507,
+          "end": 1466,
+          "bytes": 22625,
+          "initiator": "script"
+        }
+      ],
+      "waves": {
+        "depth": 2,
+        "detail": [
+          {
+            "names": [
+              "index.html"
+            ],
+            "endMs": 616
+          },
+          {
+            "names": [
+              "data/loci/ppp1r1a-pde1b/locus.json",
+              "data/loci/ppp1r1a-pde1b/variants/chr12-54578515-C-T/card.json",
+              "assets/index-zLPhh567.js"
+            ],
+            "endMs": 1466
+          }
+        ]
+      }
     },
     "browserSlow3G": {
-      "ms": 2148,
-      "transferredBytes": 20303
+      "ms": 1510,
+      "transferredBytes": 23891,
+      "documentEndMs": 618,
+      "requests": [
+        {
+          "name": "data/loci/ppp1r1a-pde1b/locus.json",
+          "start": 508,
+          "end": 947,
+          "bytes": 1266,
+          "initiator": "link"
+        },
+        {
+          "name": "assets/index-zLPhh567.js",
+          "start": 509,
+          "end": 1420,
+          "bytes": 22625,
+          "initiator": "script"
+        }
+      ],
+      "waves": {
+        "depth": 2,
+        "detail": [
+          {
+            "names": [
+              "index.html"
+            ],
+            "endMs": 618
+          },
+          {
+            "names": [
+              "data/loci/ppp1r1a-pde1b/locus.json",
+              "assets/index-zLPhh567.js"
+            ],
+            "endMs": 1420
+          }
+        ]
+      }
     },
     "interaction": {
-      "lastFrameMs": 4.8,
+      "lastFrameMs": 3.6,
       "dragSteps": 24,
       "wheelSteps": 12,
-      "wheelTotalMs": 1101,
+      "wheelTotalMs": 1088,
       "memory": {
         "usedJSHeapBytes": 10000000,
         "totalJSHeapBytes": 10000000
       },
-      "statusLine": "chr12:54,054,228-55,102,803 · 1.05 Mb · resolucion 128 pb por bin · 4.8 ms por frame",
+      "statusLine": "chr12:54,054,228-55,102,803 · 1.05 Mb · resolucion 128 pb por bin · 3.6 ms por frame",
       "frames": []
     }
   }

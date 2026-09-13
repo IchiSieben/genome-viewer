@@ -32,6 +32,13 @@ web/  (estático; cero peticiones a Google)
 Las dos capas se tocan **solo** por el contrato de `contracts/v1/*.schema.json`.
 El web no conoce el código del pipeline y el pipeline no conoce el del web.
 
+R2 tiene un corolario que se paga en comandos: **nada que se pueda derivar del
+disco puede costar una llamada a la API**. Por eso existe
+`cli.py reindex`, que recalcula lo derivado de `index.json` —hoy el puntero
+`featured` de la portada— leyendo los `locus.json` ya congelados, sin tocar
+Google. Ver «La variante de portada se deriva, no se escribe» en
+[`02-data-contract.md`](02-data-contract.md).
+
 ---
 
 ## El presupuesto de datos
@@ -132,6 +139,9 @@ solo sobre lo que la última corrida escribió.
 | bloque de señal (V3) | 160 KiB | 132 624 B | 81,0 % |
 | `annotations.json` | 128 KB | 929 B | 0,7 % |
 | manifiesto de estudio | 96 KB | 2 592 B | 2,6 % |
+| `saturation.json` (N1) | 96 KB | 27 331 B | 28,5 % |
+| `splice.json` (V4) | 64 KB | 2 903 B | 4,4 % |
+| `contacts.json` (V5) | 96 KB | 70 625 B | 71,8 % |
 
 El único ajustado es el bloque de señal, y es el único derivado de una fórmula
 cerrada: 4 tracks × 2 arreglos × 8 192 × 2 B = 131 072 B más cabecera. El 19 %
@@ -151,7 +161,7 @@ Su ventaja real son las páginas por archivo generadas en el build, y aquí esa
 ventaja se cae por dos motivos. Primero, el estado que importa (locus, variante,
 vista, modalidades visibles) es de navegación dentro de un visor, no una
 jerarquía de documentos. Segundo, en hosting compartido una ruta profunda tipo
-`/variant/chr12-54578515-T-C` da 404 al recargar salvo que se agregue reescritura
+`/variant/chr12-54578515-C-T` da 404 al recargar salvo que se agregue reescritura
 en `.htaccess`; el enrutado por hash funciona en cualquier servidor sin tocar
 nada. Astro habría añadido una capa de build cuyo beneficio principal hay que
 desactivar.
@@ -163,7 +173,7 @@ visitante vino a ver.
 
 ### D2 — Enrutado por hash
 
-`#/locus/ppp1r1a-pde1b/variant/chr12-54578515-T-C?view=card` funciona en
+`#/variant/ppp1r1a-pde1b/chr12-54578515-C-T?view=card` funciona en
 cualquier servidor estático, sobrevive a la recarga y hace que cada estado del
 visor sea un enlace que se puede compartir. Feo, pero de riesgo cero.
 
@@ -255,7 +265,161 @@ del resultado. El esquema no deja marcar un estudio como `positive` o `null` sin
 poder medido, y el test lo verifica. Un resultado nulo se muestra como resultado
 nulo.
 
+### D10 — En un visor de efecto de variante se ordena y se etiqueta por DELTA, no por nivel
+
+Esto falló **dos veces**, con criterios distintos, antes de escribirse aquí.
+
+La primera: el héroe de la ficha de variante mostraba el **rsid**. Un rsid es un
+identificador de catálogo, no una medida — dice que alguien vio antes esa
+posición, no que la variante haga nada. Ocupaba el sitio del número que sí
+importa.
+
+La segunda: los arcos del sashimi se etiquetaban por **magnitud** (`max(REF,
+ALT)`). Medido en DNM1: las tres etiquetas caían en uniones constitutivas de
+4,3 que se mueven **0,01** entre REF y ALT, mientras las cuatro uniones que la
+variante realmente desplaza (Δ entre 1,08 y 1,57) quedaban mudas. El gráfico
+era correcto y no decía nada. No falló ruidosamente: falló enseñando lo que más
+tinta ocupaba.
+
+El patrón común no es "usar la columna correcta". Es que **el nivel es una
+propiedad del tejido y el delta es la propiedad de la variante**, y este visor
+trata de variantes. El nivel solo entra como referencia de escala: una sola
+etiqueta sobre el arco mayor, para que los deltas tengan contra qué leerse.
+
+Consecuencias que ya están en el código:
+
+- Orden por `|ALT − REF|`, con un piso (`minValueShown`) para que una etiqueta
+  no pueda apuntar a ruido.
+- Resalte por proximidad a la variante, no por grosor: los arcos que tocan su
+  posición van a plena intensidad y el resto atenuado.
+- **Aplica a V5 tal cual**: el diff de mapas de contacto resalta por |cambio|,
+  nunca por fuerza de contacto. Un mapa Hi-C está dominado por la diagonal y
+  por los TAD, que son idénticos en REF y en ALT; ordenar por fuerza de
+  contacto en V5 es exactamente el mismo error con otra modalidad, y ya no
+  cuenta como sorpresa.
+
+Alternativa descartada: dejar el orden por magnitud y confiar en el tooltip
+para descubrir el delta. Descartada porque obliga a pasar el ratón por 21 arcos
+para encontrar los 4 que importan, y en móvil no hay ratón.
+
+### D11 — Cada familia de modalidad se pide en su propia llamada, con sus propios términos de ontología
+
+El biosample correcto depende de la biología que se está enseñando, así que no
+puede venir de una lista compartida a nivel de locus.
+
+V4 lo demostró y costó cuota descubrirlo. La cabecera de `build_locus.py` decía
+que una sola llamada a `predict_variant` daba «V3, V4 y V5 de una vez». Es
+verdad en cuanto a *outputs* y falso en cuanto a *utilidad*: esa llamada usa
+`ONTOLOGY_TERMS` (sangre, pulmón, hígado), y pedir `SPLICE_JUNCTIONS` ahí habría
+dibujado el splicing de DNM1 en sangre — **simétrico, sin error, sin aviso**. El
+fallo silencioso es la parte cara: un gráfico vacío se nota, un gráfico
+correcto de un tejido equivocado no.
+
+La regla: llamadas dirigidas, una por familia, cada una con su curie declarado
+por variante (`VariantSpec.sashimi_ontology`), nunca `None`. Y el curie se
+confirma con `scorer_metadata()` — RPC de solo metadatos, sin coste de
+predicción — **antes** de gastar cuota.
+
+Dos límites medidos de esta regla, que se documentan porque no son teóricos:
+
+1. **Un curie no garantiza un solo track.** En los metadatos de `CONTACT_MAPS`,
+   `EFO:0003042` (H1-hESC) trae **seis** tracks, y `EFO:0003045` (H9) otros seis.
+   El código leía `values[i, 0]`, que
+   habría elegido el primero en silencio. `build_splice` ahora se para y nombra
+   los tracks: agregarlos sería una decisión de modelado que nadie tomó.
+2. **A veces el menú no tiene la biología que necesitas.** `CONTACT_MAPS` expone
+   28 tracks, **todos** de 4D Nucleome y **todos** líneas celulares: cero tejido
+   primario, cero neuronal. Ninguna variante de demostración actual tiene ahí su
+   tejido. Cuando pasa esto la salida honesta no es elegir el curie que más se
+   parezca y callarse: es elegir uno canónico y **decirlo en la vista**, igual
+   que se dice «sin rsid catalogado» o «modalidad silenciosa».
+
+Alternativa descartada: una sola llamada gorda con la unión de todas las
+ontologías. Más barata en número de peticiones y más cara en todo lo demás —
+paga tracks que ninguna vista pinta, y sobre todo borra la relación entre
+«esta vista» y «este biosample», que es justo lo que hay que enseñar en pantalla.
+
 ---
+
+### D12 — Un dominio de color que cambia con los datos es autoescalado, aunque venga redondeado
+
+La regla, en una frase que se puede aplicar sin discutir: **si el dominio cambia
+cuando cambian los datos, es autoescalado.** Da igual cómo se vista. Un "número
+redondo por encima del grueso de la distribución" también es autoescalado, solo
+que con un paso de redondeo encima.
+
+Por qué hace falta enunciarlo así: en V5 el candidato razonable era ±0,05, redondo
+y por encima del percentil 99 de |Δ|. Medido, con ese dominio el cambio máximo
+pinta al **78 % de saturación** y el **14,26 %** de las celdas sale con color
+perceptible. El mapa se vería como una reorganización estructural. Lo que de
+verdad hay es un cambio de **0,0391 sobre un relieve de 2,684: el 1,46 %**. Y
+nada habría fallado: ningún test puede distinguir un patrón dramático hecho de
+señal de uno hecho de ruido si la escala se ajusta sola al ruido.
+
+El ancla tiene que ser **externa a los datos**. `CONTACT_DOMAIN = 1.0` lo es, y
+además significa algo: el mapa de contactos llega en espacio logarítmico (ver
+D13), así que 1 es del orden de duplicar o partir por la mitad el contacto —la
+magnitud de un límite de TAD que se rompe o un bucle de CTCF que se pierde—. Con
+eso, saturación plena pasa a querer decir *"esto reorganizó el locus"*, y dos
+variantes distintas se comparan mirando dos mapas, sin releer dos leyendas.
+
+Con una salvedad que se declara y no se disimula: que 1 sea **exactamente** el
+doble depende de que la base del logaritmo sea 2, y la base no se pudo medir —el
+SDK no la documenta y los datos no la revelan—. Es la premisa de partida, no un
+hallazgo. Lo que sí está medido es lo único de lo que depende la regla: que el
+dominio no se mueve cuando se mueven los datos. Si la base resultara ser *e*, el
+ancla seguiría siendo externa y comparable entre loci; solo cambiaría la frase
+con que se traduce a biología.
+
+Consecuencia aceptada, no sufrida: **el mapa sale casi plano, y eso es el
+resultado.** Lo que no se puede permitir es que callen el color *y* el número a
+la vez. El peso informativo se reparte en tres:
+
+1. la leyenda lleva una **marca** de dónde cae el máximo observado dentro del
+   dominio fijo, así que la pequeñez se ve y no solo se lee (medido: la marca se
+   queda al 48 % / 52 % de la barra, pegada al centro);
+2. el texto lo dice con cifras, incluida la comparación contra el relieve que la
+   estructura ya tenía;
+3. la magnificación existe, pero es un **botón con su factor en la etiqueta**
+   (`×20`), y solo se ofrece después de que el estado por defecto haya dicho la
+   verdad. Magnificación etiquetada sí; autoescalado silencioso no.
+
+Lo que lo hace estructural y no una buena intención: el dominio **viaja en el
+artefacto**, la vista lo usa tal cual y no lo recalcula nunca, y
+`test_el_dominio_es_LA_CONSTANTE_y_no_se_deriva_de_los_datos` cambia la escala de
+los datos por un factor de cien y comprueba que el dominio no se mueve.
+
+Descartado: dominio por locus anclado al rango de REF. Sigue cambiando con los
+datos —es autoescalado por locus— y rompe la comparación entre variantes, que es
+justo lo que un dominio absoluto compra.
+
+### D13 — Las unidades se miden, no se leen en el docstring
+
+El SDK documenta los mapas de contacto como *"the probability that two DNA bases
+are in contact"*. Es falso para lo que devuelve `predict_variant`, y construir
+sobre esa frase habría producido una vista sutilmente mentirosa.
+
+Lo medido, sobre la ventana real de 1 Mb: **el 79,1 % de los valores de REF son
+negativos** (el 97,9 % en la diagonal principal), el rango es −0,746 a 1,938, y
+`exp(REF)` **no** decae como ley de potencias con la distancia —se queda rondando
+1—. El propio test del SDK genera estos mapas con `np.random.normal(0, 1, ...)`.
+Es decir: el mapa ya llega en espacio logarítmico y con el decaimiento por
+distancia retirado, del tipo log(observado/esperado).
+
+Tres consecuencias, y las tres van **contra** lo que se haría por defecto con
+probabilidades:
+
+1. `ALT − REF` **ya es** el log del cociente. No hay que dividir y, por tanto, no
+   hace falta pseudoconteo: no hay denominador que se vaya a cero.
+2. **No hay celdas "sin contacto" que enmascarar.** Las 262 144 tienen valor
+   finito, y un valor bajo significa *depleción*, no ausencia. Una máscara contra
+   un suelo inexistente pintaría una afirmación falsa.
+3. **No hay que normalizar por distancia.** Se cancelaría en la resta de todos
+   modos —mismo locus en REF y en ALT— y encima el modelo ya lo hizo.
+
+El corolario general: antes de elegir la transformación de una modalidad nueva,
+se miran los valores. Signo, rango, percentiles y decaimiento cuestan una llamada
+que ya se iba a gastar, y deciden más que cualquier párrafo de documentación.
 
 ## Riesgo principal que sigue vivo
 

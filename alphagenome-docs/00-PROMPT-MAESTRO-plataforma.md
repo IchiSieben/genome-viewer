@@ -234,7 +234,10 @@ HITOS — EJECUTA EN ORDEN, DETENTE Y REPORTA EN CADA UNO
  H0. VERIFICACIÓN DE ACCESO  [sin esto no hay nada]
      - pip install -U "alphagenome>=0.9.0"
      - Una consulta de UNA variante al Atlas API, por ejemplo
-       chr12:54578515:T>C, pidiendo ['AVI_SCORE','AVI_SCORE_FEATURE_IMPORTANCE'].
+       chr12:54578515:C>T, pidiendo ['AVI_SCORE','AVI_SCORE_FEATURE_IMPORTANCE'].
+       [Corregido 2026-09-12: este documento daba T>C. La referencia GRCh38 en
+        esa posicion es C; T es el alelo ancestral. Ver README, seccion de la
+        variante semilla.]
      - DOCUMENTA EL ESQUEMA REAL: claves del Mapping, columnas de .obs y .var,
        forma de .X, si existe layers['quantiles'], y los NOMBRES EXACTOS de los
        18 features. Esto último no está documentado públicamente y lo necesitas

@@ -27,7 +27,7 @@ parte grande de lo que H0 pedía sin gastar un solo token de cuota.
 | Concurrencia por defecto | `DEFAULT_MAX_WORKERS = 10` | constante del módulo |
 | Chunk de intervalo | 32 pb por sub-petición | `atlas._INTERVAL_CHUNK_SIZE` |
 | `Interval` 0-based semiabierto | `Interval('chr11',5225726,5226575).width == 849` | ejecutado |
-| `Variant` 1-based | `Variant('chr12',54578515,'T','C').reference_interval == chr12:54578514-54578515` | ejecutado |
+| `Variant` 1-based | `Variant('chr12',54578515,'C','T').reference_interval == chr12:54578514-54578515` | ejecutado |
 | Longitudes válidas | 16 384 · 131 072 · 524 288 · **1 048 576** | `dna_client.SUPPORTED_SEQUENCE_LENGTHS` |
 | Modalidades del modelo | 11 | `dna_output.OutputType` |
 | Scorers recomendados | 19 nombres exactos | `RECOMMENDED_VARIANT_SCORERS` |
@@ -96,5 +96,5 @@ la fixture, no el código del visor.
 ## Siguiente acción cuando aparezca la llave
 
 `pipeline/` incluye `python -m alphagenome_platform.cli probe` — una única consulta
-de `chr12:54578515:T>C` que vuelca el esquema real a
+de `chr12:54578515:C>T` que vuelca el esquema real a
 `docs/evidence/h0-online-probe.json` y completa esta tabla. Coste: 1 variante.

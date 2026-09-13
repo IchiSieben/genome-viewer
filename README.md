@@ -93,7 +93,7 @@ python -m alphagenome_platform.cli probe        # UNA variante, completa H0
 Datos reales, con la llave en `~/.env`:
 
 ```bash
-python -m alphagenome_platform.cli build-locus          # los tres loci
+python -m alphagenome_platform.cli build-locus          # todo el catalogo de loci.py
 python -m alphagenome_platform.cli build-locus rpl13a   # solo uno
 ```
 
@@ -152,9 +152,17 @@ divergente para diferencias REF/ALT: el AVI mide impacto, no dirección, y una
 rampa divergente inventaría un eje que el dato no tiene. El score crudo con
 signo se guarda igual, por si otra vista lo quiere.
 
-**V4 y V5** (sashimi de splicing, diferencia de mapas de contacto) están
-contratadas, no construidas. Los paneles de estudio (V6) ya renderizan desde el
-manifiesto.
+**V4** (sashimi de splicing) y **V5** (diferencia de mapas de contacto) están
+construidas, cada una con su propia llamada a `predict_variant` y su propio
+término de ontología: pedirlas junto a las señales usaría los biosamples por
+defecto del locus, y en un tejido donde la variante no actúa el gráfico sale
+simétrico sin que nada falle.
+
+En V5 el resultado es que **la estructura tridimensional no se mueve**, y la
+vista lo dice con cifras en vez de esconderlo: el dominio del color es una
+constante del contrato y no se autoescala al rango del diff, así que un cambio
+del 1,5 % del relieve estructural se ve como lo que es. Los paneles de estudio
+(V6) ya renderizan desde el manifiesto.
 
 ## Decisiones, con su alternativa descartada
 
@@ -162,8 +170,8 @@ Están en [`docs/01-architecture.md`](docs/01-architecture.md), cada una con lo
 que se descartó y por qué. Las tres que más definen el proyecto:
 
 - **Sin framework en el frontend.** Vite y TypeScript, sin React ni Astro, y
-  **cero dependencias de runtime**: el build pesa 17,3 kB de JS comprimido, las
-  cuatro vistas incluidas. Astro se descartó porque su ventaja real (páginas por
+  **cero dependencias de runtime**: el build pesa 28,4 kB de JS comprimido, las
+  siete vistas incluidas. Astro se descartó porque su ventaja real (páginas por
   archivo) obliga a reescritura en el servidor, y la restricción es archivos
   estáticos y nada más.
 - **int16 crudo en un bloque binario propio**, no base64 dentro de JSON. 2,00
@@ -189,11 +197,34 @@ que se descartó y por qué. Las tres que más definen el proyecto:
 
 ## Lo que la corrida con datos reales corrigió
 
-**La variante semilla de los documentos de contexto está mal.** `rs884510` se da
-como `chr12:54578515:T>C` y el servidor la rechaza: la base de referencia real
-ahí es **C**. Los alelos que el Atlas conoce son A, G y T. El pipeline ahora
-resuelve cada variante contra el servidor antes de usarla, en vez de fiarse de
-un literal.
+**La variante semilla de los documentos de contexto estaba invertida.** La
+variante correcta es `chr12:54578515:C>T`. Los documentos la daban como `T>C` y
+el servidor la rechaza con *"reference base does not match the expected
+reference base: C"*. Los alelos que el Atlas conoce en esa posición son A, G y
+T. El pipeline **resuelve cada variante contra el servidor antes de usarla**
+(`freeze/build_locus.py::resolve_variants`), en vez de fiarse de un literal.
+
+El sentido de la corrección se verificó además contra la fuente primaria. Según
+PubMed, Zhu et al. 2026, *Genome Biol Evol* 18(8), PMID 42402195
+([DOI](https://doi.org/10.1093/gbe/evag164)), tabla 2: para `rs884510` en
+12:54578515 el alelo **derivado es C** y el **ancestral es T** (frecuencia del
+derivado 0,25 en quechuas peruanos frente a 0,42 en AMR). La referencia GRCh38
+lleva el alelo derivado, y eso es exactamente lo que hace confusa la notación:
+`C>T` describe el paso *de vuelta* al ancestral. El alelo con efecto es el
+ancestral — *"the ancestral Peruvian allele (T) was associated with a 1.39
+standard deviation decrease in [Hb]"*.
+
+Dos matices del mismo paper, para no sobre-leer el dato:
+
+- `rs884510` mapea al 3′ UTR de *PDE1B* y **no** es eQTL de *PDE1B* ni de
+  *PPP1R1A* en ningún tejido consultado. Los eQTLs son otros: `rs10876566`,
+  `rs7954532`, `rs2669406`.
+- La asociación con [Hb] sobrevive la corrección FDR en el test **por gen**, no
+  en el test por SNP. Ningún SNP pasa la corrección múltiple por sí solo.
+
+Esto no cambia nada de lo que el visor muestra —el AVI no sabe de hemoglobina—
+pero sí es la razón por la que este locus está en el catálogo, y conviene que
+esté citado donde se pueda comprobar.
 
 **Los 18 features del AVI ya no son provisionales.** Salieron de una consulta
 real y viven en `pipeline/src/alphagenome_platform/avi.py` con su familia

@@ -193,6 +193,7 @@ El nivel 1 se sostiene solo si el nivel 2 nunca llega.
 ## Verificaciones pendientes
 
 - Confirmar documentalmente que PEL está en el callset de gnomAD, consultando una variante PEL-enriquecida en el subset HGDP/1KG.
-- Resolver la contradicción interna de Zhu et al.: el resumen dice alelos "expression-decreasing" y la discusión dice "increase PDE1B expression". Revisar tablas suplementarias antes de fijar la hipótesis de dirección.
+- ~~Resolver la contradicción interna de Zhu et al.~~ **Leído el texto completo (PMC13428292, 2026-09-12): la contradicción es real y está en el paper, no en nuestra lectura.** El resumen dice que el barrido favorece "11 PDE1B expression-decreasing alleles"; resultados y discusión dicen que los alelos que *disminuyen* la expresión están suprimidos entre peruanos y que los eQTLs "may act to increase PDE1B expression" — lo contrario. La dirección **queda sin fijar**: H4 tiene que declararla como pendiente contra las tablas suplementarias, no elegir una de las dos.
+- Dato firme del mismo paper, y útil para la ficha del locus: `rs884510` en 12:54578515 tiene alelo derivado **C** y ancestral **T** (tabla 2); el ancestral T es el asociado a **−1,39 SD de [Hb]**. Y `rs884510` **no** es eQTL de *PDE1B* ni de *PPP1R1A* en ningún tejido: los eQTLs son `rs10876566`, `rs7954532` y `rs2669406`. La asociación con [Hb] sobrevive FDR solo en el test por gen.
 - Recuperar la lista de autores de "Pervasive ancestry bias in variant effect predictors" (bioRxiv 10.1101/2024.05.20.594987) antes de citarlo.
 - Los cálculos de faf95 usaron Clopper-Pearson como proxy de `filtering_allele_frequency` de Hail. Recalcular con Hail para publicación.

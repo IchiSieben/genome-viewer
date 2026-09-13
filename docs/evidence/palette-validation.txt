@@ -1,0 +1,66 @@
+
+=== tema claro: paleta categorica completa (8 colores) ===
+  OK    vision normal, par mas cercano: 2 naranja / 8 rojo  dE2000 = 13.3  (umbral 10.0)
+  info  protanopia    par mas cercano: 2 naranja / 6 verde  dE2000 = 5.5
+  info  deuteranopia  par mas cercano: 2 naranja / 8 rojo  dE2000 = 7.0
+  info  tritanopia    par mas cercano: 2 naranja / 5 magenta  dE2000 = 0.9
+        (con ocho categorias ninguna paleta separa en las tres
+         dicromacias: por eso la identidad nunca va solo en el color)
+
+  Mejor trio de este tema por separado: ranuras (3, 4, 7) -> 15.1
+       15.1  (3, 4, 7)  3 aqua + 4 amarillo + 7 violeta
+       14.9  (1, 7, 8)  1 azul + 7 violeta + 8 rojo
+       14.9  (1, 5, 7)  1 azul + 5 magenta + 7 violeta
+       14.9  (1, 4, 7)  1 azul + 4 amarillo + 7 violeta
+       14.9  (1, 2, 7)  1 azul + 2 naranja + 7 violeta
+
+=== tema oscuro: paleta categorica completa (8 colores) ===
+  OK    vision normal, par mas cercano: 5 magenta / 8 rojo  dE2000 = 14.1  (umbral 10.0)
+  info  protanopia    par mas cercano: 1 azul / 7 violeta  dE2000 = 1.7
+  info  deuteranopia  par mas cercano: 3 aqua / 5 magenta  dE2000 = 3.8
+  info  tritanopia    par mas cercano: 2 naranja / 4 amarillo  dE2000 = 0.8
+        (con ocho categorias ninguna paleta separa en las tres
+         dicromacias: por eso la identidad nunca va solo en el color)
+
+  Mejor trio de este tema por separado: ranuras (6, 7, 8) -> 15.3
+       15.3  (6, 7, 8)  6 verde + 7 violeta + 8 rojo
+       15.3  (5, 6, 7)  5 magenta + 6 verde + 7 violeta
+        9.5  (3, 6, 8)  3 aqua + 6 verde + 8 rojo
+        9.5  (3, 7, 8)  3 aqua + 7 violeta + 8 rojo
+        9.5  (3, 6, 7)  3 aqua + 6 verde + 7 violeta
+
+=== Okabe-Ito (referencia externa): paleta categorica completa (8 colores) ===
+  OK    vision normal, par mas cercano: 1 naranja / 4 amarillo  dE2000 = 21.7  (umbral 10.0)
+  info  protanopia    par mas cercano: 5 azul / 7 purpura  dE2000 = 12.2
+  info  deuteranopia  par mas cercano: 1 naranja / 4 amarillo  dE2000 = 11.7
+  info  tritanopia    par mas cercano: 6 bermellon / 7 purpura  dE2000 = 0.6
+        (con ocho categorias ninguna paleta separa en las tres
+         dicromacias: por eso la identidad nunca va solo en el color)
+
+  Mejor trio de Okabe-Ito: ranuras (2, 4, 8) -> 57.1  (2 celeste + 4 amarillo + 8 negro)
+  Ese trio incluye el negro, que aqui es la tinta de los dos temas y
+  no puede ser una serie. La ventaja de Okabe-Ito en trios es real y
+  viene sobre todo de ahi.
+
+=== Trio de comparacion simultanea (umbral 12.0) ===
+  Criterio: peor par en las cuatro visiones, peor de los dos temas.
+  Ranuras reservadas, fuera del ranking: (8,)
+  OK    en uso (familyColor): ranuras (5, 6, 7) -> 13.0   puesto 1 de 35
+        claro  normal         40.8  (5 magenta / 7 violeta)
+        claro  protanopia     31.7  (5 magenta / 7 violeta)
+        claro  deuteranopia   30.0  (5 magenta / 6 verde)
+        claro  tritanopia     13.0  (6 verde / 7 violeta)
+        oscuro normal         28.5  (5 magenta / 7 violeta)
+        oscuro protanopia     20.9  (5 magenta / 7 violeta)
+        oscuro deuteranopia   21.9  (5 magenta / 6 verde)
+        oscuro tritanopia     15.3  (6 verde / 7 violeta)
+  Ranking conjunto:
+       13.0  (5, 6, 7)  5 magenta + 6 verde + 7 violeta
+        9.5  (3, 6, 7)  3 aqua + 6 verde + 7 violeta
+        9.5  (3, 4, 7)  3 aqua + 4 amarillo + 7 violeta
+        9.5  (2, 3, 7)  2 naranja + 3 aqua + 7 violeta
+        7.0  (4, 6, 7)  4 amarillo + 6 verde + 7 violeta
+
+La paleta pasa en vision normal, el trio simultaneo pasa en las
+cuatro visiones y en los dos temas, y la limitacion de las ocho
+categorias esta medida y declarada. Ver docs/03-visual-system.md.

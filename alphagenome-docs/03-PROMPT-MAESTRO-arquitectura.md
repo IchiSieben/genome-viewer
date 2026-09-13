@@ -131,7 +131,9 @@ diseñar. Escribe los resultados en `docs/00-feasibility-gates.md` con evidencia
  G4. La API del Atlas responde. Con la llave en ~/.env:
        pip install -U "alphagenome>=0.9.0"
      y una consulta de UNA sola variante conocida, por ejemplo
-     chr12:54578515:T>C (rs884510, dentro de PDE1B/PPP1R1A), pidiendo
+     chr12:54578515:C>T (rs884510, dentro de PDE1B/PPP1R1A), pidiendo
+     [Corregido 2026-09-12: este documento daba T>C. La referencia GRCh38 es C;
+      T es el ancestral. Ver README, seccion de la variante semilla.]
      ['AVI_SCORE', 'AVI_SCORE_FEATURE_IMPORTANCE'].
      Documenta el ESQUEMA REAL que vuelve: claves del Mapping, columnas de
      .obs y .var, forma de .X, si existe layers['quantiles'], y los NOMBRES
