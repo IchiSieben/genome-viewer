@@ -52,14 +52,14 @@ console.log('  info  chips:', JSON.stringify(chipNames));
 const offChip = page.locator('.chip:not(.chip--on):not(.chip--action)').first();
 await offChip.evaluate((n) => n.scrollIntoView({ block: 'center' }));
 await settle(200);
-const offName = (await offChip.innerText()).trim();
+const offName = (await offChip.getAttribute('data-modality')) || '';
 await offChip.click();
 await settle();
 hash = await page.evaluate(() => location.hash);
 const after = await page.locator('.chip--on').count();
 check(
   'elegir una modalidad cambia la URL',
-  after === before + 1 && hash.toUpperCase().includes(offName.replace(/ /g, '_').toUpperCase()),
+  after === before + 1 && hash.includes(offName),
   `${offName}: ${before} -> ${after}`,
 );
 
@@ -68,9 +68,9 @@ const shared = `${BASE}#/variant/${VARIANT}?view=signal&tracks=DNASE&win=5457800
 await page.goto(shared, { waitUntil: 'networkidle' });
 await settle(1200);
 const status = await page.locator('.browser__status').innerText();
-const onChips = await page.locator('.chip--on').allInnerTexts();
+const onChips = await page.locator('.chip--on').evaluateAll((ns) => ns.map((n) => n.getAttribute('data-modality')));
 check('un enlace compartido restaura la modalidad',
-  onChips.length === 1 && onChips[0].includes('dnase'), JSON.stringify(onChips));
+  onChips.length === 1 && onChips[0] === 'DNASE', JSON.stringify(onChips));
 check('un enlace compartido restaura la ventana',
   /1[.,]00 kb|1\.00 kb|54,578,00/.test(status), status.replace(/\s+/g, ' ').slice(0, 80));
 

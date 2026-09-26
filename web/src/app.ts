@@ -31,8 +31,12 @@ import {
   provenanceStrip,
   rsidChip,
   sourceChip,
+  miniPhred,
+  viewBadges,
 } from './lib/ui';
-import { aviGauge, renderVariantCard } from './views/variantCard';
+import { aviGauge, miniCascade, renderVariantCard } from './views/variantCard';
+import { enterView, revealOnScroll } from './lib/motion';
+import { NARRATIVE_PAGES, narrativeTitle, renderNarrative, type NarrativePage } from './views/narrative';
 import { renderTissueHeatmap } from './views/tissueHeatmap';
 import { renderStudy } from './views/study';
 import { renderTrackBrowser } from './views/trackBrowser';
@@ -40,11 +44,11 @@ import { renderSaturationMap } from './views/saturationMap';
 import { renderContactDiff } from './views/contactDiff';
 import { renderSpliceSashimi } from './views/spliceSashimi';
 import { maybeStartTour } from './tour';
-import { dataText, loadFull, otherLang, otherLangHref, rememberLang, t, tp } from './i18n';
+import { dataText, loadFull, loadNarrative, otherLang, otherLangHref, rememberLang, t, tp } from './i18n';
 import type { IndexDoc, LocusDoc } from './lib/types';
 
 interface Route {
-  name: 'home' | 'locus' | 'variant' | 'study' | 'about';
+  name: 'home' | 'locus' | 'variant' | 'study' | 'about' | NarrativePage;
   params: Record<string, string>;
   query: URLSearchParams;
 }
@@ -60,6 +64,9 @@ function parseRoute(): Route {
 
   if (!parts.length) return { name: 'home', params: {}, query };
   if (parts[0] === 'about') return { name: 'about', params: {}, query };
+  if ((NARRATIVE_PAGES as string[]).includes(parts[0]!)) {
+    return { name: parts[0] as NarrativePage, params: {}, query };
+  }
   if (parts[0] === 'locus' && parts[1]) {
     return { name: 'locus', params: { locus: parts[1] }, query };
   }
@@ -172,8 +179,23 @@ function featuredHero(index: IndexDoc): { node: HTMLElement; stop: () => void } 
     .then((card) => {
       if (cancelled) return;
       const gaugeSlot = el('div', { class: 'hero__gauge' });
+      const cascadeSlot = el('div', { class: 'hero__cascade-plot' });
       clear(slot);
+      const readout = el('div', { class: 'hero__readout' });
       slot.append(
+        el(
+          'div',
+          { class: 'hero__grid' },
+          readout,
+          el(
+            'figure',
+            { class: 'hero__cascade' },
+            el('figcaption', { class: 'hero__cascade-caption', text: t('home.hero.cascade.caption') }),
+            cascadeSlot,
+          ),
+        ),
+      );
+      readout.append(
         el(
           'div',
           { class: 'hero__identity' },
@@ -199,8 +221,28 @@ function featuredHero(index: IndexDoc): { node: HTMLElement; stop: () => void } 
           aviGauge(card, Math.min(Math.max(240, width), 520), { compact: true }),
         );
       };
+      // ResizeObserver avisa tambien al empezar a observar, con el mismo ancho:
+      // sin este filtro, la cascada recien animada se reemplazaria al instante.
+      let drawn = false;
+      let lastWidth = -1;
+      const drawCascade = (raw: number) => {
+        const width = Math.min(Math.max(280, Math.round(raw)), 560);
+        if (width === lastWidth) return;
+        lastWidth = width;
+        clear(cascadeSlot);
+        cascadeSlot.append(
+          miniCascade(card, width, { animate: !drawn }),
+        );
+        drawn = true;
+      };
       draw(gaugeSlot.clientWidth || 480);
-      stopResize = onResize(gaugeSlot, draw);
+      drawCascade(cascadeSlot.clientWidth || 480);
+      const stopGauge = onResize(gaugeSlot, draw);
+      const stopCascade = onResize(cascadeSlot, drawCascade);
+      stopResize = () => {
+        stopGauge();
+        stopCascade();
+      };
     })
     .catch(() => {
       if (cancelled) return;
@@ -220,6 +262,53 @@ function featuredHero(index: IndexDoc): { node: HTMLElement; stop: () => void } 
       stopResize?.();
     },
   };
+}
+
+/**
+ * Medidor en miniatura y vistas de cada locus del catalogo de la portada.
+ *
+ * El indice no trae el AVI de cada variante; esta en cada `locus.json` (~2 KB
+ * cada uno). Pedirlos al pintar la portada sumaria una oleada a la ruta
+ * critica, asi que se piden cuando el catalogo se acerca a la ventana, que en
+ * escritorio es despues del heroe. Son los mismos archivos que la vista de
+ * locus pide despues: el cache de data.ts los reutiliza.
+ */
+function enrichCatalog(list: HTMLElement, index: IndexDoc): void {
+  const fill = () => {
+    for (const locus of index.loci) {
+      const slot = list.querySelector<HTMLElement>(`.catalog__digest[data-locus="${locus.id}"]`);
+      if (!slot) continue;
+      void loadLocus(locus.path)
+        .then((doc) => {
+          if (!doc.variants.length || !slot.isConnected) return;
+          // Con varias variantes, la de mayor AVI: la fila resume el locus.
+          const scores = doc.variants
+            .map((v) => v.aviPhred)
+            .filter((v): v is number => typeof v === 'number');
+          const artifacts = Object.assign({}, ...doc.variants.map((v) => v.artifacts));
+          clear(slot);
+          slot.append(viewBadges(artifacts) ?? '', miniPhred(scores.length ? Math.max(...scores) : null));
+        })
+        .catch(() => {
+          // Sin medidor la fila sigue siendo un enlace util.
+        });
+    }
+  };
+  if (!('IntersectionObserver' in window)) {
+    whenIdle(fill);
+    return;
+  }
+  const io = new IntersectionObserver(
+    (entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      io.disconnect();
+      fill();
+    },
+    { rootMargin: '200px 0px' },
+  );
+  // Y nunca antes del `load`: en 3G lento, nueve peticiones compitiendo con
+  // la ficha del heroe la retrasarian aunque el catalogo ya se viera.
+  whenIdle(() => io.observe(list));
 }
 
 /**
@@ -255,10 +344,14 @@ function renderHome(main: HTMLElement, index: IndexDoc): (() => void) | undefine
               span: fmt.span(locus.end - locus.start),
             }),
           }),
+          // Se llena al acercarse al catalogo (ver enrichCatalog). El hueco
+          // tiene alto fijo: llenarlo no mueve nada.
+          el('span', { class: 'catalog__digest', 'data-locus': locus.id }),
         ),
       ),
     ),
   );
+  enrichCatalog(loci, index);
 
   const studies = index.studies.length
     ? el(
@@ -303,6 +396,27 @@ function renderHome(main: HTMLElement, index: IndexDoc): (() => void) | undefine
       { title: t('home.studies.title'), subtitle: t('home.studies.subtitle') },
       studies,
     ),
+    panel(
+      { title: t('home.project.title'), subtitle: t('home.project.subtitle') },
+      el(
+        'ul',
+        { class: 'catalog' },
+        ...(['why', 'roadmap', 'how', 'references'] as const).map((page) =>
+          el(
+            'li',
+            { class: 'catalog__item' },
+            el(
+              'a',
+              { class: 'catalog__link', href: href(page) },
+              el('span', {
+                class: 'catalog__name',
+                text: t(page === 'why' ? 'nav.why' : page === 'references' ? 'footer.refs' : `footer.${page}`),
+              }),
+            ),
+          ),
+        ),
+      ),
+    ),
     // La portada era la unica vista sin sello. Un catalogo tambien es un
     // artefacto: declara su version de esquema, su fecha y su origen.
     ...(index.provenance ? [provenanceStrip(index.provenance)] : []),
@@ -335,16 +449,15 @@ function renderLocus(main: HTMLElement, locus: LocusDoc): void {
         entry.variant.rsid
           ? el('span', { class: 'catalog__coords', text: entry.variant.rsid })
           : null,
-        el('span', {
-          class: 'catalog__detail',
-          text:
-            entry.aviPhred === null || entry.aviPhred === undefined
-              ? t('locus.aviMissing')
-              : t('locus.aviDetail', {
-                  value: fmt.fixed2(entry.aviPhred),
-                  meaning: fmt.phredMeaning(entry.aviPhred),
-                }),
-        }),
+        el(
+          'span',
+          { class: 'catalog__digest' },
+          viewBadges(entry.artifacts),
+          miniPhred(entry.aviPhred),
+        ),
+        entry.aviPhred === null || entry.aviPhred === undefined
+          ? null
+          : el('span', { class: 'catalog__detail', text: fmt.phredMeaning(entry.aviPhred) }),
       ),
     ),
   );
@@ -654,8 +767,12 @@ function warmUp(current: Route): void {
 }
 
 /** Routes whose texts are not in the dictionary inlined in the shell. */
+function isNarrative(name: Route['name']): name is NarrativePage {
+  return (NARRATIVE_PAGES as string[]).includes(name);
+}
+
 function needsFullDictionary(current: Route): boolean {
-  if (current.name === 'about' || current.name === 'study') return true;
+  if (current.name === 'about' || current.name === 'study' || isNarrative(current.name)) return true;
   if (current.name !== 'variant') return false;
   const view = current.query.get('view') ?? 'card';
   return view !== 'card' && view !== 'signal';
@@ -707,11 +824,13 @@ async function route(): Promise<void> {
   // Views outside the inlined dictionary wait for the full one, requested in
   // parallel with their data (never after it: that would add a network wave).
   const fullReady = needsFullDictionary(current) ? loadFull() : Promise.resolve();
+  const narrativeReady = isNarrative(current.name) ? loadNarrative() : Promise.resolve();
   main.append(loadingState(t('app.loading.catalog')));
 
   try {
     indexDoc ??= await loadIndex();
     await fullReady;
+    await narrativeReady;
     clear(main);
 
     switch (current.name) {
@@ -722,6 +841,13 @@ async function route(): Promise<void> {
       case 'about':
         renderAbout(main, indexDoc);
         setTitle(t('about.title'));
+        break;
+      case 'why':
+      case 'roadmap':
+      case 'how':
+      case 'references':
+        renderNarrative(main, current.name, indexDoc);
+        setTitle(narrativeTitle(current.name));
         break;
       case 'locus': {
         const entry = indexDoc.loci.find((l) => l.id === current.params['locus']);
@@ -765,6 +891,10 @@ async function route(): Promise<void> {
     main.append(errorState(title, detail, () => void route()));
   }
 
+  // Movimiento (src/lib/motion.ts): la vista nueva entra con un fundido y los
+  // bloques de abajo del pliegue aparecen al llegar. Ninguno toca layout.
+  enterView(main);
+  revealOnScroll(main);
   syncLangToggle();
   // The tour's texts are in the full dictionary. On the home page this is also
   // the idle-time prefetch that makes the next view not wait for it.

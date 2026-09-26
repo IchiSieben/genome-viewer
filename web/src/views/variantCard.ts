@@ -15,7 +15,8 @@
 
 import { clear, el, onResize, onThemeChange, svg } from '../lib/dom';
 import * as fmt from '../lib/format';
-import { dataText, t } from '../i18n';
+import { dataText, t, tp } from '../i18n';
+import { drawBars, fadeIn } from '../lib/motion';
 import { familyLabel, FAMILY_ORDER, familyColor, modalityColor } from '../lib/color';
 import { panel, predictionNotice, provenanceStrip, rsidChip, sourceChip, tooltip } from '../lib/ui';
 import type { AviFeature, CardDoc } from '../lib/types';
@@ -410,6 +411,159 @@ function waterfall(
     group.addEventListener('blur', () => tip.hide());
 
     root.append(group);
+  }
+
+  return root as unknown as HTMLElement;
+}
+
+/** Filas de la cascada compacta: las N mayores y una que suma el resto. */
+const MINI_TOP = 6;
+const MINI_ROW = 18;
+const MINI_GAP = 4;
+const MINI_LABEL = 150;
+const MINI_VALUE = 50;
+const MINI_AXIS = 24;
+
+/** Alto FIJO de la cascada compacta, sea cual sea la variante: el heroe
+ *  reserva ese espacio antes de que llegue la ficha (CLS 0). */
+export const MINI_CASCADE_HEIGHT = (MINI_TOP + 1) * (MINI_ROW + MINI_GAP) + MINI_AXIS;
+
+/**
+ * Cascada SHAP compacta para el heroe de la portada.
+ *
+ * Los mismos datos que la cascada completa de la ficha, del mismo `card.json`
+ * que el heroe ya descarga (cero bytes nuevos): las seis contribuciones de
+ * mayor magnitud, en orden, y una fila que suma las demas, desde el valor base
+ * hasta el score. Se dibuja barra a barra al entrar; con movimiento reducido,
+ * aparece entera.
+ */
+export function miniCascade(
+  card: CardDoc,
+  width: number,
+  { animate = true }: { animate?: boolean } = {},
+): HTMLElement {
+  const sorted = [...card.features].sort(
+    (a, b) => Math.abs(b.contribution) - Math.abs(a.contribution),
+  );
+  const top = sorted.slice(0, MINI_TOP);
+  const rest = sorted.slice(MINI_TOP);
+  const restSum = rest.reduce((sum, f) => sum + f.contribution, 0);
+
+  const base = card.avi.baseValue ?? 0;
+  let cumulative = base;
+  const rows = top.map((feature) => {
+    const from = cumulative;
+    cumulative += feature.contribution;
+    return {
+      label: dataText(`data.feature.${feature.id}`, feature.label),
+      value: feature.contribution,
+      from,
+      to: cumulative,
+    };
+  });
+  if (rest.length) {
+    rows.push({
+      label: tp('home.hero.cascade.rest', rest.length),
+      value: restSum,
+      from: cumulative,
+      to: cumulative + restSum,
+    });
+    cumulative += restSum;
+  }
+  const final = cumulative;
+
+  const values = rows.flatMap((r) => [r.from, r.to]).concat(base);
+  const lo = Math.min(...values);
+  const hi = Math.max(...values);
+  const pad = (hi - lo) * 0.06 || 0.05;
+  const plotWidth = Math.max(80, width - MINI_LABEL - MINI_VALUE - 12);
+  const x = (v: number) => MINI_LABEL + ((v - (lo - pad)) / (hi - lo + 2 * pad)) * plotWidth;
+  const height = MINI_CASCADE_HEIGHT;
+  const plotBottom = (MINI_TOP + 1) * (MINI_ROW + MINI_GAP);
+
+  const root = svg('svg', {
+    class: 'mini-cascade',
+    width: String(width),
+    height: String(height),
+    viewBox: `0 0 ${width} ${height}`,
+    role: 'img',
+    'aria-label': t('home.hero.cascade.ariaLabel', {
+      n: top.length,
+      score: fmt.signed2(final),
+    }),
+  });
+
+  root.append(
+    svg('line', {
+      x1: String(x(base)),
+      x2: String(x(base)),
+      y1: '0',
+      y2: String(plotBottom),
+      class: 'waterfall__baseline',
+    }),
+  );
+
+  const bars: { node: SVGElement; from: 'left' | 'right' }[] = [];
+  rows.forEach((row, i) => {
+    const y = i * (MINI_ROW + MINI_GAP);
+    const x0 = Math.min(x(row.from), x(row.to));
+    const x1 = Math.max(x(row.from), x(row.to));
+    const positive = row.value >= 0;
+    const bar = svg('rect', {
+      x: String(x0),
+      y: String(y + 3),
+      width: String(Math.max(1.5, x1 - x0)),
+      height: String(MINI_ROW - 6),
+      rx: '1.5',
+      class: positive
+        ? 'mini-cascade__bar waterfall__bar--pos'
+        : 'mini-cascade__bar waterfall__bar--neg',
+    });
+    bars.push({ node: bar, from: positive ? 'left' : 'right' });
+    root.append(
+      svg('text', {
+        x: String(MINI_LABEL - 8),
+        y: String(y + MINI_ROW / 2 + 4),
+        class: i === rows.length - 1 && rest.length ? 'waterfall__label mini-cascade__rest' : 'waterfall__label',
+        'text-anchor': 'end',
+        text: row.label,
+      }),
+      bar,
+      svg('text', {
+        x: String(width - 2),
+        y: String(y + MINI_ROW / 2 + 4),
+        class: 'waterfall__value',
+        'text-anchor': 'end',
+        text: fmt.signed2(row.value),
+      }),
+    );
+  });
+
+  // Donde termina la explicacion: el score crudo, con su marca.
+  const fx = x(final);
+  const finalMark = svg('g', { class: 'mini-cascade__final' });
+  finalMark.append(
+    svg('line', {
+      x1: String(fx),
+      x2: String(fx),
+      y1: '0',
+      y2: String(plotBottom + 4),
+      class: 'mini-cascade__final-line',
+    }),
+    svg('text', {
+      x: String(fx),
+      y: String(plotBottom + 18),
+      'text-anchor': fx > MINI_LABEL + plotWidth * 0.75 ? 'end' : fx < MINI_LABEL + plotWidth * 0.25 ? 'start' : 'middle',
+      class: 'mini-cascade__final-label',
+      text: t('home.hero.cascade.final', { score: fmt.signed2(final) }),
+    }),
+  );
+  root.append(finalMark);
+
+  // Solo la primera vez: redibujar por un cambio de ancho no repite la entrada.
+  if (animate) {
+    drawBars(bars, { delay: 120, stagger: 80 });
+    fadeIn(finalMark, 120 + bars.length * 80 + 200);
   }
 
   return root as unknown as HTMLElement;

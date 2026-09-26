@@ -19,7 +19,7 @@
 
 import { clear, el, onResize, onThemeChange, setupCanvas, svg, token } from '../lib/dom';
 import * as fmt from '../lib/format';
-import { t, tp } from '../i18n';
+import { dataText, t, tp } from '../i18n';
 import { MODALITY_ORDER, modalityColor } from '../lib/color';
 import { emptyState, errorState, loadingState, panel, predictionNotice, provenanceStrip, sourceChip, tooltip } from '../lib/ui';
 import { altOf } from '../lib/signal';
@@ -853,6 +853,7 @@ export function renderTrackBrowser(
         class: active ? 'chip chip--on' : 'chip',
         type: 'button',
         'aria-pressed': String(active),
+        'data-modality': modality,
         title: t('browser.chip.tooltip', { tracks: ref.tracks, bytes: fmt.bytes(ref.bytes) }),
       });
       chip.append(
@@ -861,7 +862,7 @@ export function renderTrackBrowser(
           style: `background:${modalityColor(modality)}`,
           'aria-hidden': 'true',
         }),
-        document.createTextNode(modality.replace(/_/g, ' ').toLowerCase()),
+        document.createTextNode(dataText(`data.modality.${modality}`, modality.replace(/_/g, ' '))),
       );
       chip.addEventListener('click', () => {
         if (selected.has(modality)) selected.delete(modality);

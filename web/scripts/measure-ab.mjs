@@ -10,6 +10,8 @@
 // Usage:
 //   node scripts/measure-ab.mjs <baseline-dist-dir> [rounds=3]
 // Output: docs/evidence/performance-ab.json and a table on stdout.
+// Env: AGP_AB_LANG=es measures the Spanish shell (<mount>/es/) instead of the
+// English root; AGP_AB_OUT names the output file (default performance-ab.json).
 import { spawn } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -19,6 +21,7 @@ import { tmpdir } from 'node:os';
 const here = dirname(fileURLToPath(import.meta.url));
 const baseline = process.argv[2];
 const rounds = Number(process.argv[3] || 3);
+const LANG_DIR = process.env.AGP_AB_LANG === 'es' ? 'es/' : '';
 if (!baseline) {
   console.error('usage: node scripts/measure-ab.mjs <baseline-dist-dir> [rounds]');
   process.exit(1);
@@ -58,7 +61,7 @@ try {
     for (const b of r % 2 ? [...builds].reverse() : builds) {
       const out = resolve(scratch, `${b.name}-${r}.json`);
       await run(process.execPath, [resolve(here, 'measure.mjs')], {
-        AGP_BASE_URL: `http://127.0.0.1:${b.port}/genome-viewer/`,
+        AGP_BASE_URL: `http://127.0.0.1:${b.port}/genome-viewer/${LANG_DIR}`,
         AGP_MEASURE_OUT: out,
       });
       results[b.name].push(JSON.parse(readFileSync(out, 'utf8')));
@@ -90,10 +93,10 @@ const table = views.map((v) => {
   };
 });
 
-const out = resolve(here, '../../docs/evidence/performance-ab.json');
+const out = resolve(here, '../../docs/evidence', process.env.AGP_AB_OUT || 'performance-ab.json');
 writeFileSync(
   out,
-  JSON.stringify({ measuredAt: new Date().toISOString(), rounds, baseline, table }, null, 2) + '\n',
+  JSON.stringify({ measuredAt: new Date().toISOString(), rounds, lang: LANG_DIR ? 'es' : 'en', baseline, table }, null, 2) + '\n',
 );
 
 console.log('\nvista              antes ms  despues ms   antes KiB  despues KiB  oleadas  CLS (max)');

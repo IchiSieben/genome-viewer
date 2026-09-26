@@ -74,7 +74,15 @@ const INLINE = [
   'browser.', 'data.modality.',
 ];
 const inlined = (d) =>
-  Object.fromEntries(Object.entries(d).filter(([k]) => INLINE.some((p) => k === p || k.startsWith(p))));
+  Object.fromEntries(
+    Object.entries(d).filter(
+      ([k]) =>
+        INLINE.some((p) => k === p || k.startsWith(p)) ||
+        // Study names are listed on the home page; the rest of each study's
+        // prose waits for the full dictionary on the study view.
+        /^data\.study\.[^.]+\.label$/.test(k),
+    ),
+  );
 
 const esc = (text) =>
   String(text)

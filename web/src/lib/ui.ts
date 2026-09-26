@@ -322,3 +322,49 @@ export function predictionNotice(): HTMLElement {
     text: t('ui.notice.prediction'),
   });
 }
+
+// --------------------------------------------------------------------------
+// Resumen de variante para listados: medidor PHRED en miniatura + vistas
+// --------------------------------------------------------------------------
+
+/** Mismo eje que el medidor grande (PHRED_AXIS_MAX en variantCard.ts). */
+const MINI_PHRED_MAX = 40;
+
+/**
+ * Una barra de 64 px con el AVI PHRED y su cifra: el medidor de la ficha,
+ * reducido a lo que cabe en una fila de catalogo. Sin score (indel sin
+ * cuantil, por ejemplo) no se dibuja barra: una barra vacia se leeria como
+ * "cero", y no es cero, es "no hay dato".
+ */
+export function miniPhred(phred: number | null | undefined): HTMLElement {
+  if (phred === null || phred === undefined) {
+    return el('span', { class: 'mini-phred mini-phred--missing', text: t('locus.aviMissing') });
+  }
+  const pct = Math.max(0, Math.min(1, phred / MINI_PHRED_MAX)) * 100;
+  return el(
+    'span',
+    {
+      class: 'mini-phred',
+      title: fmt.phredMeaning(phred),
+    },
+    el(
+      'span',
+      { class: 'mini-phred__track', 'aria-hidden': 'true' },
+      el('span', { class: 'mini-phred__fill', style: `width:${pct.toFixed(1)}%` }),
+    ),
+    el('span', { class: 'mini-phred__value', text: `${fmt.fixed1(phred)} PHRED` }),
+  );
+}
+
+/** Vistas que NO todas las variantes tienen: las que distinguen a esta. */
+const DISTINCT_VIEWS = ['saturation', 'splice', 'contact'] as const;
+
+export function viewBadges(artifacts: Partial<Record<string, string | null>>): HTMLElement | null {
+  const present = DISTINCT_VIEWS.filter((v) => artifacts[v]);
+  if (!present.length) return null;
+  return el(
+    'span',
+    { class: 'view-badges' },
+    ...present.map((v) => el('span', { class: `view-badge view-badge--${v}`, text: t(`variant.tab.${v}`) })),
+  );
+}

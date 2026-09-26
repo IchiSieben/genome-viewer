@@ -29,6 +29,10 @@ async function visit(name, hash, { width = 1280, height = 900, theme = 'light', 
     viewport: { width, height },
     deviceScaleFactor: 2,
     colorScheme: theme,
+    // Screenshots are taken with motion reduced: a full-page capture never
+    // scrolls, so scroll-in entries would stay hidden below the fold. Motion
+    // itself is checked separately below (checkMotion).
+    reducedMotion: 'reduce',
   });
   const page = await context.newPage();
 
@@ -362,6 +366,74 @@ await visit('es-10-sobre-los-datos', '#/about', {
   lang: 'es',
   checks: [{ selector: '.facts dd', min: 4, label: 'hechos del contrato' }],
 });
+
+// Narrative pages (phase 3): every paragraph, milestone, fact and reference.
+await visit('23-por-que', '#/why', {
+  checks: [{ selector: '.prose--long p', min: 6, label: 'párrafos' }],
+});
+await visit('24-hoja-de-ruta', '#/roadmap', {
+  checks: [{ selector: '.milestone', min: 22, label: 'hitos y compuertas' }],
+});
+await visit('25-como-esta-hecho', '#/how', {
+  checks: [{ selector: '.facts dd', min: 8, label: 'datos y herramientas' }],
+});
+await visit('26-referencias', '#/references', {
+  checks: [{ selector: '.reference', min: 13, label: 'referencias' }],
+});
+await visit('es-23-por-que-oscuro-movil', '#/why', {
+  lang: 'es', theme: 'dark', width: 400, height: 800,
+  checks: [{ selector: '.prose--long p', min: 6, label: 'párrafos' }],
+});
+await visit('es-24-hoja-de-ruta', '#/roadmap', {
+  lang: 'es',
+  checks: [{ selector: '.milestone', min: 22, label: 'hitos y compuertas' }],
+});
+await visit('es-26-referencias', '#/references', {
+  lang: 'es',
+  checks: [{ selector: '.reference', min: 13, label: 'referencias' }],
+});
+
+// Motion ON: the hero draws, scroll entries end visible, nothing is left at
+// opacity 0 after scrolling to the bottom, and the catalog digests fill in.
+async function checkMotion(lang) {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const page = await context.newPage();
+  const errors = [];
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+  await page.addInitScript(() => { try { localStorage.setItem('agp-tour-seen', '1'); } catch {} });
+  await page.goto(BASE + (lang === 'es' ? 'es/' : ''), { waitUntil: 'networkidle', timeout: 120000 });
+  const results = [];
+  const check = (ok, label) => { results.push(`${ok ? '  OK   ' : '  FALLA'} ${label}`); if (!ok) failures++; };
+  check(await page.evaluate(() => document.documentElement.classList.contains('motion')), 'clase motion sin reduced-motion');
+  await page.waitForSelector('.mini-cascade', { timeout: 60000 });
+  check((await page.locator('.mini-cascade__bar').count()) >= 6, 'cascada del heroe con 6+ barras');
+  // Scroll to the bottom in steps, like a reader.
+  for (let y = 0; y < 8000; y += 600) {
+    await page.evaluate((top) => window.scrollTo(0, top), y);
+    await page.waitForTimeout(120);
+  }
+  await page.waitForTimeout(900);
+  const hidden = await page.evaluate(() =>
+    [...document.querySelectorAll('.panel, .reveal, .hero__lead, .hero__featured')]
+      .filter((n) => Number(getComputedStyle(n).opacity) < 0.99).length,
+  );
+  check(hidden === 0, `nada queda invisible tras bajar hasta el pie (${hidden})`);
+  await page
+    .waitForFunction(() => document.querySelectorAll('.catalog__digest .mini-phred').length >= 9, null, { timeout: 60000 })
+    .catch(() => {});
+  const digests = await page.locator('.catalog__digest .mini-phred').count();
+  check(digests >= 9, `medidores del catalogo llenos (${digests})`);
+  for (const icon of ['favicon.svg', 'favicon-32.png', 'apple-touch-icon.png', `og-${lang}.png`]) {
+    const res = await page.request.get(BASE + icon);
+    check(res.ok(), `${icon} existe`);
+  }
+  check(errors.length === 0, `sin errores de consola${errors.length ? ': ' + errors.join(' | ') : ''}`);
+  console.log(`\nmovimiento (${lang})`);
+  for (const r of results) console.log(r);
+  await context.close();
+}
+await checkMotion('en');
+await checkMotion('es');
 
 await browser.close();
 console.log(`\n${failures === 0 ? 'TODO OK' : failures + ' FALLAS'}`);

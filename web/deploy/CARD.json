@@ -1,0 +1,33 @@
+{
+  "_note": "Suggested landing card for Landing/src/content/projects/{en,es}/genome-viewer.md. Not read by any build: the landing session integrates it by hand. Skill slugs below exist in Landing/src/content/skills as of 2026-09-26.",
+  "slug": "genome-viewer",
+  "status": "beta",
+  "url": {
+    "en": "https://ichisieben.dev/genome-viewer/",
+    "es": "https://ichisieben.dev/genome-viewer/es/"
+  },
+  "localPath": "/genome-viewer/",
+  "repoUrl": "https://github.com/IchiSieben/genome-viewer",
+  "ogImage": {
+    "en": "https://ichisieben.dev/genome-viewer/og-en.png",
+    "es": "https://ichisieben.dev/genome-viewer/og-es.png"
+  },
+  "segment": "ciencia-bioinformatica",
+  "tech": ["data-viz", "etl-bases-de-datos", "frontend"],
+  "sector": ["ciencia-bioinformatica"],
+  "skills": ["typescript", "vite", "python", "playwright", "visualizacion", "hosting-estatico", "gestion-secretos"],
+  "en": {
+    "title": "Genome Viewer",
+    "oneLine": "What a variant does to the genome, predicted",
+    "techLine": "TypeScript · Vite · no framework · Python pipeline · frozen artifacts, zero API calls from the web",
+    "summary": "An unofficial, interactive viewer for AlphaGenome predictions: a SHAP waterfall per variant, a tissue-by-assay heatmap, REF vs ALT signal tracks, saturation mutagenesis, a splicing sashimi and 3D contact maps.",
+    "description": "A Python pipeline queries AlphaGenome once with a personal key and freezes the results into versioned, provenance-stamped files under a byte budget. The site is static, bilingual (English and Spanish), reads only those files and never calls the API. Every number shows where it came from; model predictions, not measurements, and not for clinical use."
+  },
+  "es": {
+    "title": "Visor del genoma",
+    "oneLine": "Qué le hace una variante al genoma, predicho",
+    "techLine": "TypeScript · Vite · sin framework · pipeline en Python · artefactos congelados, cero llamadas a la API desde la web",
+    "summary": "Visor interactivo y no oficial de las predicciones de AlphaGenome: cascada SHAP por variante, mapa de calor por tejido y ensayo, pistas de señal REF contra ALT, mutagénesis de saturación, sashimi de splicing y mapas de contacto 3D.",
+    "description": "Un pipeline en Python consulta AlphaGenome una vez con una llave personal y congela el resultado en archivos versionados, con sello de proveniencia y un presupuesto de bytes. El sitio es estático y bilingüe (español e inglés), solo lee esos archivos y nunca llama a la API. Cada cifra dice de dónde salió: son predicciones de un modelo, no mediciones, y no son para uso clínico."
+  }
+}

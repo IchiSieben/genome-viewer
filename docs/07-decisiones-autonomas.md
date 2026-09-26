@@ -166,3 +166,149 @@ varía más de lo que se compara. Dos cosas que sí se comprobaron:
   carrera.
 - "Antes" es la interfaz solo en español servida en la raíz; "después" es la
   raíz inglesa. El A/B compara idiomas distintos, además de builds distintos.
+
+---
+
+## Fase 2 — Identidad y pulido visual
+
+Auditoría de partida: `docs/05-visual-audit.md` (32 capturas).
+
+## D-20 · La marca sale de la visualización: cuatro barras de señal
+
+- **Qué**: la marca son cuatro barras de altura distinta en los cuatro
+  primeros colores categóricos. Es la misma figura que ya había en la cabecera
+  (hecha con degradados CSS), ahora como SVG. El favicon (`public/favicon.svg`,
+  con variante oscura por `prefers-color-scheme`) y los PNG de 32 y 180 px
+  salen de ese mismo SVG. El wordmark es el nombre en la tipografía del sistema.
+- **Descartado**: doble hélice (vetada por el encargo), un logotipo dibujado
+  aparte y una fuente web solo para el wordmark (más bytes en la ruta crítica).
+- **Reversible**: sí; `public/favicon.svg` y el SVG en línea de `index.html`.
+
+## D-21 · Imágenes OG por idioma, generadas en el build con datos reales
+
+- `scripts/build-icons.mjs` (Playwright, ya era dependencia de desarrollo)
+  pinta `og-en.png` y `og-es.png` de 1200×630. Llevan el nombre, el eslogan y
+  la cascada SHAP de la variante destacada, leída del `card.json` congelado.
+  No es una maqueta: si cambian los datos, cambia la imagen.
+- **Coste**: el build necesita Chromium. Si falta, el build falla, en vez de
+  publicar un `og:image` que da 404.
+
+## D-22 · Héroe vivo: la cascada SHAP de la variante destacada
+
+- **Qué**: al lado del medidor, las seis contribuciones SHAP mayores y una fila
+  con la suma del resto, desde el valor base hasta el score. Se dibujan barra
+  a barra (WAAPI, `scaleX` con `transform-box: fill-box`).
+- **Por qué esta y no el sashimi**: sale del mismo `card.json` que el héroe ya
+  descargaba (cero bytes nuevos). El sashimi exigiría un `splice.json` de
+  decenas de KB en la ruta crítica de la portada.
+- **CLS**: la cascada tiene alto fijo (`MINI_CASCADE_HEIGHT`) y el hueco del
+  héroe se reserva con la altura medida a 400, 899, 900 y 1 280 px en los dos
+  idiomas (468 px en una columna, 236 px en dos).
+
+## D-23 · Movimiento: solo con JS, solo si no se pidió reducirlo
+
+- Script de arranque → clase `motion` en `<html>` si
+  `prefers-reduced-motion` no es `reduce`. Sin esa clase, el CSS no esconde
+  nada y `motion.ts` no anima nada.
+- Solo `opacity` y `transform`; nada anima el layout.
+- El titular no se anima: es el LCP. Entran por fases la entradilla y la
+  variante. Las entradas al hacer scroll solo se aplican a bloques que empiezan
+  debajo del pliegue. La transición entre vistas se salta la primera vista.
+- `verify` hace las capturas con `reducedMotion: 'reduce'`: una captura de
+  página entera no hace scroll y dejaría invisibles los bloques de abajo. Aparte,
+  una pasada con movimiento baja hasta el pie en los dos idiomas y falla si
+  queda algún bloque con opacidad menor que 1.
+
+## D-24 · Catálogo con medidor en miniatura y distintivos de vista
+
+- El índice no trae el AVI; está en cada `locus.json` (~2 KB). En la portada
+  se piden después del `load` y solo cuando el catálogo se acerca a la
+  ventana, así que no entran en la ruta crítica. El hueco tiene tamaño fijo:
+  llenarlo no mueve nada.
+- En locus con varias variantes, la fila muestra el AVI **máximo**.
+- Distintivos solo para las vistas que no tienen todas las variantes
+  (saturación, sashimi, contactos). Poner "ficha" o "pistas" en todas no
+  informaría de nada.
+
+## D-25 · Corregidos de paso
+
+- La ayuda del mapa de saturación decía "cuanto más oscura la celda, más alto
+  el AVI", lo cual es falso en el tema oscuro, donde la rampa se invierte.
+  Ahora dice "cuanto más resalta sobre el fondo", que vale en los dos temas.
+- Los chips del navegador de pistas decían `rna seq` (el id en minúsculas);
+  ahora usan la etiqueta de la modalidad (`RNA-seq`).
+- En la portada inglesa, el nombre del estudio salía en español sin tildes: su
+  clave no estaba en el diccionario incrustado.
+- `.honesty__limits` medía 84 caracteres por línea; ahora usa
+  `--measure` (68ch).
+
+## PENDIENTE de la auditoría (no se tocó en esta pasada)
+
+- Mapa de calor tejido × modalidad: colapsar por sistema de órganos y un
+  resumen "top N" antes de la pared de ~240 filas (P2, M).
+- Ayuda del navegador de pistas en móvil: plegarla bajo 480 px (P2, S).
+- Vistas cortas (locus, "sobre los datos"): el hueco que deja `min-height:
+  100dvh`, que existe por CLS (P2, M).
+- Capturas de los estados de carga y error (P3, S).
+
+---
+
+## Fase 3 — Por qué, hoja de ruta, referencias y cómo está hecho
+
+## D-30 · Referencias: solo las verificadas en PubMed
+
+- Las 13 citas del encargo se comprobaron una por una contra PubMed el
+  2026-09-26 (autores, título, revista, volumen, DOI, PMID). Las 13 existen.
+  Cada una se publica con enlace a su DOI y a su registro de PubMed.
+- Correcciones que salieron de verificar:
+  - "Radivojac 2026" es **Hoffing R, …, Radivojac P** (Radivojac es el autor
+    senior). Se cita con el primer autor.
+  - Sun, Mews & Bush 2026 y Hoffing 2026 son **preprints de bioRxiv**, no
+    artículos revisados por pares. La cita lo dice.
+  - Zoonomia (Christmas et al. 2023) habla de **240** especies. El nombre del
+    feature `phyloP Cactus 241-way` viene de los datos (el alineamiento
+    incluye la referencia humana) y no se toca. Ningún texto propio dice
+    "241 mamíferos" (comprobado con grep).
+  - Las fechas (API junio 2025, Nature 28 ene 2026) coinciden con PubMed. El
+    Atlas del 8 sep 2026 no está en PubMed (es un reporte técnico); la fecha
+    sale de `alphagenome-docs/`.
+
+## D-31 · [VERIFICAR] — la frase de la "interfaz permanente" no se publica
+
+- El encargo pedía la frase de la interfaz permanente con sus tres apoyos,
+  "tomada de alphagenome-docs". **No está en alphagenome-docs**: se buscaron
+  interfaz, permanente, perdura, sobrevive y tres pilares/apoyos, sin
+  resultados. La única versión conocida es la del prompt pegado, que trae
+  U+FFFD y el encargo la descarta.
+- En su lugar, el párrafo 7 de "Por qué" explica por qué la interfaz sigue
+  funcionando sin servicios externos, con las tres restricciones R1/R2/R3 de
+  `docs/01-architecture.md`. Es una afirmación con fuente, no la frase pedida.
+- **Para cerrarlo**: pegar la frase limpia en `alphagenome-docs/` y
+  sustituir `why.p7` en los dos diccionarios.
+
+## D-32 · Qué se quitó de la narrativa por no tener fuente firme
+
+- "La muestra peruana de 1000 Genomes está dentro de gnomAD v4": el propio
+  `02-atlas-andino-plan-v2.md` lo marca "sin confirmación documental directa".
+  Se quitó.
+- "Primera pintura en menos de 1,5 s": era la cifra del 13 sep con la máquina
+  descargada. Hoy el mismo build mide entre 1,5 y 1,9 s según la carga, y el
+  texto dice eso.
+
+## D-33 · Narrativa: cuatro rutas en el hash, un chunk propio
+
+- `#/why`, `#/roadmap`, `#/how` y `#/references`. El texto va en
+  `narrative.{es,en}.json`, un chunk que solo piden esas rutas (en paralelo con
+  el índice, no después). Se enlazan desde la cabecera ("Por qué"), desde un
+  panel "El proyecto" en la portada y desde el pie, que ahora lleva además el
+  repositorio y el autor.
+- "Datos y herramientas" (en "Cómo está hecho") se llena desde el sello de
+  proveniencia del índice; no hay versiones escritas a mano.
+- Pasa por el guardarraíl de redacción (sin vocabulario clínico ni promesas),
+  por el de tildes y por la paridad de claves e identificadores ES/EN.
+
+## D-34 · Fases 2 y 3 en un solo commit
+
+- Comparten `app.ts`, `index.html` y `verify.mjs`, y la Fase 3 no compila sin
+  la 2. Partirlas a mano en dos commits que compilen cada uno costaba más que
+  lo que aporta. Se hace un commit que nombra las dos fases.

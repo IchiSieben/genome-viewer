@@ -30,8 +30,20 @@
   --text-xl: 1.5rem;
   --text-2xl: 2rem;
 
+  /* Display: solo titulares de pagina. Fluido entre movil y escritorio, sin
+     media queries: a 400px da ~2rem, a 1280px llega al tope. */
+  --text-3xl: clamp(1.75rem, 1.2rem + 2.2vw, 2.5rem);
+  --text-display: clamp(2rem, 1.1rem + 3.6vw, 3.4rem);
+
   --leading-tight: 1.25;
+  --leading-display: 1.08;
   --leading-normal: 1.55;
+  --leading-prose: 1.65;
+
+  /* Medida de lectura. 60-75 caracteres es el rango en el que el ojo no se
+     pierde al volver al inicio de la linea; toda prosa larga se ata aqui. */
+  --measure: 68ch;
+  --measure-narrow: 60ch;
 
   /* --- Espaciado --------------------------------------------------------- */
   --sp-1: 0.125rem;
@@ -43,6 +55,20 @@
   --sp-12: 1.5rem;
   --sp-16: 2rem;
   --sp-24: 3rem;
+  --sp-32: 4rem;
+  --sp-48: 6rem;
+  /* Respiracion entre secciones de una pagina: crece con la pantalla. */
+  --section-gap: clamp(var(--sp-16), 2rem + 3vw, var(--sp-32));
+
+  /* --- Movimiento -------------------------------------------------------- */
+  /* Solo transform y opacity: ninguna animacion toca layout. Con
+     `prefers-reduced-motion: reduce` nada de esto se aplica (ver motion.ts y
+     la clase `motion` que pone el script de arranque). */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-quick: 160ms;
+  --dur-enter: 420ms;
+  --dur-draw: 700ms;
+  --shift-enter: 10px;
 
   --radius-sm: 3px;
   --radius-md: 5px;

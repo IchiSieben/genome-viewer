@@ -1,14 +1,24 @@
-# Visor de predicciones de AlphaGenome
+[English](README.en.md)
 
-Plataforma web para visualizar efectos de variante predichos por **AlphaGenome**,
-más el pipeline que la alimenta.
+# Visor del genoma
 
-![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
+*No oficial. Qué le hace una variante al genoma, predicho.*
+
+El nombre evita la marca registrada de Google en un nombre de producto;
+**AlphaGenome** se sigue nombrando como la fuente de los datos.
+
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178C6?logo=typescript&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?logo=vite&logoColor=white)
-![alphagenome](https://img.shields.io/badge/alphagenome-0.9.0-4285F4?logo=googlecloud&logoColor=white)
-![JSON Schema](https://img.shields.io/badge/JSON%20Schema-2020--12-1f5fd0)
-![Sin backend](https://img.shields.io/badge/backend-ninguno-6f7c8a)
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
+![Playwright](https://img.shields.io/badge/Playwright-1.48-2EAD33?logo=playwright&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-1f5fd0)
+![static](https://img.shields.io/badge/static-0%20API%20calls-6f7c8a)
+
+**En línea:** <https://ichisieben.dev/genome-viewer/> ·
+<https://ichisieben.dev/genome-viewer/es/> (español)
+
+Es una beta. En esta primera subida lleva `noindex`: no aparece en
+buscadores todavía.
 
 ---
 
@@ -36,13 +46,15 @@ tests, y una capa de presentación que respeta una restricción de despliegue re
 | H3 | Vistas V1 y V2 | **Hecho** — ambos temas, responsive, consola limpia |
 | H4 | Datos reales de tres loci | **Hecho** — PPP1R1A/PDE1B, RASGEF1B, RPL13A |
 | H5 | V3, navegador de tracks | **Hecho** — canvas y SVG, zoom, doble resolución |
-| H6 | Despliegue | **Hecho** — [en línea](https://darkgray-alpaca-401605.hostingersite.com/) |
+| H6 | Despliegue | **Hecho** — [en línea](https://ichisieben.dev/genome-viewer/) |
 | N1 | Mapa de saturación | **Hecho** — 512 posiciones × 3 alternativas |
 | N2 | Enlace cruzado entre vistas | **Hecho** |
 | N3 | Estado en la URL | **Hecho** — locus, variante, vista, pistas y zoom |
-| H7 | Estudio poblacional | Pendiente |
-
-**En línea:** <https://darkgray-alpaca-401605.hostingersite.com/>
+| i18n | Español e inglés, sin framework | **Hecho** — ver [`docs/08-i18n.md`](docs/08-i18n.md) |
+| Identidad | Marca desde la visualización, movimiento, imágenes OG | **Hecho** — ver [`docs/05-visual-audit.md`](docs/05-visual-audit.md) |
+| Narrativa | Páginas de por qué, hoja de ruta, cómo está hecho y referencias | **Hecho** |
+| N4, N6, N7 | — | Planeadas |
+| H7 | Estudio poblacional | **Pendiente** — si el resultado es nulo, se publica igual |
 
 Los datos son **reales**, del Atlas API y del Model API. El generador de
 fixtures sintéticas sigue existiendo para desarrollar sin gastar cuota, y lo que
@@ -70,6 +82,27 @@ pipeline/   Python, local, con la llave.  ->  data/dist/   artefactos congelados
 ```
 
 Las dos capas se tocan solo por `contracts/v1/*.schema.json`.
+
+## Idiomas
+
+Inglés en la raíz (`/genome-viewer/`, x-default) y español en
+`/genome-viewer/es/`, cada uno como cascarón HTML propio generado en el build.
+El bundle es uno solo; ninguno de los dos idiomas paga por el diccionario del
+otro. `data/dist/` no se toca: su prosa se sobrescribe por id estable desde el
+diccionario (opción A), así que los artefactos siguen siendo la fuente
+congelada de datos. Detalle completo, con lo que se midió y lo que se
+descartó, en [`docs/08-i18n.md`](docs/08-i18n.md).
+
+## Identidad y movimiento
+
+La marca sale de la propia visualización: cuatro barras de altura distinta en
+los cuatro primeros colores categóricos, el mismo patrón que ya vivía en la
+cabecera. Las imágenes Open Graph por idioma se generan en el build con
+Playwright, a partir de datos reales del `card.json` congelado — no son una
+maqueta. El movimiento respeta `prefers-reduced-motion` (sin esa preferencia,
+ninguna animación corre) y solo anima `opacity`/`transform`, nunca el layout;
+el CLS medido es 0. Auditoría completa en
+[`docs/05-visual-audit.md`](docs/05-visual-audit.md).
 
 ## Cómo correrlo
 
@@ -112,14 +145,22 @@ python -m alphagenome_platform.cli build-locus          # todo el catalogo de lo
 python -m alphagenome_platform.cli build-locus rpl13a   # solo uno
 ```
 
-Tests y verificación:
+Build y verificación:
 
 ```bash
-PYTHONPATH=pipeline/src python -m pytest pipeline/tests -q   # 110 tests
-cd web && npm run build
+PYTHONUTF8=1 PYTHONPATH=pipeline/src python -m pytest pipeline/tests -q   # 110 tests
+
+cd web
+npm run build           # también escribe cascarones por idioma, 404, sitemap,
+                         # .htaccess, iconos e imágenes OG — necesita Chromium (Playwright)
+AGP_NOINDEX=0 npm run build   # el mismo build, sin el noindex de la beta
+
 npm run verify         # 16 escenarios en Chromium, dos temas, ancho de movil
 npm run verify:links   # enlace cruzado y estado en la URL
 npm run measure        # tiempo hasta interactivo y coste por frame
+
+node scripts/measure-ab.mjs <dist-de-referencia> [rondas]   # A/B contra un build anterior
+AGP_AB_LANG=es node scripts/measure-ab.mjs <dist-de-referencia>   # el mismo A/B en español
 ```
 
 `npm run verify` sirve el build **desde una subcarpeta**, como se despliega, y
@@ -269,10 +310,12 @@ pipeline/         Python. Corre en local con la llave. Nunca se despliega.
     provenance.py   sello de proveniencia
     fixtures.py     generador sintético
     acquire/        capa de adquisición, reanudable
-  tests/          51 tests
+  tests/          110 tests (incluye i18n y guardarraíl de tildes)
 data/dist/        artefactos congelados. Es lo que se despliega.
 web/              sitio estático. Vite + TypeScript, sin framework.
-docs/             decisiones de arquitectura y evidencia medida
+  src/i18n/       diccionarios es/en, narrativa, formato numérico
+  scripts/        build-shells, build-icons, verify, verify:links, measure, measure-ab
+docs/             decisiones de arquitectura, i18n, auditoría visual y evidencia medida
 ```
 
 ## Licencia y términos
@@ -282,3 +325,7 @@ sujetos a los *AlphaGenome Output Terms of Use*: uso no comercial, de
 investigación. No es un dispositivo médico, no constituye consejo médico y no
 debe usarse para decisiones clínicas. Todo lo que el visor muestra son
 predicciones de un modelo, no mediciones experimentales.
+
+---
+
+Yoichi Palacios (iC7) — <https://ichisieben.dev/>

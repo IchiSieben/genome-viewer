@@ -94,16 +94,13 @@ a {
   font-weight: 600;
 }
 
-/* La marca es una escalera de cuatro trazos: alude a una pista de senal sin
-   dibujar un logo. */
+/* La marca: cuatro barras de senal de distinta altura, los cuatro primeros
+   colores categoricos. Sale de la propia visualizacion (una pista, una
+   cascada) y es la misma figura que el favicon (public/favicon.svg). */
 .topbar__mark {
   width: 18px;
-  height: 14px;
-  background:
-    linear-gradient(var(--cat-1), var(--cat-1)) 0 60% / 3px 40% no-repeat,
-    linear-gradient(var(--cat-2), var(--cat-2)) 5px 20% / 3px 80% no-repeat,
-    linear-gradient(var(--cat-4), var(--cat-4)) 10px 45% / 3px 55% no-repeat,
-    linear-gradient(var(--cat-5), var(--cat-5)) 15px 5% / 3px 95% no-repeat;
+  height: 18px;
+  flex: none;
 }
 
 .topbar__name {
@@ -167,6 +164,12 @@ a {
   gap: var(--sp-12);
 }
 
+/* La portada respira mas que las vistas de trabajo: es la pagina que se lee,
+   no la que se usa. */
+.main:has(> .hero) {
+  gap: var(--section-gap);
+}
+
 @media (min-width: 720px) {
   .main {
     padding-inline: var(--sp-16);
@@ -191,16 +194,25 @@ a {
 
 /* --- Portada ------------------------------------------------------------ */
 
+.hero {
+  padding-top: clamp(var(--sp-8), 1rem + 3vw, var(--sp-32));
+}
 .hero__title {
-  font-size: var(--text-xl);
-  line-height: var(--leading-tight);
-  margin: 0 0 var(--sp-4);
-  letter-spacing: -0.015em;
+  font-size: var(--text-display);
+  line-height: var(--leading-display);
+  margin: 0 0 var(--sp-8);
+  letter-spacing: -0.028em;
+  font-weight: 650;
+  max-width: 20ch;
+  text-wrap: balance;
 }
 .hero__lead {
   margin: 0;
-  max-width: 62ch;
+  max-width: var(--measure-narrow);
+  font-size: clamp(var(--text-base), 0.85rem + 0.5vw, var(--text-lg));
+  line-height: var(--leading-prose);
   color: var(--ink-muted);
+  text-wrap: pretty;
 }
 
 /* El heroe: una variante real por encima del pliegue.
@@ -211,7 +223,7 @@ a {
    cifra es la altura medida del contenido que va a entrar: identidad, chips y
    el medidor compacto. */
 .hero__featured {
-  margin-top: var(--sp-8);
+  margin-top: clamp(var(--sp-12), 1rem + 2vw, var(--sp-24));
   padding: var(--sp-8);
   border: var(--stroke-hair) solid var(--rule);
   border-radius: var(--radius-md);
@@ -225,7 +237,106 @@ a {
   color: var(--ink-faint);
 }
 .hero__slot {
-  min-height: 210px;
+  /* Una columna: lectura (~232) + separacion + cascada con su pie. Medido a
+     400 px en los dos idiomas: 468 px. */
+  min-height: 470px;
+}
+
+/* Lectura a la izquierda (identidad y medidor), cascada a la derecha: lo que
+   dice el score y por que lo dice, lado a lado. La altura de la cascada es
+   fija (MINI_CASCADE_HEIGHT en variantCard.ts), asi que la reserva del slot
+   no depende de la variante. */
+.hero__grid {
+  display: grid;
+  gap: var(--sp-16);
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 900px) {
+  .hero__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    align-items: start;
+  }
+  .hero__slot {
+    min-height: 236px;
+  }
+}
+.hero__cascade {
+  margin: 0;
+  min-width: 0;
+}
+.hero__cascade-caption {
+  margin: 0 0 var(--sp-6);
+  font-size: var(--text-xs);
+  color: var(--ink-muted);
+  max-width: var(--measure-narrow);
+}
+.hero__cascade-plot {
+  /* 7 filas de 22 px + 24 del eje. Reservado antes de dibujar. */
+  min-height: 178px;
+}
+.mini-cascade {
+  display: block;
+  overflow: visible;
+}
+.mini-cascade__bar {
+  transform-box: fill-box;
+}
+.mini-cascade__rest {
+  fill: var(--ink-faint);
+  font-style: italic;
+}
+.mini-cascade__final-line {
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+.mini-cascade__final-label {
+  fill: var(--ink);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Entrada del heroe por fases: primero el titular (que NO se anima: es el
+   LCP y se pinta ya), luego la entradilla, luego la variante. */
+.motion .hero__lead,
+.motion .hero__featured {
+  animation: enter var(--dur-enter) var(--ease-out) both;
+}
+.motion .hero__lead {
+  animation-delay: 90ms;
+}
+.motion .hero__featured {
+  animation-delay: 200ms;
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--shift-enter));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Entradas al hacer scroll (src/lib/motion.ts). Solo existe `.reveal` en lo
+   que empezo debajo del pliegue, y solo con la clase `motion` en <html>. */
+.motion .reveal {
+  transition:
+    opacity var(--dur-enter) var(--ease-out) var(--reveal-delay, 0ms),
+    transform var(--dur-enter) var(--ease-out) var(--reveal-delay, 0ms);
+}
+.motion .reveal:not(.is-in) {
+  opacity: 0;
+  transform: translateY(calc(var(--shift-enter) * 2));
+}
+
+@media print {
+  .motion .reveal:not(.is-in) {
+    opacity: 1;
+    transform: none;
+  }
 }
 .hero__variant {
   font-size: var(--text-lg);
@@ -246,8 +357,8 @@ a {
   color: var(--ink-faint);
 }
 .hero__note {
-  margin: var(--sp-6) 0 0;
-  max-width: 62ch;
+  margin: var(--sp-8) 0 0;
+  max-width: var(--measure);
   font-size: var(--text-xs);
   color: var(--ink-muted);
 }
@@ -266,9 +377,6 @@ a {
    soltar es la altura reservada: con dos lineas de chips el contenido crece y
    un minimo pensado para el ancho grande dejaria un hueco. */
 @media (max-width: 480px) {
-  .hero__slot {
-    min-height: 232px;
-  }
   .hero__actions .button {
     flex: 1 1 auto;
     text-align: center;
@@ -356,6 +464,73 @@ a {
   margin-left: auto;
   font-size: var(--text-xs);
   color: var(--ink-faint);
+}
+
+/* Resumen de cada fila: vistas propias de esa variante y su AVI en miniatura.
+   Hueco de tamano FIJO: en la portada se llena despues del load, y llenarlo
+   no puede empujar nada (CLS). En movil ocupa su propia linea. */
+.catalog__digest {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--sp-6);
+  flex: 1 0 100%;
+  height: 20px;
+  overflow: hidden;
+}
+@media (min-width: 720px) {
+  .catalog__digest {
+    flex: 0 0 22rem;
+    justify-content: flex-end;
+  }
+}
+
+.mini-phred {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-4);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-2xs);
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+.mini-phred--missing {
+  color: var(--ink-faint);
+}
+.mini-phred__track {
+  position: relative;
+  display: inline-block;
+  width: 64px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface-sunken);
+  outline: var(--stroke-hair) solid var(--rule);
+  outline-offset: -1px;
+  overflow: hidden;
+}
+.mini-phred__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--seq-7);
+}
+.mini-phred__value {
+  min-width: 8.5ch;
+}
+
+.view-badges {
+  display: inline-flex;
+  gap: var(--sp-2);
+}
+.view-badge {
+  font-size: var(--text-3xs);
+  letter-spacing: 0.02em;
+  color: var(--ink-muted);
+  border: var(--stroke-hair) solid var(--rule-strong);
+  border-radius: 999px;
+  padding: 0 var(--sp-4);
+  line-height: 1.6;
+  white-space: nowrap;
 }
 
 /* --- Identidad de variante ---------------------------------------------- */
@@ -963,7 +1138,7 @@ a {
   gap: var(--sp-3);
   font-size: var(--text-sm);
   color: var(--ink-muted);
-  max-width: 84ch;
+  max-width: var(--measure);
 }
 .honesty__hint,
 .honesty__ethics {
@@ -1688,4 +1863,121 @@ a {
   font-size: var(--text-sm);
   line-height: var(--leading-normal);
   color: var(--ink-muted);
+}
+
+/* --- Paginas de texto (por que, hoja de ruta, como esta hecho, refs) ---- */
+
+.page-head {
+  padding-top: clamp(var(--sp-8), 1rem + 2vw, var(--sp-24));
+}
+.page-head__title {
+  font-size: var(--text-3xl);
+  line-height: var(--leading-display);
+  letter-spacing: -0.024em;
+  font-weight: 650;
+  margin: 0 0 var(--sp-8);
+  max-width: 24ch;
+  text-wrap: balance;
+}
+.page-head__lead {
+  margin: 0;
+  max-width: var(--measure-narrow);
+  font-size: clamp(var(--text-base), 0.85rem + 0.4vw, var(--text-lg));
+  line-height: var(--leading-prose);
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}
+
+/* Prosa para leer de corrido: cuerpo mayor, interlineado de lectura, medida
+   de 68 caracteres. */
+.prose--long p {
+  max-width: var(--measure);
+  font-size: var(--text-base);
+  line-height: var(--leading-prose);
+  color: var(--ink);
+  margin-bottom: var(--sp-12);
+  text-wrap: pretty;
+}
+
+.milestones {
+  list-style: none;
+  margin: var(--sp-8) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-2);
+}
+.milestone {
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr);
+  gap: var(--sp-8);
+  align-items: baseline;
+  padding: var(--sp-6) 0;
+  border-top: var(--stroke-hair) solid var(--rule);
+}
+.milestone__id {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-align: center;
+  border-radius: 999px;
+  padding: 0 var(--sp-4);
+  line-height: 1.7;
+}
+.milestone--done .milestone__id {
+  color: var(--ok);
+  background: var(--ok-soft);
+}
+.milestone--planned .milestone__id {
+  color: var(--ink-muted);
+  border: var(--stroke-hair) dashed var(--rule-strong);
+}
+.milestone__name {
+  margin: 0 0 var(--sp-1);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+.milestone__body {
+  margin: 0;
+  max-width: var(--measure);
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+}
+
+.references {
+  margin: var(--sp-8) 0 0;
+  padding-left: 1.4rem;
+  display: grid;
+  gap: var(--sp-8);
+}
+.reference {
+  max-width: 80ch;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+.reference__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-8);
+  margin-top: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+}
+
+.footer__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4) var(--sp-12);
+  margin-bottom: var(--sp-8);
+  font-size: var(--text-sm);
+}
+.footer__nav a {
+  color: var(--ink-muted);
+  text-decoration: none;
+}
+.footer__nav a:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+.footer .footer__author {
+  margin-bottom: var(--sp-8);
 }
