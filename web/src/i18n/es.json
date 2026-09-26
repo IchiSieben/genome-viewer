@@ -405,5 +405,9 @@
   "footer.repo": "Código en GitHub",
   "footer.author": "Hecho por Yoichi Palacios (iC7), ingeniero de datos en Lima",
   "home.project.title": "El proyecto",
-  "home.project.subtitle": "Por qué existe, qué falta y cómo está construido"
+  "home.project.subtitle": "Por qué existe, qué falta y cómo está construido",
+  "heatmap.search.label": "Buscar tracks por biosample, sistema de órganos o término de ontología",
+  "heatmap.search.placeholder": "Buscar: nervioso, liver, UBERON…",
+  "heatmap.search.count": "{shown} de {total} biosamples",
+  "heatmap.search.empty": "Ningún biosample coincide con «{query}». Los tejidos llevan su nombre de ontología, en inglés; los sistemas de órganos, en español. Esc borra la búsqueda."
 }

@@ -15,7 +15,7 @@ import { clear, el, onResize, onThemeChange, svg } from '../lib/dom';
 import * as fmt from '../lib/format';
 import { dataText, t } from '../i18n';
 import { divergingScale, modalityColor } from '../lib/color';
-import { panel, predictionNotice, provenanceStrip, rsidChip, sourceChip, tooltip } from '../lib/ui';
+import { emptyState, panel, predictionNotice, provenanceStrip, rsidChip, sourceChip, tooltip } from '../lib/ui';
 import type { TracksDoc } from '../lib/types';
 
 const ROW_HEIGHT = 17;
@@ -41,8 +41,12 @@ interface GroupLayout {
   rows: RowLayout[];
 }
 
-/** Agrupa los biosamples por sistema de organos conservando el orden declarado. */
-function layoutGroups(doc: TracksDoc): { groups: GroupLayout[]; height: number } {
+/** Agrupa los biosamples por sistema de organos conservando el orden declarado.
+ *  `keep`, si viene, deja solo esos biosamples (N6, buscador de tracks). */
+function layoutGroups(
+  doc: TracksDoc,
+  keep?: Set<number>,
+): { groups: GroupLayout[]; height: number } {
   const systems = doc.organSystems ?? [];
   const order = systems.length
     ? systems.map((s) => s.id)
@@ -56,7 +60,8 @@ function layoutGroups(doc: TracksDoc): { groups: GroupLayout[]; height: number }
     const indices = doc.biosamples
       .map((biosample, index) => ({ biosample, index }))
       .filter(({ biosample }) => (biosample.organSystem ?? 'otros') === id)
-      .map(({ index }) => index);
+      .map(({ index }) => index)
+      .filter((index) => !keep || keep.has(index));
     if (!indices.length) continue;
 
     const top = y;
@@ -175,8 +180,9 @@ function drawHeatmap(
   doc: TracksDoc,
   width: number,
   onOpenSignal?: (modality: string, biosample: string) => void,
+  keep?: Set<number>,
 ): HTMLElement {
-  const { groups, height } = layoutGroups(doc);
+  const { groups, height } = layoutGroups(doc, keep);
   const nModalities = doc.modalities.length;
 
   const available = Math.max(240, width - LABEL_WIDTH - 8);
@@ -350,6 +356,11 @@ function drawHeatmap(
 }
 
 /** Monta la vista y devuelve la funcion de limpieza. */
+/** Minusculas y sin diacriticos: "musculo" encuentra "músculo". */
+function normalize(text: string): string {
+  return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
 export function renderTissueHeatmap(
   container: HTMLElement,
   doc: TracksDoc,
@@ -362,12 +373,75 @@ export function renderTissueHeatmap(
     doc.cells.map(([, , value]) => value),
   );
 
+  // N6 — buscador de tracks. Filtra filas por nombre del biosample, sistema
+  // de organos o termino de ontologia; la escala de color NO cambia al
+  // filtrar (el dominio sale de todas las celdas), asi que un color significa
+  // lo mismo con y sin filtro.
+  const organLabel = new Map((doc.organSystems ?? []).map((o) => [o.id, o.label]));
+  const haystack = doc.biosamples.map((b) =>
+    normalize(
+      [
+        b.label,
+        // Translated and original organ label: "hígado" and "liver" both work.
+        b.organSystem ? dataText(`data.organ.${b.organSystem}`, b.organSystem) : '',
+        organLabel.get(b.organSystem ?? '') ?? '',
+        b.ontologyCurie ?? '',
+      ].join(' '),
+    ),
+  );
+  let keep: Set<number> | undefined;
+  const count = el('span', { class: 'heatmap-search__count', 'aria-live': 'polite' });
+  const input = el('input', {
+    class: 'heatmap-search__input',
+    type: 'search',
+    placeholder: t('heatmap.search.placeholder'),
+    'aria-label': t('heatmap.search.label'),
+    autocomplete: 'off',
+    spellcheck: 'false',
+  }) as HTMLInputElement;
+  const search = el(
+    'div',
+    { class: 'heatmap-search', role: 'search' },
+    input,
+    count,
+  );
+
   const draw = (width: number) => {
     clear(slot);
     clear(legendSlot);
     legendSlot.append(legend(domainMax, width, clamped) as unknown as HTMLElement);
-    slot.append(drawHeatmap(doc, width, onOpenSignal));
+    if (keep && keep.size === 0) {
+      slot.append(emptyState(t('heatmap.search.empty', { query: input.value.trim() })));
+      return;
+    }
+    slot.append(drawHeatmap(doc, width, onOpenSignal, keep));
   };
+
+  const applyFilter = () => {
+    const words = normalize(input.value).split(/\s+/).filter(Boolean);
+    keep = words.length
+      ? new Set(
+          haystack
+            .map((text, i) => (words.every((w) => text.includes(w)) ? i : -1))
+            .filter((i) => i >= 0),
+        )
+      : undefined;
+    count.textContent = keep
+      ? t('heatmap.search.count', { shown: keep.size, total: doc.biosamples.length })
+      : '';
+    draw(slot.clientWidth || 720);
+  };
+  let pending = 0;
+  input.addEventListener('input', () => {
+    window.clearTimeout(pending);
+    pending = window.setTimeout(applyFilter, 120);
+  });
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && input.value) {
+      input.value = '';
+      applyFilter();
+    }
+  });
 
   const covered = new Set(doc.cells.map((c) => `${c[0]}:${c[1]}`)).size;
   const total = doc.biosamples.length * doc.modalities.length;
@@ -407,7 +481,7 @@ export function renderTissueHeatmap(
         subtitle: t('heatmap.panel.subtitle', { covered, total, trimmedNote: trimmed }),
         hint: t('heatmap.panel.hint'),
       },
-      el('div', {}, legendSlot, slot),
+      el('div', {}, search, legendSlot, slot),
     ),
     predictionNotice(),
   );

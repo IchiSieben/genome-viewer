@@ -42,8 +42,8 @@ function renderWhy(main: HTMLElement): void {
   );
 }
 
-const DONE = ['H0', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'N1', 'N2', 'N3', 'V4', 'V5'];
-const PLANNED = ['H7', 'N4', 'N6', 'N7'];
+const DONE = ['H0', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'N1', 'N2', 'N3', 'V4', 'V5', 'N6'];
+const PLANNED = ['H7', 'N4', 'N7'];
 const GATES = ['G1', 'G2', 'G3', 'G4', 'G5', 'G6'];
 
 function milestone(id: string, done: boolean): HTMLElement {

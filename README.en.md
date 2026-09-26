@@ -54,7 +54,8 @@ constraint.
 | i18n | Spanish and English, no framework | **Done** — see [`docs/08-i18n.md`](docs/08-i18n.md) |
 | Identity | Mark from the visualization, motion, OG images | **Done** — see [`docs/05-visual-audit.md`](docs/05-visual-audit.md) |
 | Narrative | Why, roadmap, how-it's-built and references pages | **Done** |
-| N4, N6, N7 | — | Planned |
+| N6 | Track search in the tissue × modality map | **Done** |
+| N4, N7 | — | Planned |
 | H7 | Population study | **Pending** — a null result will be published too |
 
 The data is **real**, from the Atlas API and the Model API. The synthetic

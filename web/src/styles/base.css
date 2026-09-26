@@ -843,6 +843,34 @@ a {
 
 /* --- Mapa de calor ------------------------------------------------------ */
 
+.heatmap-search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-4) var(--sp-8);
+  margin-bottom: var(--sp-12);
+}
+.heatmap-search__input {
+  flex: 1 1 16rem;
+  max-width: 28rem;
+  min-height: 36px;
+  padding: 0 var(--sp-6);
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+}
+.heatmap-search__input:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 1px;
+}
+.heatmap-search__count {
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
 .heatmap-legend {
   margin-bottom: var(--sp-6);
 }

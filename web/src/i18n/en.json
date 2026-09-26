@@ -405,5 +405,9 @@
   "footer.repo": "Code on GitHub",
   "footer.author": "Made by Yoichi Palacios (iC7), data engineer in Lima",
   "home.project.title": "The project",
-  "home.project.subtitle": "Why it exists, what is missing and how it is built"
+  "home.project.subtitle": "Why it exists, what is missing and how it is built",
+  "heatmap.search.label": "Search tracks by biosample, organ system or ontology term",
+  "heatmap.search.placeholder": "Search: nervous, liver, UBERON…",
+  "heatmap.search.count": "{shown} of {total} biosamples",
+  "heatmap.search.empty": "No biosample matches “{query}”. Tissues use their ontology name; organ systems their group name. Esc clears the search."
 }

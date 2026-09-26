@@ -43,7 +43,7 @@
   "roadmap.item.N4.name": "Comparator",
   "roadmap.item.N4.body": "A view for placing two variants or two loci side by side. Not yet built.",
   "roadmap.item.N6.name": "Track search",
-  "roadmap.item.N6.body": "Search over biosamples and modalities inside the track browser, to find a specific track without scrolling the full list. Not yet built.",
+  "roadmap.item.N6.body": "A field above the tissue × modality map filters its rows by biosample name, organ system or ontology term, ignoring case and accents. The color scale does not change when filtering: a color means the same with or without a search.",
   "roadmap.item.N7.name": "Gene view",
   "roadmap.item.N7.body": "A panel centered on a whole gene instead of a single variant. Not yet built.",
   "roadmap.gates.title": "Population-study gates",

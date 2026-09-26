@@ -435,6 +435,40 @@ async function checkMotion(lang) {
 await checkMotion('en');
 await checkMotion('es');
 
+// N6: the track search filters heatmap rows, ignores accents, shows an empty
+// state for no match, and Esc brings every row back.
+async function checkSearch(lang, query) {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: 'reduce' });
+  const page = await context.newPage();
+  const errors = [];
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+  await page.addInitScript(() => { try { localStorage.setItem('agp-tour-seen', '1'); } catch {} });
+  await page.goto(BASE + (lang === 'es' ? 'es/' : '') + '#/variant/ppp1r1a-pde1b/chr12-54578515-C-T?view=tracks', { waitUntil: 'networkidle', timeout: 120000 });
+  await page.waitForSelector('.heatmap__row-label', { timeout: 60000 });
+  const results = [];
+  const check = (ok, label) => { results.push(`${ok ? '  OK   ' : '  FALLA'} ${label}`); if (!ok) failures++; };
+  const rows = () => page.locator('.heatmap__row-label').count();
+  const all = await rows();
+  const input = page.locator('.heatmap-search__input');
+  await input.fill(query);
+  await page.waitForTimeout(400);
+  const some = await rows();
+  check(some > 0 && some < all, `"${query}" deja ${some} de ${all} filas`);
+  check((await page.locator('.heatmap-search__count').textContent())?.includes(String(some)), 'el recuento coincide con las filas');
+  await input.fill('zzqx-sin-resultado');
+  await page.waitForTimeout(400);
+  check((await rows()) === 0 && (await page.locator('.state--empty').count()) > 0, 'sin coincidencias: estado vacio');
+  await input.press('Escape');
+  await page.waitForTimeout(200);
+  check((await rows()) === all, 'Esc devuelve todas las filas');
+  check(errors.length === 0, `sin errores de consola${errors.length ? ': ' + errors.join(' | ') : ''}`);
+  console.log(`\nbuscador de tracks (${lang})`);
+  for (const r of results) console.log(r);
+  await context.close();
+}
+await checkSearch('en', 'liver');
+await checkSearch('es', 'musculo');
+
 await browser.close();
 console.log(`\n${failures === 0 ? 'TODO OK' : failures + ' FALLAS'}`);
 process.exit(failures === 0 ? 0 : 1);
