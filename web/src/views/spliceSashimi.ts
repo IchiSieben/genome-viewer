@@ -22,6 +22,7 @@ import { clear, el, onResize, onThemeChange, svg, token } from '../lib/dom';
 import * as fmt from '../lib/format';
 import { divergingScale } from '../lib/color';
 import { emptyState, panel, predictionNotice, provenanceStrip, sourceChip, tooltip } from '../lib/ui';
+import { dataText, t } from '../i18n';
 import type { SpliceDoc, SpliceJunction } from '../lib/types';
 
 const MARGIN = { top: 28, right: 16, bottom: 30, left: 16 };
@@ -95,7 +96,7 @@ function arcPath(x0: number, x1: number, baseline: number, height: number, dir: 
 export function renderSpliceSashimi(container: HTMLElement, doc: SpliceDoc): () => void {
   const biosampleChip = el('span', {
     class: 'card__chip',
-    title: `Ontologia ${doc.biosample.ontologyCurie}`,
+    title: t('splice.ontologyTitle', { curie: doc.biosample.ontologyCurie }),
     text: doc.biosample.name,
   });
 
@@ -104,16 +105,11 @@ export function renderSpliceSashimi(container: HTMLElement, doc: SpliceDoc): () 
       provenanceStrip(doc.provenance),
       panel(
         {
-          title: 'Splicing (sashimi)',
-          subtitle: 'Uniones de empalme, REF contra ALT',
+          title: t('splice.title'),
+          subtitle: t('splice.subtitleShort'),
           actions: [sourceChip(doc.provenance), biosampleChip],
         },
-        emptyState(
-          'Sin uniones de empalme en esta ventana.',
-          'El scorer SPLICE_JUNCTIONS no devolvio observaciones para este ' +
-            'biosample en este intervalo. Modalidad silenciosa, no un fallo: ' +
-            'el mismo patron que "sin rsid catalogado".',
-        ),
+        emptyState(t('splice.noData.title'), t('splice.noData.body')),
       ),
     );
     return () => {};
@@ -134,7 +130,7 @@ export function renderSpliceSashimi(container: HTMLElement, doc: SpliceDoc): () 
   const toggle = el(
     'button',
     { class: 'button button--quiet', type: 'button', 'aria-pressed': 'false' },
-    'Solo delta',
+    t('splice.toggle.onlyDelta'),
   );
   toggle.addEventListener('click', () => {
     deltaMode = !deltaMode;
@@ -143,9 +139,11 @@ export function renderSpliceSashimi(container: HTMLElement, doc: SpliceDoc): () 
   });
 
   const readout = el('p', { class: 'sashimi__readout' });
-  readout.textContent =
-    `${junctions.length} de ${doc.totalJunctionsInWindow} uniones en esta ventana, ` +
-    `mostrando solo las que superan ${fmt.fixed2(doc.minValueShown)}`;
+  readout.textContent = t('splice.readout', {
+    shown: junctions.length,
+    total: doc.totalJunctionsInWindow,
+    floor: fmt.fixed2(doc.minValueShown),
+  });
 
   function plotWidth(): number {
     return Math.max(200, width - MARGIN.left - MARGIN.right);
@@ -316,14 +314,14 @@ export function renderSpliceSashimi(container: HTMLElement, doc: SpliceDoc): () 
           y: String(MARGIN.top - 10),
           class: 'sashimi__lane-label',
           fill: refColor,
-          text: 'REF',
+          text: t('splice.lane.ref'),
         }),
         svg('text', {
           x: String(MARGIN.left),
           y: String(h - MARGIN.bottom + 16),
           class: 'sashimi__lane-label',
           fill: altColor,
-          text: 'ALT',
+          text: t('splice.lane.alt'),
         }),
       );
     }
@@ -375,14 +373,17 @@ export function renderSpliceSashimi(container: HTMLElement, doc: SpliceDoc): () 
   }
 
   function showTip(event: MouseEvent, j: SpliceJunction, delta?: number): void {
-    const title = `${fmt.coordinate(doc.interval.chromosome, j.start + 1)} - ${j.end - j.start} pb`;
+    const title = t('splice.tooltip.junction', {
+      coordinate: fmt.coordinate(doc.interval.chromosome, j.start + 1),
+      length: j.end - j.start,
+    });
     if (delta !== undefined) {
       tip.show(
         title,
         [
-          { label: 'REF', value: fmt.fixed2(j.ref) },
-          { label: 'ALT', value: fmt.fixed2(j.alt) },
-          { label: 'ALT - REF', value: fmt.signed2(delta), emphasis: true },
+          { label: t('splice.tooltip.ref'), value: fmt.fixed2(j.ref) },
+          { label: t('splice.tooltip.alt'), value: fmt.fixed2(j.alt) },
+          { label: t('splice.tooltip.deltaLabel'), value: fmt.signed2(delta), emphasis: true },
         ],
         event.clientX,
         event.clientY,
@@ -392,8 +393,8 @@ export function renderSpliceSashimi(container: HTMLElement, doc: SpliceDoc): () 
     tip.show(
       title,
       [
-        { label: 'REF', value: fmt.fixed2(j.ref), swatch: token(REF_COLOR_TOKEN), emphasis: true },
-        { label: 'ALT', value: fmt.fixed2(j.alt), swatch: token(ALT_COLOR_TOKEN), emphasis: true },
+        { label: t('splice.tooltip.ref'), value: fmt.fixed2(j.ref), swatch: token(REF_COLOR_TOKEN), emphasis: true },
+        { label: t('splice.tooltip.alt'), value: fmt.fixed2(j.alt), swatch: token(ALT_COLOR_TOKEN), emphasis: true },
       ],
       event.clientX,
       event.clientY,
@@ -404,8 +405,8 @@ export function renderSpliceSashimi(container: HTMLElement, doc: SpliceDoc): () 
     provenanceStrip(doc.provenance),
     panel(
       {
-        title: 'Splicing (sashimi)',
-        subtitle: `Uniones de empalme, REF contra ALT · ${doc.biosample.name}`,
+        title: t('splice.title'),
+        subtitle: t('splice.subtitleWithBiosample', { biosample: doc.biosample.name }),
         actions: [sourceChip(doc.provenance), biosampleChip, toggle],
         hint: deltaHint(),
       },
@@ -424,16 +425,8 @@ export function renderSpliceSashimi(container: HTMLElement, doc: SpliceDoc): () 
   function deltaHint(): string {
     const touching = junctions.filter((j) => touchesVariant(j, doc.variant.position)).length;
     return (
-      'REF arriba del eje, ALT abajo: la diferencia de forma entre las dos mitades ' +
-      'es la senal. "Solo delta" cambia a una sola fila con el signo de ALT menos ' +
-      'REF -rojo cuando ALT gana, azul cuando REF gana- para quien quiere la ' +
-      'magnitud exacta en vez de comparar dos siluetas.' +
-      (touching
-        ? ` Los ${touching} arcos que tocan la posicion de la variante van a ` +
-          `plena intensidad y el resto atenuado; las etiquetas se reparten por ` +
-          `|ALT - REF|, no por grosor, mas una sola sobre el arco mayor como ` +
-          `referencia de escala.`
-        : '')
+      t('splice.hint.base') +
+      (touching ? t('splice.hint.touching', { count: touching }) : '')
     );
   }
 
@@ -487,8 +480,8 @@ function findingBlock(doc: SpliceDoc): HTMLElement[] {
     el(
       'section',
       { class: 'finding' },
-      el('h3', { class: 'finding__title', text: 'El hallazgo' }),
-      el('p', { class: 'finding__text', text: doc.finding }),
+      el('h3', { class: 'finding__title', text: t('splice.finding.title') }),
+      el('p', { class: 'finding__text', text: dataText(`data.finding.${doc.variant.id}`, doc.finding) }),
       el(
         'table',
         { class: 'finding__table' },
@@ -498,22 +491,23 @@ function findingBlock(doc: SpliceDoc): HTMLElement[] {
           el(
             'tr',
             {},
-            el('th', { scope: 'col', text: 'Donador → aceptor' }),
-            el('th', { scope: 'col', text: 'REF' }),
-            el('th', { scope: 'col', text: 'ALT' }),
-            el('th', { scope: 'col', text: 'ALT − REF' }),
+            el('th', { scope: 'col', text: t('splice.finding.table.donorAcceptor') }),
+            el('th', { scope: 'col', text: t('splice.finding.table.ref') }),
+            el('th', { scope: 'col', text: t('splice.finding.table.alt') }),
+            el('th', { scope: 'col', text: t('splice.finding.table.delta') }),
           ),
         ),
         el('tbody', {}, ...rows),
       ),
       el('p', {
         class: 'finding__method',
-        text:
-          `Las cifras salen del propio artefacto: son las ${touching.length} uniones ` +
-          `cuyos extremos caen a ${VARIANT_FOOTPRINT_BP} pb o menos de ` +
-          `${fmt.coordinate(doc.variant.chromosome, doc.variant.position)}, entre las ` +
-          `${doc.junctions.length} que superan el piso de ${fmt.fixed2(doc.minValueShown)} ` +
-          `en esta ventana. Son tambien las ${touching.length} primeras al ordenar por |ALT - REF|.`,
+        text: t('splice.finding.method', {
+          touchingCount: touching.length,
+          footprint: VARIANT_FOOTPRINT_BP,
+          coordinate: fmt.coordinate(doc.variant.chromosome, doc.variant.position),
+          totalCount: doc.junctions.length,
+          floor: fmt.fixed2(doc.minValueShown),
+        }),
       }),
     ),
   ];
@@ -529,9 +523,9 @@ function widthLegend(domainMin: number, domainMax: number): HTMLElement {
     height: '40',
     viewBox: '0 0 260 40',
     role: 'img',
-    'aria-label': 'Leyenda de grosor: escala logaritmica de magnitud de union.',
+    'aria-label': t('splice.legend.ariaLabel'),
   });
-  root.append(svg('text', { x: '0', y: '10', class: 'legend__title', text: 'Grosor · magnitud (log)' }));
+  root.append(svg('text', { x: '0', y: '10', class: 'legend__title', text: t('splice.legend.title') }));
   let x = 4;
   for (const value of samples) {
     const w = widthFor(value, domainMin, domainMax);

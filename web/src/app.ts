@@ -40,6 +40,7 @@ import { renderSaturationMap } from './views/saturationMap';
 import { renderContactDiff } from './views/contactDiff';
 import { renderSpliceSashimi } from './views/spliceSashimi';
 import { maybeStartTour } from './tour';
+import { dataText, loadFull, otherLang, otherLangHref, rememberLang, t, tp } from './i18n';
 import type { IndexDoc, LocusDoc } from './lib/types';
 
 interface Route {
@@ -125,22 +126,20 @@ function featuredHero(index: IndexDoc): { node: HTMLElement; stop: () => void } 
   const slot = el(
     'div',
     { class: 'hero__slot' },
-    el('p', { class: 'hero__waiting', text: 'Cargando la variante...' }),
+    el('p', { class: 'hero__waiting', text: t('home.hero.loading') }),
   );
 
   const node = el(
     'section',
     { class: 'hero__featured' },
-    el('p', { class: 'hero__kicker', text: 'Una variante real, ya cargada' }),
+    el('p', { class: 'hero__kicker', text: t('home.hero.kicker') }),
     slot,
     // Una linea que es cierta con cualquier score. La lectura del numero la da
     // el propio medidor, derivada del cuantil; repetirla aqui a mano seria la
     // forma mas facil de que la portada envejezca diciendo algo falso.
     el('p', {
       class: 'hero__note',
-      text:
-        'El score situa a la variante entre todas las del genoma. Es una ' +
-        'prediccion de efecto regulatorio, no un diagnostico.',
+      text: t('home.hero.note'),
     }),
     el(
       'div',
@@ -148,7 +147,7 @@ function featuredHero(index: IndexDoc): { node: HTMLElement; stop: () => void } 
       el(
         'a',
         { class: 'button', href: href(variantRoute) },
-        'Ver la ficha completa',
+        t('home.hero.openCard'),
       ),
       featured.saturation
         ? el(
@@ -157,7 +156,7 @@ function featuredHero(index: IndexDoc): { node: HTMLElement; stop: () => void } 
               class: 'button button--quiet',
               href: href(`${variantRoute}?view=saturation`),
             },
-            'Mapa de saturacion',
+            t('variant.tab.saturation'),
           )
         : null,
     ),
@@ -209,7 +208,7 @@ function featuredHero(index: IndexDoc): { node: HTMLElement; stop: () => void } 
       slot.append(
         el('p', {
           class: 'hero__waiting',
-          text: 'La ficha no cargo. Los enlaces de abajo siguen sirviendo.',
+          text: t('home.hero.failed'),
         }),
       );
     });
@@ -251,10 +250,10 @@ function renderHome(main: HTMLElement, index: IndexDoc): (() => void) | undefine
           }),
           el('span', {
             class: 'catalog__detail',
-            text:
-              `${locus.variantCount ?? 0} variantes · ${fmt.span(
-                locus.end - locus.start,
-              )}`,
+            text: t('home.catalog.detail', {
+              variants: tp('home.catalog.variants', locus.variantCount ?? 0),
+              span: fmt.span(locus.end - locus.start),
+            }),
           }),
         ),
       ),
@@ -272,7 +271,10 @@ function renderHome(main: HTMLElement, index: IndexDoc): (() => void) | undefine
             el(
               'a',
               { class: 'catalog__link', href: href(`study/${study.id}`) },
-              el('span', { class: 'catalog__name', text: study.label }),
+              el('span', {
+                class: 'catalog__name',
+                text: dataText(`data.study.${study.id}.label`, study.label),
+              }),
               el('span', {
                 class: `status status--${study.status}`,
                 text: statusLabel(study.status),
@@ -281,7 +283,7 @@ function renderHome(main: HTMLElement, index: IndexDoc): (() => void) | undefine
           ),
         ),
       )
-    : emptyState('Todavia no hay estudios publicados.');
+    : emptyState(t('home.studies.empty'));
 
   const hero = featuredHero(index);
 
@@ -289,32 +291,16 @@ function renderHome(main: HTMLElement, index: IndexDoc): (() => void) | undefine
     el(
       'div',
       { class: 'hero' },
-      el('h1', {
-        class: 'hero__title',
-        text: 'Que le hace una variante al genoma, predicho',
-      }),
-      el('p', {
-        class: 'hero__lead',
-        text:
-          'AlphaGenome es el modelo de DeepMind que predice como una variante ' +
-          'cambia la lectura del ADN, y el Atlas de Variantes es su catalogo de ' +
-          'esas predicciones ya calculadas; este visor las lee congeladas en ' +
-          'archivos estaticos y nunca llama a la API.',
-      }),
+      el('h1', { class: 'hero__title', text: t('home.title') }),
+      el('p', { class: 'hero__lead', text: t('home.lead') }),
       ...(hero ? [hero.node] : [el('p', { class: 'card__meta' }, sourceChip(index.provenance))]),
     ),
     panel(
-      {
-        title: 'Loci',
-        subtitle: 'Cada uno con sus variantes y sus pistas de senal',
-      },
+      { title: t('home.loci.title'), subtitle: t('home.loci.subtitle') },
       loci,
     ),
     panel(
-      {
-        title: 'Estudios',
-        subtitle: 'Analisis que usan estos datos, con su estado declarado',
-      },
+      { title: t('home.studies.title'), subtitle: t('home.studies.subtitle') },
       studies,
     ),
     // La portada era la unica vista sin sello. Un catalogo tambien es un
@@ -325,23 +311,10 @@ function renderHome(main: HTMLElement, index: IndexDoc): (() => void) | undefine
   return hero ? hero.stop : undefined;
 }
 
+const STATUSES = ['planned', 'running', 'positive', 'null', 'inconclusive', 'underpowered'];
+
 function statusLabel(status: string): string {
-  switch (status) {
-    case 'planned':
-      return 'planificado';
-    case 'running':
-      return 'en curso';
-    case 'positive':
-      return 'resultado positivo';
-    case 'null':
-      return 'resultado nulo';
-    case 'inconclusive':
-      return 'no concluyente';
-    case 'underpowered':
-      return 'sin poder estadistico';
-    default:
-      return status;
-  }
+  return STATUSES.includes(status) ? t(`study.status.${status}`) : status;
 }
 
 function renderLocus(main: HTMLElement, locus: LocusDoc): void {
@@ -366,8 +339,11 @@ function renderLocus(main: HTMLElement, locus: LocusDoc): void {
           class: 'catalog__detail',
           text:
             entry.aviPhred === null || entry.aviPhred === undefined
-              ? 'AVI sin dato'
-              : `AVI ${fmt.fixed2(entry.aviPhred)} · ${fmt.phredMeaning(entry.aviPhred)}`,
+              ? t('locus.aviMissing')
+              : t('locus.aviDetail', {
+                  value: fmt.fixed2(entry.aviPhred),
+                  meaning: fmt.phredMeaning(entry.aviPhred),
+                }),
         }),
       ),
     ),
@@ -400,7 +376,7 @@ function renderLocus(main: HTMLElement, locus: LocusDoc): void {
       ),
     ),
     panel(
-      { title: 'Variantes', subtitle: 'Elige una para ver su ficha y su mapa de calor' },
+      { title: t('locus.variants.title'), subtitle: t('locus.variants.subtitle') },
       el('ul', { class: 'catalog' }, ...rows),
     ),
     provenanceStrip(locus.provenance),
@@ -415,7 +391,7 @@ function renderLocus(main: HTMLElement, locus: LocusDoc): void {
         el(
           'a',
           { href: href(`variant/${locus.id}/${first.variant.id}?view=signal`) },
-          'Abrir el navegador de pistas de senal de este locus',
+          t('locus.openBrowser'),
         ),
       ),
     );
@@ -432,14 +408,14 @@ async function renderVariant(
 ): Promise<void> {
   const entry = index.loci.find((l) => l.id === locusId);
   if (!entry) {
-    main.append(emptyState('Ese locus no existe en el indice.'));
+    main.append(emptyState(t('app.empty.noLocus')));
     return;
   }
 
   const locus = await loadLocus(entry.path);
   const record = locus.variants.find((v) => v.variant.id === variantId);
   if (!record) {
-    main.append(emptyState('Esa variante no esta en este locus.'));
+    main.append(emptyState(t('app.empty.noVariant')));
     return;
   }
 
@@ -456,13 +432,13 @@ async function renderVariant(
 
   const tabs = el(
     'nav',
-    { class: 'tabs', 'aria-label': 'Vistas de la variante' },
-    tabFor('card', 'Ficha de variante'),
-    tabFor('tracks', 'Tejido x modalidad'),
-    tabFor('signal', 'Pistas de senal'),
-    ...(record.artifacts.saturation ? [tabFor('saturation', 'Mapa de saturacion')] : []),
-    ...(record.artifacts.splice ? [tabFor('splice', 'Splicing (sashimi)')] : []),
-    ...(record.artifacts.contact ? [tabFor('contact', 'Contactos 3D')] : []),
+    { class: 'tabs', 'aria-label': t('variant.tabs.label') },
+    tabFor('card', t('variant.tab.card')),
+    tabFor('tracks', t('variant.tab.tracks')),
+    tabFor('signal', t('variant.tab.signal')),
+    ...(record.artifacts.saturation ? [tabFor('saturation', t('variant.tab.saturation'))] : []),
+    ...(record.artifacts.splice ? [tabFor('splice', t('variant.tab.splice'))] : []),
+    ...(record.artifacts.contact ? [tabFor('contact', t('variant.tab.contact'))] : []),
     el(
       'a',
       { class: 'tabs__back', href: href(`locus/${locusId}`) },
@@ -471,6 +447,10 @@ async function renderVariant(
   );
 
   main.append(tabs);
+  const tabKey = ['card', 'tracks', 'signal', 'saturation', 'splice', 'contact'].includes(view)
+    ? view
+    : 'card';
+  setTitle(`${fmt.variantLabel(record.variant)} · ${t(`variant.tab.${tabKey}`)}`);
   const slot = el('div', { class: 'view-slot' });
   main.append(slot);
 
@@ -505,10 +485,10 @@ async function renderVariant(
   } else if (view === 'saturation') {
     const path = record.artifacts.saturation;
     if (!path) {
-      slot.append(emptyState('Esta variante no tiene mapa de saturacion congelado.'));
+      slot.append(emptyState(t('variant.missing.saturation')));
       return;
     }
-    slot.append(loadingState('el mapa de saturacion'));
+    slot.append(loadingState(t('variant.loading.saturation')));
     const [doc, notes] = await Promise.all([
       loadSaturation(entry.path, path),
       locus.annotations
@@ -522,30 +502,30 @@ async function renderVariant(
   } else if (view === 'splice') {
     const path = record.artifacts.splice;
     if (!path) {
-      slot.append(emptyState('Esta variante no tiene sashimi de splicing congelado.'));
+      slot.append(emptyState(t('variant.missing.splice')));
       return;
     }
-    slot.append(loadingState('el sashimi de splicing'));
+    slot.append(loadingState(t('variant.loading.splice')));
     const doc = await loadSplice(entry.path, path);
     clear(slot);
     cleanup = renderSpliceSashimi(slot, doc);
   } else if (view === 'contact') {
     const path = record.artifacts.contact;
     if (!path) {
-      slot.append(emptyState('Esta variante no tiene diff de contactos congelado.'));
+      slot.append(emptyState(t('variant.missing.contact')));
       return;
     }
-    slot.append(loadingState('el diff de contactos 3D'));
+    slot.append(loadingState(t('variant.loading.contact')));
     const doc = await loadContacts(entry.path, path);
     clear(slot);
     cleanup = renderContactDiff(slot, doc);
   } else if (view === 'tracks') {
     const path = record.artifacts.tracks;
     if (!path) {
-      slot.append(emptyState('Esta variante no tiene mapa de calor congelado.'));
+      slot.append(emptyState(t('variant.missing.tracks')));
       return;
     }
-    slot.append(loadingState('el mapa de calor'));
+    slot.append(loadingState(t('variant.loading.tracks')));
     const doc = await loadTracks(entry.path, path);
     clear(slot);
     cleanup = renderTissueHeatmap(slot, doc, (modality) => {
@@ -555,10 +535,10 @@ async function renderVariant(
   } else {
     const path = record.artifacts.card;
     if (!path) {
-      slot.append(emptyState('Esta variante no tiene ficha congelada.'));
+      slot.append(emptyState(t('variant.missing.card')));
       return;
     }
-    slot.append(loadingState('la ficha de variante'));
+    slot.append(loadingState(t('variant.loading.card')));
     const doc = await loadCard(entry.path, path);
     clear(slot);
     cleanup = renderVariantCard(slot, doc, (modality) => {
@@ -573,69 +553,35 @@ function renderAbout(main: HTMLElement, index: IndexDoc): void {
     el(
       'div',
       { class: 'card__identity' },
-      el('h1', { class: 'card__title', text: 'Sobre estos datos' }),
+      el('h1', { class: 'card__title', text: t('about.title') }),
       el('p', { class: 'card__meta' }, sourceChip(index.provenance)),
     ),
     panel(
-      { title: 'Como se produjo esto' },
-      el(
-        'div',
-        { class: 'prose' },
-        el('p', {
-          text:
-            'Las predicciones se consultan en local con una llave personal, se ' +
-            'congelan en artefactos versionados y esta pagina solo lee esos ' +
-            'archivos. La llave de AlphaGenome es personal e intransferible ' +
-            'segun sus terminos de uso, asi que un sitio publico no puede ' +
-            'llamar a la API en vivo. La consecuencia util es que la pagina ' +
-            'carga instantanea y no consume cuota por visitante.',
-        }),
-        el('p', {
-          text:
-            'Los cuantiles del AVI se recalibraron el 18 de junio de 2026 y la ' +
-            'inferencia de indels se corrigio el 14 de julio de 2026. Comparar ' +
-            'artefactos de cosechas distintas no es valido, y por eso cada uno ' +
-            'lleva sellada su epoca de calibracion.',
-        }),
-      ),
+      { title: t('about.how.title') },
+      el('div', { class: 'prose' }, el('p', { text: t('about.how.p1') }), el('p', { text: t('about.how.p2') })),
     ),
     panel(
-      { title: 'Terminos' },
-      el(
-        'div',
-        { class: 'prose' },
-        el('p', {
-          text:
-            'Los resultados derivados de AlphaGenome estan sujetos a los ' +
-            'AlphaGenome Output Terms of Use. Uso no comercial, de ' +
-            'investigacion. No es un dispositivo medico, no constituye consejo ' +
-            'medico y no debe usarse para decisiones clinicas.',
-        }),
-        el('p', {
-          text:
-            'Todo lo que se muestra son predicciones de un modelo, no ' +
-            'mediciones experimentales.',
-        }),
-      ),
+      { title: t('about.terms.title') },
+      el('div', { class: 'prose' }, el('p', { text: t('about.terms.p1') }), el('p', { text: t('about.terms.p2') })),
     ),
     panel(
-      { title: 'Contrato de datos' },
+      { title: t('about.contract.title') },
       el(
         'dl',
         { class: 'facts' },
-        el('dt', { text: 'Version del esquema' }),
+        el('dt', { text: t('about.contract.schema') }),
         el('dd', { text: index.schemaVersion }),
-        el('dt', { text: 'Generado' }),
+        el('dt', { text: t('about.contract.generated') }),
         el('dd', { text: fmt.timestamp(index.generated) }),
-        el('dt', { text: 'Origen' }),
+        el('dt', { text: t('about.contract.source') }),
         el('dd', {
           text:
             index.provenance?.source === 'synthetic'
-              ? 'Fixtures sinteticas de desarrollo. No son predicciones.'
-              : (index.provenance?.source ?? 'sin declarar'),
+              ? t('about.contract.synthetic')
+              : (index.provenance?.source ?? t('about.contract.undeclared')),
         }),
-        el('dt', { text: 'Epoca de calibracion' }),
-        el('dd', { text: index.provenance?.calibrationEpoch ?? 'sin declarar' }),
+        el('dt', { text: t('about.contract.epoch') }),
+        el('dd', { text: index.provenance?.calibrationEpoch ?? t('about.contract.undeclared') }),
       ),
     ),
   );
@@ -647,18 +593,18 @@ function renderAbout(main: HTMLElement, index: IndexDoc): void {
 
 function describeError(error: unknown): { title: string; detail: string } {
   if (error instanceof SchemaVersionError) {
-    return { title: 'Contrato de datos incompatible', detail: error.message };
+    return { title: t('app.error.schema'), detail: error.message };
   }
   if (error instanceof DataError) {
     // El mensaje nombra el artefacto: "no es JSON valido" sin decir CUAL es un
     // diagnostico inservible, y esa diferencia cuesta media hora.
     return {
-      title: 'No se pudieron cargar los datos',
+      title: t('app.error.data'),
       detail: `${error.message}  (${error.url})`,
     };
   }
   return {
-    title: 'Algo salio mal',
+    title: t('app.error.unknown'),
     detail: error instanceof Error ? error.message : String(error),
   };
 }
@@ -707,6 +653,46 @@ function warmUp(current: Route): void {
   }
 }
 
+/** Routes whose texts are not in the dictionary inlined in the shell. */
+function needsFullDictionary(current: Route): boolean {
+  if (current.name === 'about' || current.name === 'study') return true;
+  if (current.name !== 'variant') return false;
+  const view = current.query.get('view') ?? 'card';
+  return view !== 'card' && view !== 'signal';
+}
+
+/**
+ * After the `load` event and then idle time: the prefetch of the full
+ * dictionary must never compete with what the visitor came to see.
+ */
+function whenIdle(fn: () => void): void {
+  const idle = () => {
+    const ric = (window as { requestIdleCallback?: (cb: () => void) => number })
+      .requestIdleCallback;
+    if (ric) ric(fn);
+    else window.setTimeout(fn, 200);
+  };
+  if (document.readyState === 'complete') idle();
+  else window.addEventListener('load', idle, { once: true });
+}
+
+/**
+ * Per-view `<title>`. The shell ships the home title; each view refines it so
+ * a shared link and a browser tab say what they point at.
+ */
+function setTitle(page?: string): void {
+  document.title = page ? t('meta.title.page', { page }) : t('meta.title.home');
+}
+
+/**
+ * The language toggle points at the SAME view in the other language: the view
+ * lives in the hash, the language in the path, so the hash is carried over.
+ */
+function syncLangToggle(): void {
+  const toggle = document.getElementById('lang-toggle') as HTMLAnchorElement | null;
+  if (toggle) toggle.href = otherLangHref();
+}
+
 async function route(): Promise<void> {
   const main = document.getElementById('main');
   if (!main) return;
@@ -718,29 +704,36 @@ async function route(): Promise<void> {
 
   const current = parseRoute();
   warmUp(current);
-  main.append(loadingState('el catalogo'));
+  // Views outside the inlined dictionary wait for the full one, requested in
+  // parallel with their data (never after it: that would add a network wave).
+  const fullReady = needsFullDictionary(current) ? loadFull() : Promise.resolve();
+  main.append(loadingState(t('app.loading.catalog')));
 
   try {
     indexDoc ??= await loadIndex();
+    await fullReady;
     clear(main);
 
     switch (current.name) {
       case 'home':
         cleanup = renderHome(main, indexDoc) ?? null;
+        setTitle();
         break;
       case 'about':
         renderAbout(main, indexDoc);
+        setTitle(t('about.title'));
         break;
       case 'locus': {
         const entry = indexDoc.loci.find((l) => l.id === current.params['locus']);
         if (!entry) {
-          main.append(emptyState('Ese locus no existe en el indice.'));
+          main.append(emptyState(t('app.empty.noLocus')));
           break;
         }
         main.append(loadingState(entry.label, entry.bytes));
         const locus = await loadLocus(entry.path);
         clear(main);
         renderLocus(main, locus);
+        setTitle(locus.label);
         break;
       }
       case 'variant':
@@ -756,12 +749,13 @@ async function route(): Promise<void> {
       case 'study': {
         const entry = indexDoc.studies.find((s) => s.id === current.params['study']);
         if (!entry) {
-          main.append(emptyState('Ese estudio no existe en el indice.'));
+          main.append(emptyState(t('app.empty.noStudy')));
           break;
         }
         const study = await loadStudy(entry.path);
         clear(main);
         cleanup = renderStudy(main, study);
+        setTitle(dataText(`data.study.${study.id}.label`, study.label));
         break;
       }
     }
@@ -771,7 +765,14 @@ async function route(): Promise<void> {
     main.append(errorState(title, detail, () => void route()));
   }
 
-  maybeStartTour(current.name);
+  syncLangToggle();
+  // The tour's texts are in the full dictionary. On the home page this is also
+  // the idle-time prefetch that makes the next view not wait for it.
+  whenIdle(() => {
+    void loadFull().then(() => {
+      if (parseRoute().name === current.name) maybeStartTour(current.name);
+    });
+  });
 }
 
 // --------------------------------------------------------------------------
@@ -806,6 +807,11 @@ function toggleTheme(): void {
 }
 
 export function start(): void {
+  syncLangToggle();
+  document.getElementById('lang-toggle')?.addEventListener('click', () => {
+    // Only an explicit click is remembered; see the redirect in index.html.
+    rememberLang(otherLang);
+  });
   applyStoredTheme();
   document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
   window.addEventListener('hashchange', () => void route());

@@ -125,3 +125,34 @@ def test_el_texto_del_hallazgo_no_lleva_cifras(doc: dict) -> None:
     assert finding, "DNM1 es el caso de demostracion de V4: tiene que llevar hallazgo"
     numeros = re.findall(r"\d+[,.]?\d*", finding)
     assert not numeros, f"cifras congeladas en la prosa: {numeros}"
+
+
+# --- El hallazgo en los diccionarios del visor (opcion A de la Fase 1b) ------
+#
+# La web no muestra `doc["finding"]` tal cual: lo sobrescribe desde
+# `web/src/i18n/{es,en}.json` por id de variante. La traduccion inglesa es
+# prosa nueva sobre los mismos datos, asi que tiene que cumplir el mismo
+# contrato: ninguna cifra, y las mismas afirmaciones que el test de arriba
+# comprueba contra las uniones.
+
+I18N = pathlib.Path(__file__).resolve().parents[2] / "web/src/i18n"
+FINDING_KEY = "data.finding.chr9-128226027-G-A"
+
+# Afirmacion -> como se escribe en cada idioma. Cada una la respalda uno de los
+# tests de arriba.
+CLAIMS = {
+    "es": ["seis bases", "cuatro uniones", "recíproco", "REF", "ALT", "|ALT - REF|"],
+    "en": ["six bases", "four junctions", "reciprocal", "REF", "ALT", "|ALT - REF|"],
+}
+
+
+@pytest.mark.parametrize("lang", ["es", "en"])
+def test_el_hallazgo_del_diccionario_no_lleva_cifras_y_dice_lo_mismo(lang: str) -> None:
+    import re
+
+    text = json.loads((I18N / f"{lang}.json").read_text(encoding="utf-8")).get(FINDING_KEY)
+    assert text, f"falta {FINDING_KEY} en {lang}.json"
+    numeros = re.findall(r"\d+[,.]?\d*", text)
+    assert not numeros, f"{lang}: cifras congeladas en la prosa: {numeros}"
+    for claim in CLAIMS[lang]:
+        assert claim in text, f"{lang}: el hallazgo ya no dice '{claim}'"

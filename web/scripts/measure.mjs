@@ -15,7 +15,9 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const OUT = resolve(here, '../../docs/evidence/performance.json');
+const OUT = process.env.AGP_MEASURE_OUT
+  ? resolve(process.env.AGP_MEASURE_OUT)
+  : resolve(here, '../../docs/evidence/performance.json');
 const BASE = process.env.AGP_BASE_URL || 'http://127.0.0.1:8099/genome-viewer/';
 const VARIANT = '#/variant/ppp1r1a-pde1b/chr12-54578515-C-T';
 
@@ -56,7 +58,8 @@ async function timeToInteractive(label, hash, selector, throttle, viewport) {
   }
 
   const started = Date.now();
-  await page.goto(BASE + hash);
+  // Generous: on a saturated machine the throttled load event can pass 30 s.
+  await page.goto(BASE + hash, { timeout: 120000 });
   // Interactivo = el elemento que el usuario vino a ver existe y esta pintado.
   await page.waitForSelector(selector, { state: 'attached', timeout: 60000 });
   await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => r(null))));

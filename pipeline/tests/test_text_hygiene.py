@@ -129,7 +129,7 @@ def missing_accents(text: str, *, english_ok: bool = True) -> list[str]:
 @pytest.mark.parametrize("label,text", list(spanish_visible_sources()), ids=lambda x: x if isinstance(x, str) and len(x) < 60 else "")
 def test_spanish_visible_text_has_accents(label, text):
     # Code spans and URLs are identifiers, not prose.
-    prose = re.sub(r"`[^`]*`|https?://\S+|\([^)]*\.md\)", " ", text)
+    prose = re.sub(r"`[^`]*`|https?://\S+|\([^)]*\.md\)|\{\w+\}", " ", text)
     hits = missing_accents(prose)
     assert not hits, f"{label}: missing accents in {sorted(set(hits))[:20]}"
 

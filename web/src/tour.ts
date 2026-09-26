@@ -11,6 +11,7 @@
  */
 
 import { el, clear } from './lib/dom';
+import { t } from './i18n';
 
 const SEEN_KEY = 'agp-tour-seen';
 
@@ -21,60 +22,24 @@ interface Step {
   body: string;
 }
 
-const STEPS: Step[] = [
-  {
-    title: 'Predicciones de AlphaGenome, en el navegador',
-    body:
-      'AlphaGenome predice el efecto de una variante del genoma sobre once ' +
-      'modalidades moleculares. Su libreria oficial dibuja imagenes estaticas; ' +
-      'esto es un visor interactivo de esos mismos resultados.',
-  },
-  {
-    target: '.catalog',
-    title: 'Empieza por un locus',
-    body:
-      'Cada locus es una ventana de un millon de pares de bases con sus ' +
-      'variantes. Al entrar veras la lista de variantes con su score AVI.',
-  },
-  {
-    target: '.provenance',
-    title: 'De donde salio cada numero',
-    body:
-      'Cada artefacto lleva sellado su origen, la version del cliente y su ' +
-      'epoca de calibracion. Si dice "datos sinteticos", son datos de ' +
-      'desarrollo y no predicciones reales: la franja lo avisa siempre.',
-  },
-  {
-    target: '.gauge-block',
-    title: 'El score AVI y su escala',
-    body:
-      'El AVI resume el impacto esperado en una escala PHRED. 10 significa el ' +
-      '10 % mas alto del genoma, 20 el 1 % y 30 el 0,1 %.',
-  },
-  {
-    target: '.waterfall',
-    title: 'De que esta hecho el score',
-    body:
-      'El AVI se calcula a partir de 18 features. La cascada muestra cuanto ' +
-      'aporta cada uno y en que direccion, agrupados en sus cuatro familias.',
-  },
-  {
-    target: '.browser__stage',
-    title: 'Recorrer el locus',
-    body:
-      'La linea gris es la senal de referencia y la de color es la de la ' +
-      'variante. El area sombreada entre las dos es la diferencia. Rueda para ' +
-      'acercar, arrastra para desplazar, tecla 0 para volver al locus entero.',
-  },
-  {
-    target: '.heatmap-scroll',
-    title: 'Ubicuo o especifico de tejido',
-    body:
-      'Las filas van agrupadas por sistema de organos. Una banda continua de ' +
-      'color significa un efecto concentrado en ese sistema; color repartido ' +
-      'por todo el mapa significa un efecto ubicuo.',
-  },
+const STEP_TARGETS: Array<string | undefined> = [
+  undefined,
+  '.catalog',
+  '.provenance',
+  '.gauge-block',
+  '.waterfall',
+  '.browser__stage',
+  '.heatmap-scroll',
 ];
+
+/** No se puede llamar `t()` a nivel de modulo: el diccionario carga despues. */
+function allSteps(): Step[] {
+  return STEP_TARGETS.map((target, i) => ({
+    target,
+    title: t(`tour.step.${i}.title`),
+    body: t(`tour.step.${i}.body`),
+  }));
+}
 
 let active = false;
 
@@ -93,7 +58,7 @@ let active = false;
  * introduccion, y una introduccion no tiene sitio en la pagina al que saltar.
  */
 function stepsFor(): Step[] {
-  const found = STEPS.map((step) => ({
+  const found = allSteps().map((step) => ({
     step,
     node: step.target ? document.querySelector(step.target) : null,
   })).filter((entry) => !entry.step.target || entry.node);
@@ -125,7 +90,7 @@ export function startTour(): void {
       class: 'tour',
       role: 'dialog',
       'aria-modal': 'true',
-      'aria-label': 'Recorrido de introduccion',
+      'aria-label': t('tour.dialog.ariaLabel'),
     },
     highlight,
     cardBody,
@@ -182,18 +147,18 @@ export function startTour(): void {
     const back = el('button', {
       class: 'button button--quiet',
       type: 'button',
-      text: 'Atras',
+      text: t('tour.back'),
       disabled: index === 0,
     });
     const next = el('button', {
       class: 'button',
       type: 'button',
-      text: index === steps.length - 1 ? 'Empezar' : 'Siguiente',
+      text: index === steps.length - 1 ? t('tour.start') : t('tour.next'),
     });
     const skip = el('button', {
       class: 'tour__skip',
       type: 'button',
-      text: 'Saltar',
+      text: t('tour.skip'),
     });
     back.addEventListener('click', () => show(index - 1));
     next.addEventListener('click', () => show(index + 1));
@@ -205,7 +170,7 @@ export function startTour(): void {
         { class: 'tour__head' },
         el('span', {
           class: 'tour__counter',
-          text: `${index + 1} / ${steps.length}`,
+          text: t('tour.counter', { current: index + 1, total: steps.length }),
         }),
         skip,
       ),

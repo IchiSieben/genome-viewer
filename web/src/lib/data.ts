@@ -20,10 +20,14 @@ import type {
   TracksDoc,
 } from './types';
 import { decodeBlock } from './signal';
+import { root, t } from '../i18n';
 import type { DecodedBlock } from './signal';
 
-/** Raiz de los datos, relativa al documento para que funcione en subcarpeta. */
-const ROOT = 'data/';
+/**
+ * Data root, relative to the app root (not to the document): the Spanish shell
+ * lives one level down at `/es/`, so `root` is `../` there and `./` in English.
+ */
+const ROOT = `${root}data/`;
 
 /**
  * Cache en memoria por URL.
@@ -56,17 +60,13 @@ export class SchemaVersionError extends DataError {}
 function checkSchemaVersion(version: string, url: string): void {
   const major = Number.parseInt(version.split('.')[0] ?? '', 10);
   if (!Number.isFinite(major)) {
-    throw new SchemaVersionError(
-      `El artefacto declara una version de esquema ilegible ("${version}").`,
-      url,
-    );
+    throw new SchemaVersionError(t('error.schemaUnreadable', { version }), url);
   }
   if (major !== SUPPORTED_MAJOR) {
     // Rechazar es lo correcto: renderizar un contrato major distinto produce un
     // grafico plausible y equivocado, que es peor que no mostrar nada.
     throw new SchemaVersionError(
-      `Este visor lee el contrato v${SUPPORTED_MAJOR}.x y el artefacto es ` +
-        `v${version}. Hay que actualizar el visor o regenerar los datos.`,
+      t('error.schemaMismatch', { supported: SUPPORTED_MAJOR, version }),
       url,
     );
   }
@@ -81,19 +81,16 @@ async function fetchJson<T extends { schemaVersion: string }>(url: string): Prom
     try {
       response = await fetch(url);
     } catch (cause) {
-      throw new DataError('No se pudo contactar el servidor de datos.', url, cause);
+      throw new DataError(t('error.network'), url, cause);
     }
     if (!response.ok) {
-      throw new DataError(
-        `El servidor respondio ${response.status} al pedir este artefacto.`,
-        url,
-      );
+      throw new DataError(t('error.httpStatus', { status: response.status }), url);
     }
     let document: T;
     try {
       document = (await response.json()) as T;
     } catch (cause) {
-      throw new DataError('El artefacto no es JSON valido.', url, cause);
+      throw new DataError(t('error.invalidJson'), url, cause);
     }
     checkSchemaVersion(document.schemaVersion, url);
     return document;
@@ -218,19 +215,16 @@ export function loadSignal(
     try {
       response = await fetch(url);
     } catch (cause) {
-      throw new DataError('No se pudo descargar el bloque de senal.', url, cause);
+      throw new DataError(t('error.signalNetwork'), url, cause);
     }
     if (!response.ok) {
-      throw new DataError(
-        `El servidor respondio ${response.status} al pedir la senal.`,
-        url,
-      );
+      throw new DataError(t('error.signalHttpStatus', { status: response.status }), url);
     }
     try {
       return decodeBlock(await response.arrayBuffer());
     } catch (cause) {
       throw new DataError(
-        cause instanceof Error ? cause.message : 'Bloque de senal ilegible.',
+        cause instanceof Error ? cause.message : t('error.signalUnreadable'),
         url,
         cause,
       );

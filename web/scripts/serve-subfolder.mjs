@@ -13,7 +13,8 @@ import { extname, normalize, resolve, dirname, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const ROOT = resolve(here, '../dist');
+// AGP_DIST lets measure-ab.mjs serve a second (baseline) build side by side.
+const ROOT = process.env.AGP_DIST ? resolve(process.env.AGP_DIST) : resolve(here, '../dist');
 // El punto de montaje es el de produccion (ichisieben.dev/genome-viewer/).
 const MOUNT = process.env.AGP_MOUNT || '/genome-viewer';
 
@@ -26,7 +27,7 @@ const CSP =
   "img-src 'self' data: https://flagcdn.com; font-src 'self' data: https://fonts.gstatic.com; " +
   "connect-src 'self' https://api.open-meteo.com; object-src 'none'; base-uri 'self'; " +
   "form-action 'self'; frame-src https://www.youtube.com; frame-ancestors 'self'";
-const PORT = 8099;
+const PORT = Number(process.env.AGP_PORT || 8099);
 
 if (!existsSync(ROOT)) {
   console.error(`No existe ${ROOT}. Corre primero: npm run build`);

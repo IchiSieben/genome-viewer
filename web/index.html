@@ -1,13 +1,18 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Visor de predicciones de AlphaGenome</title>
-    <meta
-      name="description"
-      content="Visor interactivo de efectos de variante predichos por AlphaGenome. Sitio estático, sin backend, sin llamadas a la API."
-    />
+    <!-- Everything between these two markers is rewritten per language by
+         scripts/build-shells.mjs (title, description, canonical, hreflang,
+         Open Graph, JSON-LD, robots). In `vite dev` it stays as is. -->
+    <!-- agp:head:start -->
+    <title>Genome Viewer</title>
+    <meta name="description" content="" />
+    <!-- agp:head:end -->
+    <!-- Relative path from this shell to the app root: "./" here, "../" in /es/.
+         Data and preloads are resolved against it (src/i18n/index.ts). -->
+    <meta name="agp-root" content="./" />
     <meta name="color-scheme" content="light dark" />
 
     <!-- El catalogo completo son 978 B. Se incrusta aqui durante el build
@@ -43,13 +48,31 @@
       (function () {
         'use strict';
         var SAFE = /^[A-Za-z0-9_-]+$/;
+        var rootMeta = document.querySelector('meta[name="agp-root"]');
+        var ROOT = (rootMeta && rootMeta.getAttribute('content')) || './';
+
+        // Remembered language. Only an explicit click on the toggle stores it,
+        // and only a visit to the bare home page follows it: a deep link in the
+        // other language is a choice too, and crawlers never store anything.
+        try {
+          var chosen = localStorage.getItem('agp-lang');
+          var current = document.documentElement.lang;
+          var bare = !String(location.hash || '').replace(/^#\/?/, '');
+          if (bare && (chosen === 'es' || chosen === 'en') && chosen !== current &&
+              document.querySelector('meta[name="agp-shell"]')) {
+            location.replace(chosen === 'es' ? ROOT + 'es/' : ROOT);
+            return;
+          }
+        } catch (error) {
+          // Blocked storage: stay on the language of the URL.
+        }
 
         function preload(path) {
           var link = document.createElement('link');
           link.rel = 'preload';
           link.as = 'fetch';
           link.crossOrigin = 'anonymous';
-          link.href = path;
+          link.href = ROOT + path;
           document.head.appendChild(link);
         }
 
@@ -94,6 +117,20 @@
             return;
           }
 
+          // Views whose texts are not inlined need the full dictionary chunk.
+          // Its URL is written by build-shells.mjs; asking for it here, next to
+          // the view's artifact, keeps it off the serial chain.
+          var view = query.get('view') || 'card';
+          var needsFull = parts[0] === 'about' || parts[0] === 'study' ||
+            (parts[0] === 'variant' && view !== 'card' && view !== 'signal');
+          var fullMeta = document.querySelector('meta[name="agp-full-dict"]');
+          if (needsFull && fullMeta && fullMeta.getAttribute('content')) {
+            var mod = document.createElement('link');
+            mod.rel = 'modulepreload';
+            mod.href = ROOT + fullMeta.getAttribute('content');
+            document.head.appendChild(mod);
+          }
+
           if (parts[0] === 'about') return;
 
           if (parts[0] === 'study') {
@@ -119,47 +156,53 @@
     </script>
   </head>
   <body>
-    <a class="skip-link" href="#main">Saltar al contenido</a>
+    <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
 
     <header class="topbar">
       <a class="topbar__brand" href="#/">
         <span class="topbar__mark" aria-hidden="true"></span>
-        <span class="topbar__name">Visor AlphaGenome</span>
+        <span class="topbar__name" data-i18n="brand.name">Genome Viewer</span>
+        <span class="topbar__unofficial" data-i18n="brand.unofficial">unofficial</span>
       </a>
-      <nav class="topbar__nav" aria-label="Principal">
-        <a class="topbar__link" href="#/">Loci</a>
-        <a class="topbar__link" href="#/about">Sobre estos datos</a>
-        <button class="topbar__button" type="button" id="tour-button">
-          Cómo se usa
-        </button>
+      <nav class="topbar__nav" data-i18n-attr="aria-label:nav.label" aria-label="Main">
+        <a class="topbar__link" href="#/" data-i18n="nav.loci">Loci</a>
+        <a class="topbar__link" href="#/about" data-i18n="nav.about">About the data</a>
+        <button class="topbar__button" type="button" id="tour-button" data-i18n="nav.tour">How to use it</button>
         <button
           class="topbar__button"
           type="button"
           id="theme-toggle"
-          aria-label="Cambiar entre tema claro y oscuro"
-          title="Cambiar tema"
-        >
-          Tema
-        </button>
+          data-i18n-attr="aria-label:nav.themeLabel;title:nav.themeTitle"
+          aria-label="Switch between light and dark theme"
+          title="Switch theme"
+          data-i18n="nav.theme"
+        >Theme</button>
+        <a
+          class="topbar__link topbar__lang"
+          id="lang-toggle"
+          href="es/"
+          data-i18n="nav.langToggle"
+          data-i18n-attr="aria-label:nav.langToggleLabel;hreflang:meta.otherLang;lang:meta.otherLang"
+          hreflang="es"
+          lang="es"
+        >Español</a>
       </nav>
     </header>
 
     <main id="main" class="main"></main>
 
     <footer class="footer">
-      <p>
-        Resultados derivados de AlphaGenome, sujetos a los
-        <strong>AlphaGenome Output Terms of Use</strong>. Uso no comercial, de
-        investigación. No es un dispositivo médico y no constituye consejo
-        médico.
-      </p>
-      <p class="footer__quiet">
-        Predicciones de un modelo, no mediciones experimentales. El pipeline
-        corre en local con una llave personal; esta página solo lee archivos
-        congelados y nunca llama a la API.
-      </p>
+      <p data-i18n="footer.terms">Results derived from AlphaGenome, subject to the AlphaGenome Output Terms of Use.</p>
+      <p class="footer__quiet" data-i18n="footer.quiet">Model predictions, not experimental measurements.</p>
+      <p class="footer__quiet" data-i18n="brand.disclaimer">Independent project, not affiliated with Google or Google DeepMind.</p>
     </footer>
 
+    <!-- The ACTIVE language's dictionary, inlined per shell at build time.
+         At the END of the body on purpose: the module script is deferred, so
+         the dictionary is parsed long before it runs, and nothing here delays
+         the parser's discovery of the bundle and the preloads in <head>.
+         Measured: in <head> it pushed every request back ~150 ms on slow 3G. -->
+    <script type="application/json" id="agp-i18n">null</script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

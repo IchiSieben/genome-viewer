@@ -1,147 +1,149 @@
 /**
- * Formato de numeros, coordenadas y escalas.
+ * Number, coordinate and scale formatting, per language.
  *
- * Regla del encargo: cada eje con unidades reales. Una coordenada genomica sin
- * separadores de millar es ilegible, y un PHRED sin su interpretacion es un
- * numero que nadie sabe leer.
+ * Rule from the brief: every axis with real units. A genomic coordinate with
+ * no thousands separator is unreadable, and a PHRED without its reading is a
+ * number nobody knows how to read.
+ *
+ * Quantities follow the reader's language:
+ * - Spanish: decimal comma and a narrow no-break space (U+202F) between
+ *   thousands, with four-digit numbers left ungrouped, as the RAE and the SI
+ *   recommend: `25,96`, `5553`, `262 144`. `Intl.NumberFormat('es')` gets the
+ *   decimal and the four-digit rule right but groups with a dot, so its group
+ *   separator is swapped after formatting. (`es-PE`, used until 2026-09, is
+ *   not an option: CLDR gives it `25.96` and `54,578,515`, English style.)
+ * - English: `25.96`, `5,553`, `262,144`.
+ *
+ * Genomic coordinates are identifiers, not quantities: `chr12:54,578,515`
+ * is written the same in both languages, the way UCSC, Ensembl and the
+ * literature write it. See `coordinate()`.
  */
 
-const ES = 'es-PE';
+import { lang, t } from '../i18n';
 
-const INT = new Intl.NumberFormat(ES, { maximumFractionDigits: 0 });
-const FIX2 = new Intl.NumberFormat(ES, {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-const SIGNED2 = new Intl.NumberFormat(ES, {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-  signDisplay: 'always',
-});
+const LOCALE = lang === 'es' ? 'es' : 'en';
+const NNBSP = '\u202f';
 
-/** Entero con separador de millar: 54 578 515. */
+function nf(options: Intl.NumberFormatOptions): (value: number) => string {
+  const f = new Intl.NumberFormat(LOCALE, options);
+  if (lang !== 'es') return (value) => f.format(value);
+  return (value) =>
+    f
+      .formatToParts(value)
+      .map((part) => (part.type === 'group' ? NNBSP : part.value))
+      .join('');
+}
+
+const INT = nf({ maximumFractionDigits: 0 });
+const FIX1 = nf({ minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const FIX2 = nf({ minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const FIX3 = nf({ minimumFractionDigits: 3, maximumFractionDigits: 3 });
+const FIX4 = nf({ minimumFractionDigits: 4, maximumFractionDigits: 4 });
+const SIGNED2 = nf({ minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: 'always' });
+const SIGNED4 = nf({ minimumFractionDigits: 4, maximumFractionDigits: 4, signDisplay: 'always' });
+
+/** Coordinates: always English grouping, in every language. */
+const COORD = new Intl.NumberFormat('en', { maximumFractionDigits: 0 });
+
+/** Integer with thousands separator: `262 144` / `262,144`. */
 export function int(value: number): string {
-  return INT.format(value);
+  return INT(value);
 }
 
-/** Dos decimales fijos, para que las columnas de una tabla se alineen. */
+/** One fixed decimal (legend ticks, frame times). */
+export function fixed1(value: number): string {
+  return FIX1(value);
+}
+
+/** Two fixed decimals, so table columns line up. */
 export function fixed2(value: number): string {
-  return FIX2.format(value);
+  return FIX2(value);
 }
-
-const FIX3 = new Intl.NumberFormat(ES, {
-  minimumFractionDigits: 3,
-  maximumFractionDigits: 3,
-});
 
 /**
- * Dos decimales, salvo cuando eso convertiria un residuo en un cero redondo.
+ * Two decimals, unless that would turn a residue into a round zero.
  *
- * El lado debil del intercambio de aceptor de DNM1 vale 0,0058: con dos
- * decimales sale "0.01", que es justo el piso declarado del artefacto y se lee
- * como "esto no se mostro" en vez de "esto casi desaparecio". Por debajo del
- * piso se pasa a tres decimales.
+ * The weak side of the DNM1 acceptor switch is 0.0058: with two decimals it
+ * reads "0.01", exactly the artifact's declared floor, which reads as "not
+ * shown" instead of "almost gone". Below the floor, three decimals.
  */
 export function residual(value: number): string {
-  return value > 0 && value < 0.01 ? FIX3.format(value) : FIX2.format(value);
+  return value > 0 && value < 0.01 ? FIX3(value) : FIX2(value);
 }
 
-const FIX4 = new Intl.NumberFormat(ES, {
-  minimumFractionDigits: 4,
-  maximumFractionDigits: 4,
-});
-const SIGNED4 = new Intl.NumberFormat(ES, {
-  minimumFractionDigits: 4,
-  maximumFractionDigits: 4,
-  signDisplay: 'always',
-});
-
 /**
- * Cuatro decimales. Para el diff de contactos, donde dos no bastan.
- *
- * El cambio maximo que mide V5 vale 0,0391: con dos decimales sale "0.04", que
- * pierde justo la cifra que permite compararlo con el umbral visible. La
- * pequenez del numero ES el resultado, asi que el numero tiene que poder
- * escribirse entero.
+ * Four decimals. For the contact diff, where two are not enough: its largest
+ * change is 0.0391, and "0.04" loses exactly the digit that makes it
+ * comparable with the visible threshold. The smallness IS the result.
  */
 export function fixed4(value: number): string {
-  return FIX4.format(value);
+  return FIX4(value);
 }
 
-/** Cuatro decimales con signo. Para celdas de un diff, donde el signo manda. */
+/** Four decimals, signed. For diff cells, where the sign matters. */
 export function signed4(value: number): string {
-  return SIGNED4.format(value);
+  return SIGNED4(value);
 }
 
-/** Porcentaje con un decimal. Para "el cambio es el 1,5 % del relieve". */
+/** Percentage with one decimal: `1,5 %` / `1.5%`. */
 export function percent1(fraction: number): string {
-  return `${FIX1.format(fraction * 100)} %`;
+  return t('fmt.percent', { value: FIX1(fraction * 100) });
 }
 
-const FIX1 = new Intl.NumberFormat(ES, {
-  minimumFractionDigits: 1,
-  maximumFractionDigits: 1,
-});
-
-/** Dos decimales con signo siempre visible. Para diferencias y contribuciones. */
+/** Two decimals with the sign always visible. For differences and contributions. */
 export function signed2(value: number): string {
-  return SIGNED2.format(value);
+  return SIGNED2(value);
 }
 
-/**
- * Coordenada genomica. `chr12:54 578 515`.
- *
- * El separador de millar es el que hace legible un numero de ocho cifras. Sin
- * el, comparar dos posiciones exige contar digitos con el dedo.
- */
+/** Genomic coordinate: `chr12:54,578,515` in both languages (an identifier). */
 export function coordinate(chromosome: string, position: number): string {
-  return `${chromosome}:${int(position)}`;
+  return `${chromosome}:${COORD.format(position)}`;
 }
 
-/** Intervalo cerrado para mostrar. El contrato guarda 0-based semiabierto. */
+/** Closed interval for display. The contract stores 0-based half-open. */
 export function intervalLabel(chromosome: string, start: number, end: number): string {
-  return `${chromosome}:${int(start + 1)}-${int(end)}`;
+  return `${chromosome}:${COORD.format(start + 1)}-${COORD.format(end)}`;
 }
 
-/** Ancho en pb con la unidad que corresponda: 1 048 576 pb -> "1,05 Mb". */
+/** Width in bp with the right unit: 1 048 576 bp -> "1,05 Mb" / "1.05 Mb". */
 export function span(bp: number): string {
-  if (bp >= 1e6) return `${FIX2.format(bp / 1e6)} Mb`;
-  if (bp >= 1e3) return `${FIX2.format(bp / 1e3)} kb`;
-  return `${int(bp)} pb`;
+  if (bp >= 1e6) return `${FIX2(bp / 1e6)} Mb`;
+  if (bp >= 1e3) return `${FIX2(bp / 1e3)} kb`;
+  return `${INT(bp)} ${t('fmt.bp')}`;
 }
 
-/** Bytes legibles. Se usa en la pagina de proveniencia y en los estados de carga. */
+/** Human-readable bytes. Used on the provenance page and in loading states. */
 export function bytes(n: number): string {
-  if (n >= 1024 * 1024) return `${FIX2.format(n / (1024 * 1024))} MiB`;
-  if (n >= 1024) return `${FIX2.format(n / 1024)} KiB`;
-  return `${int(n)} B`;
+  if (n >= 1024 * 1024) return `${FIX2(n / (1024 * 1024))} MiB`;
+  if (n >= 1024) return `${FIX2(n / 1024)} KiB`;
+  return `${INT(n)} B`;
 }
 
 /**
- * Interpretacion de un PHRED del AVI.
+ * Reading of an AVI PHRED.
  *
- * PHRED = -10*log10(1-cuantil), asi que 10 es el 10 % superior, 20 el 1 % y 30
- * el 0,1 %. Devolver la frase junto al numero evita que el lector tenga que
- * recordar la formula.
+ * PHRED = -10*log10(1-quantile), so 10 is the top 10 %, 20 the top 1 % and 30
+ * the top 0.1 %. Returning the sentence with the number saves the reader from
+ * remembering the formula.
  */
 export function phredMeaning(phred: number): string {
-  if (!Number.isFinite(phred)) return 'sin dato';
+  if (!Number.isFinite(phred)) return t('fmt.phred.noData');
   const topFraction = Math.pow(10, -phred / 10);
-  if (topFraction >= 1) return 'sin senal';
+  if (topFraction >= 1) return t('fmt.phred.noSignal');
   const percent = topFraction * 100;
-  // Con un PHRED bajo, "top 94 %" es literalmente cierto y se lee justo al
-  // reves de lo que significa: parece un percentil 94. Por debajo del 50 % de
-  // corte se dice en positivo cuanta variacion queda por encima.
-  if (percent > 50) {
-    return `por debajo de la mediana del genoma`;
-  }
-  if (percent >= 1) return `en el ${percent.toFixed(0)} % mas alto`;
-  if (percent >= 0.1) return `en el ${percent.toFixed(1)} % mas alto`;
-  if (percent >= 0.01) return `en el ${percent.toFixed(2)} % mas alto`;
-  return `en el ${percent.toExponential(1)} % mas alto`;
+  // With a low PHRED, "top 94 %" is literally true and reads exactly
+  // backwards: it looks like a 94th percentile. Above 50 % it is said the
+  // other way round.
+  if (percent > 50) return t('fmt.phred.belowMedian');
+  const digits = percent >= 1 ? 0 : percent >= 0.1 ? 1 : percent >= 0.01 ? 2 : -1;
+  const value =
+    digits >= 0
+      ? nf({ minimumFractionDigits: digits, maximumFractionDigits: digits })(percent)
+      : percent.toExponential(1).replace('.', lang === 'es' ? ',' : '.');
+  return t('fmt.phred.top', { value });
 }
 
-/** Marcas interpretables del eje PHRED. */
+/** Readable ticks of the PHRED axis. */
 export const PHRED_TICKS: Array<{ value: number; label: string }> = [
   { value: 0, label: '0' },
   { value: 10, label: '10' },
@@ -150,21 +152,32 @@ export const PHRED_TICKS: Array<{ value: number; label: string }> = [
   { value: 40, label: '40' },
 ];
 
-/** Clave del eje PHRED, en una linea aparte para que no choque con las marcas. */
-export const PHRED_LEGEND = '10 = 10 % mas alto · 20 = 1 % · 30 = 0,1 % · 40 = 0,01 %';
+/** Key of the PHRED axis, on its own line so it does not collide with the ticks. */
+export function phredLegend(): string {
+  return t('fmt.phred.legend');
+}
 
-/** Fecha ISO a algo legible, sin inventar zona horaria. */
+/** ISO date to something readable, without inventing a time zone. */
 export function timestamp(iso: string): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return iso;
-  return new Intl.DateTimeFormat(ES, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    timeZone: 'UTC',
-  }).format(date) + ' UTC';
+  return (
+    new Intl.DateTimeFormat(LOCALE, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+      timeZone: 'UTC',
+    }).format(date) + ' UTC'
+  );
 }
 
-/** Texto de una variante tal como se muestra: `chr12:54 578 515 C>T`. */
+/** Date only (for provenance and "queried on"). */
+export function date(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return new Intl.DateTimeFormat(LOCALE, { dateStyle: 'long', timeZone: 'UTC' }).format(d);
+}
+
+/** A variant as displayed: `chr12:54,578,515 C>T` (identifier, never localized). */
 export function variantLabel(v: {
   chromosome: string;
   position: number;

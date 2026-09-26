@@ -6,6 +6,8 @@
  * verifica con el magic y con la version, y cualquier desacuerdo lanza.
  */
 
+import { t } from '../i18n';
+
 const MAGIC = 'AGSB';
 const SUPPORTED_FORMAT = 1;
 const PREFIX_BYTES = 12;
@@ -82,14 +84,14 @@ export function decodeBlock(buffer: ArrayBuffer): DecodedBlock {
   const bytes = new Uint8Array(buffer);
   const magic = String.fromCharCode(bytes[0]!, bytes[1]!, bytes[2]!, bytes[3]!);
   if (magic !== MAGIC) {
-    throw new Error(`No es un bloque AGSB: magic "${magic}"`);
+    throw new Error(t('error.signal.badMagic', { magic }));
   }
 
   const view = new DataView(buffer);
   const formatVersion = view.getUint16(4, true);
   if (formatVersion !== SUPPORTED_FORMAT) {
     throw new Error(
-      `Bloque de senal en formato ${formatVersion}; este visor lee ${SUPPORTED_FORMAT}.`,
+      t('error.signal.badFormat', { format: formatVersion, supported: SUPPORTED_FORMAT }),
     );
   }
 
@@ -101,18 +103,14 @@ export function decodeBlock(buffer: ArrayBuffer): DecodedBlock {
 
   const payloadStart = PREFIX_BYTES + headerLength;
   if (payloadStart % 2 !== 0) {
-    throw new Error(
-      `Carga util desalineada en el byte ${payloadStart}; el bloque esta corrupto.`,
-    );
+    throw new Error(t('error.signal.misaligned', { offset: payloadStart }));
   }
 
   const { length } = header;
   const expected = header.tracks.length * 2 * length;
   const available = (buffer.byteLength - payloadStart) / 2;
   if (available !== expected) {
-    throw new Error(
-      `El bloque declara ${expected} valores y trae ${available}. Esta truncado.`,
-    );
+    throw new Error(t('error.signal.truncated', { expected, available }));
   }
 
   const tracks: DecodedTrack[] = header.tracks.map((trackHeader, i) => {

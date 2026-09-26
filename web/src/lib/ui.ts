@@ -8,6 +8,7 @@
 
 import { el, clear } from './dom';
 import * as fmt from './format';
+import { t } from '../i18n';
 import type { Provenance } from './types';
 
 // --------------------------------------------------------------------------
@@ -156,9 +157,12 @@ export function loadingState(what: string, sizeBytes?: number): HTMLElement {
     el(
       'div',
       {},
-      el('p', { class: 'state__title', text: `Cargando ${what}` }),
+      el('p', { class: 'state__title', text: t('ui.loading.title', { what }) }),
       sizeBytes
-        ? el('p', { class: 'state__detail', text: `${fmt.bytes(sizeBytes)} por descargar` })
+        ? el('p', {
+            class: 'state__detail',
+            text: t('ui.loading.size', { size: fmt.bytes(sizeBytes) }),
+          })
         : null,
     ),
   );
@@ -175,7 +179,7 @@ export function emptyState(title: string, detail?: string): HTMLElement {
 
 export function errorState(title: string, detail?: string, retry?: () => void): HTMLElement {
   const button = retry
-    ? el('button', { class: 'button', type: 'button', text: 'Reintentar' })
+    ? el('button', { class: 'button', type: 'button', text: t('ui.retry') })
     : null;
   button?.addEventListener('click', retry!);
   return el(
@@ -205,14 +209,14 @@ const API_SOURCES = new Set(['atlas-api', 'model-api']);
 export function sourceLabel(source: string): string {
   switch (source) {
     case 'atlas-api':
-      return 'Atlas API';
+      return t('ui.source.atlasApi');
     case 'model-api':
-      return 'Model API';
+      return t('ui.source.modelApi');
     case 'synthetic':
-      return 'Datos sinteticos';
+      return t('ui.source.synthetic');
     default:
       // Un origen que no conocemos no se traduce a algo tranquilizador.
-      return `Origen no declarado: ${source}`;
+      return t('ui.source.undeclared', { source });
   }
 }
 
@@ -239,14 +243,16 @@ export function sourceChip(provenance: Provenance | undefined | null): HTMLEleme
     {
       class: trusted ? 'source-chip' : 'source-chip source-chip--warn',
       title: trusted
-        ? `Prediccion congelada desde ${sourceLabel(source)}. ` +
-          `Calibracion ${provenance?.calibrationEpoch ?? 'sin declarar'}.`
-        : 'Este artefacto NO viene de la API de AlphaGenome. No son predicciones.',
+        ? t('ui.sourceChip.tooltipTrusted', {
+            source: sourceLabel(source),
+            epoch: provenance?.calibrationEpoch ?? t('ui.sourceChip.epochUndeclared'),
+          })
+        : t('ui.sourceChip.tooltipWarn'),
     },
     el('span', { class: 'source-chip__dot', 'aria-hidden': 'true' }),
     el('span', {
       class: 'source-chip__text',
-      text: provenance ? sourceLabel(source) : 'Sin sello de origen',
+      text: provenance ? sourceLabel(source) : t('ui.sourceChip.none'),
     }),
   );
 }
@@ -264,8 +270,8 @@ export function rsidChip(rsid: string | null | undefined): HTMLElement {
     ? el('span', { class: 'card__chip', text: rsid })
     : el('span', {
         class: 'card__chip card__chip--quiet',
-        text: 'sin rsid catalogado',
-        title: 'dbSNP no tiene entrada en esta posicion. El Atlas puntua cualquier variante, catalogada o no.',
+        text: t('ui.rsid.none'),
+        title: t('ui.rsid.noneTooltip'),
       });
 }
 
@@ -286,27 +292,25 @@ export function provenanceStrip(provenance: Provenance): HTMLElement {
     synthetic
       ? el('span', {
           class: 'provenance__warning',
-          text: 'No son predicciones de AlphaGenome.',
+          text: t('ui.provenance.warning'),
         })
       : null,
     el('span', {
       class: 'provenance__item',
-      text: `cliente ${provenance.clientVersion}`,
+      text: t('ui.provenance.client', { version: provenance.clientVersion }),
     }),
     el('span', {
       class: 'provenance__item',
-      text: `consultado ${fmt.timestamp(provenance.queriedAt)}`,
+      text: t('ui.provenance.queried', { timestamp: fmt.timestamp(provenance.queriedAt) }),
     }),
     el('span', {
       class: 'provenance__item',
-      title:
-        'Los cuantiles del AVI se recalibraron el 18/06/2026 y la inferencia de ' +
-        'indels el 14/07/2026. Solo se pueden comparar artefactos de la misma epoca.',
-      text: `calibracion ${provenance.calibrationEpoch}`,
+      title: t('ui.provenance.calibrationTooltip'),
+      text: t('ui.provenance.calibration', { epoch: provenance.calibrationEpoch }),
     }),
     el('span', {
       class: 'provenance__item provenance__item--hash',
-      text: `config ${provenance.configHash}`,
+      text: t('ui.provenance.config', { hash: provenance.configHash }),
     }),
   );
 }
@@ -315,8 +319,6 @@ export function provenanceStrip(provenance: Provenance): HTMLElement {
 export function predictionNotice(): HTMLElement {
   return el('p', {
     class: 'notice',
-    text:
-      'Todo lo que se muestra son predicciones de un modelo, no mediciones ' +
-      'experimentales. Sin uso clinico ni valor de consejo medico.',
+    text: t('ui.notice.prediction'),
   });
 }

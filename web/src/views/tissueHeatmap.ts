@@ -13,6 +13,7 @@
 
 import { clear, el, onResize, onThemeChange, svg } from '../lib/dom';
 import * as fmt from '../lib/format';
+import { dataText, t } from '../i18n';
 import { divergingScale, modalityColor } from '../lib/color';
 import { panel, predictionNotice, provenanceStrip, rsidChip, sourceChip, tooltip } from '../lib/ui';
 import type { TracksDoc } from '../lib/types';
@@ -46,7 +47,7 @@ function layoutGroups(doc: TracksDoc): { groups: GroupLayout[]; height: number }
   const order = systems.length
     ? systems.map((s) => s.id)
     : [...new Set(doc.biosamples.map((b) => b.organSystem ?? 'otros'))];
-  const labelOf = new Map(systems.map((s) => [s.id, s.label]));
+  const labelOf = new Map(systems.map((s) => [s.id, dataText(`data.organ.${s.id}`, s.label)]));
 
   const groups: GroupLayout[] = [];
   let y = HEADER_HEIGHT;
@@ -64,7 +65,7 @@ function layoutGroups(doc: TracksDoc): { groups: GroupLayout[]; height: number }
       y: top + i * (ROW_HEIGHT + ROW_GAP),
     }));
     const height = indices.length * (ROW_HEIGHT + ROW_GAP);
-    groups.push({ id, label: labelOf.get(id) ?? id, y: top, height, rows });
+    groups.push({ id, label: labelOf.get(id) ?? dataText(`data.organ.${id}`, id), y: top, height, rows });
     y = top + height + GROUP_GAP;
   }
 
@@ -107,9 +108,10 @@ function legend(domainMax: number, width: number, clamped: boolean): SVGSVGEleme
     height: String(height),
     viewBox: `0 0 ${barWidth + 60} ${height}`,
     role: 'img',
-    'aria-label':
-      `Escala de color divergente de ${fmt.signed2(-domainMax)} a ` +
-      `${fmt.signed2(domainMax)}, con el cero en gris neutro.`,
+    'aria-label': t('heatmap.legend.ariaLabel', {
+      lo: fmt.signed2(-domainMax),
+      hi: fmt.signed2(domainMax),
+    }),
   });
 
   const steps = 48;
@@ -162,7 +164,7 @@ function legend(domainMax: number, width: number, clamped: boolean): SVGSVGEleme
       x: '0',
       y: '11',
       class: 'legend__title',
-      text: 'ALT − REF  ·  diferencia predicha',
+      text: t('heatmap.legend.title'),
     }),
   );
 
@@ -202,18 +204,19 @@ function drawHeatmap(
     height: String(height),
     viewBox: `0 0 ${totalWidth} ${height}`,
     role: 'img',
-    'aria-label':
-      `Mapa de calor de ${doc.biosamples.length} biosamples por ` +
-      `${nModalities} modalidades para la variante ${fmt.variantLabel(doc.variant)}.`,
+    'aria-label': t('heatmap.ariaLabel', {
+      n: doc.biosamples.length,
+      m: nModalities,
+      variant: fmt.variantLabel(doc.variant),
+    }),
   });
 
   // Cabeceras de modalidad, rotadas para que quepan sin ensanchar la columna.
   doc.modalities.forEach((modality, i) => {
     const x = LABEL_WIDTH + i * cellWidth + cellWidth / 2;
+    const full = dataText(`data.modality.${modality.id}`, modality.label);
     const label =
-      modality.label.length > MAX_COL_LABEL
-        ? `${modality.label.slice(0, MAX_COL_LABEL - 1)}…`
-        : modality.label;
+      full.length > MAX_COL_LABEL ? `${full.slice(0, MAX_COL_LABEL - 1)}…` : full;
     root.append(
       svg(
         'text',
@@ -225,7 +228,7 @@ function drawHeatmap(
           'text-anchor': 'start',
         },
         // El titulo nativo da el nombre completo cuando se recorta.
-        svg('title', { text: modality.label }),
+        svg('title', { text: full }),
         label,
       ),
       svg('rect', {
@@ -275,9 +278,11 @@ function drawHeatmap(
           fill: value === null ? 'transparent' : scale(value),
           tabindex: '0',
           role: 'img',
-          'aria-label':
-            `${biosample.label}, ${modality.label}: ` +
-            (value === null ? 'sin dato' : fmt.signed2(value)),
+          'aria-label': t('heatmap.cellAriaLabel', {
+            biosample: biosample.label,
+            modality: dataText(`data.modality.${modality.id}`, modality.label),
+            value: value === null ? t('heatmap.cell.noData') : fmt.signed2(value),
+          }),
         });
 
         const describe = (event: MouseEvent | FocusEvent) => {
@@ -287,23 +292,23 @@ function drawHeatmap(
             biosample.label,
             [
               {
-                label: modality.label,
-                value: value === null ? 'sin dato' : fmt.signed2(value),
+                label: dataText(`data.modality.${modality.id}`, modality.label),
+                value: value === null ? t('heatmap.cell.noData') : fmt.signed2(value),
                 swatch: value === null ? undefined : scale(value),
                 emphasis: true,
               },
               ...(cell?.[3] !== null && cell?.[3] !== undefined
-                ? [{ label: 'Cuantil', value: fmt.fixed2(cell[3]) }]
+                ? [{ label: t('heatmap.tooltip.quantile'), value: fmt.fixed2(cell[3]) }]
                 : []),
-              { label: 'Sistema', value: group.label },
+              { label: t('heatmap.tooltip.system'), value: group.label },
               ...(biosample.biosampleType
-                ? [{ label: 'Tipo', value: biosample.biosampleType }]
+                ? [{ label: t('heatmap.tooltip.type'), value: biosample.biosampleType }]
                 : []),
               ...(biosample.ontologyCurie
-                ? [{ label: 'Ontologia', value: biosample.ontologyCurie }]
+                ? [{ label: t('heatmap.tooltip.ontology'), value: biosample.ontologyCurie }]
                 : []),
               ...(onOpenSignal
-                ? [{ label: '', value: 'clic para ver esta pista en el locus' }]
+                ? [{ label: '', value: t('heatmap.tooltip.linkHint') }]
                 : []),
             ],
             mouse.clientX || box.right,
@@ -334,7 +339,12 @@ function drawHeatmap(
   // entera se desplace de lado en movil.
   return el(
     'div',
-    { class: 'heatmap-scroll', tabindex: '0', role: 'region', 'aria-label': 'Mapa de calor' },
+    {
+      class: 'heatmap-scroll',
+      tabindex: '0',
+      role: 'region',
+      'aria-label': t('heatmap.scrollRegion.ariaLabel'),
+    },
     root as unknown as HTMLElement,
   );
 }
@@ -365,7 +375,10 @@ export function renderTissueHeatmap(
   // dejar creer que ese es todo el atlas de tejidos.
   const trimmed =
     doc.biosampleTotal !== undefined && doc.biosampleTotal > doc.biosamples.length
-      ? ` · ${doc.biosamples.length} de ${doc.biosampleTotal} biosamples, los de mayor efecto`
+      ? t('heatmap.panel.trimmedNote', {
+          shown: doc.biosamples.length,
+          total: doc.biosampleTotal,
+        })
       : '';
 
   container.append(
@@ -379,7 +392,10 @@ export function renderTissueHeatmap(
         rsidChip(doc.variant.rsid),
         el('span', {
           class: 'card__chip card__chip--quiet',
-          text: `${doc.biosamples.length} biosamples · ${doc.modalities.length} modalidades`,
+          text: t('heatmap.meta.counts', {
+            biosamples: doc.biosamples.length,
+            modalities: doc.modalities.length,
+          }),
         }),
         sourceChip(doc.provenance),
       ),
@@ -387,13 +403,9 @@ export function renderTissueHeatmap(
     provenanceStrip(doc.provenance),
     panel(
       {
-        title: 'Efecto por tejido y modalidad',
-        subtitle: `${covered} de ${total} celdas con senal medible${trimmed}`,
-        hint:
-          'Las filas van agrupadas por sistema de organos, no en orden ' +
-          'alfabetico: asi una banda de color continua significa un efecto ' +
-          'especifico de ese sistema. El gris neutro es cero, no ausencia de ' +
-          'dato. Cada celda es pinchable y lleva a esa pista en el locus.',
+        title: t('heatmap.panel.title'),
+        subtitle: t('heatmap.panel.subtitle', { covered, total, trimmedNote: trimmed }),
+        hint: t('heatmap.panel.hint'),
       },
       el('div', {}, legendSlot, slot),
     ),

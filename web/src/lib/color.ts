@@ -18,6 +18,7 @@
 
 import { interpolateRgb, piecewise } from './interpolate';
 import { token } from './dom';
+import { t, has } from '../i18n';
 
 /** Las 11 modalidades reales de `dna_output.OutputType`. */
 export const MODALITY_ORDER = [
@@ -71,15 +72,11 @@ const FAMILY_SLOT: Record<ModalityFamily, number> = {
   polyadenylation: 7,
 };
 
-export const FAMILY_LABEL_MODALITY: Record<ModalityFamily, string> = {
-  expression: 'Expresion',
-  accessibility: 'Accesibilidad',
-  'tf-binding': 'Union de factores',
-  histone: 'Histonas',
-  splicing: 'Splicing',
-  'chromatin-3d': 'Contacto 3D',
-  polyadenylation: 'Poliadenilacion',
-};
+/** Etiqueta legible de una familia de modalidad. Funcion, no tabla: `t()` no
+ * se puede llamar a nivel de modulo. */
+export function familyLabelModality(family: ModalityFamily): string {
+  return t(`legend.modalityFamily.${family}`);
+}
 
 /** Color de una ranura categorica, de 1 a 8. */
 export function slotColor(slot: number): string {
@@ -170,12 +167,15 @@ export const FAMILY_ORDER = [
   'indel',
 ] as const;
 
-export const FAMILY_LABEL: Record<string, string> = {
-  regulatory: 'Regulatorio',
-  protein: 'Proteina',
-  conservation: 'Conservacion',
-  indel: 'Indel',
-};
+/**
+ * Etiqueta legible de una familia de features del AVI.
+ *
+ * A function, not a constant map: `t()` cannot run at module load (the
+ * dictionary arrives after the modules evaluate).
+ */
+export function familyLabel(family: string): string {
+  return has(`legend.aviFamily.${family}`) ? t(`legend.aviFamily.${family}`) : family;
+}
 
 /**
  * Color de una familia de features del AVI.

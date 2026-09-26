@@ -15,7 +15,8 @@
 
 import { clear, el, onResize, onThemeChange, svg } from '../lib/dom';
 import * as fmt from '../lib/format';
-import { FAMILY_LABEL, FAMILY_ORDER, familyColor, modalityColor } from '../lib/color';
+import { dataText, t } from '../i18n';
+import { familyLabel, FAMILY_ORDER, familyColor, modalityColor } from '../lib/color';
 import { panel, predictionNotice, provenanceStrip, rsidChip, sourceChip, tooltip } from '../lib/ui';
 import type { AviFeature, CardDoc } from '../lib/types';
 
@@ -91,9 +92,10 @@ export function aviGauge(
     height: String(height),
     viewBox: `0 0 ${width} ${height}`,
     role: 'img',
-    'aria-label': `AVI PHRED ${fmt.fixed2(card.avi.phred)}, ${fmt.phredMeaning(
-      card.avi.phred,
-    )}`,
+    'aria-label': t('card.gauge.ariaLabel', {
+      phred: fmt.fixed2(card.avi.phred),
+      meaning: fmt.phredMeaning(card.avi.phred),
+    }),
   });
 
   // Canal de fondo.
@@ -175,22 +177,22 @@ export function aviGauge(
       'div',
       { class: 'gauge-block__readout' },
       el('span', { class: 'gauge-block__number', text: fmt.fixed2(card.avi.phred) }),
-      el('span', { class: 'gauge-block__unit', text: 'PHRED' }),
+      el('span', { class: 'gauge-block__unit', text: t('card.gauge.unit') }),
       el('span', {
         class: 'gauge-block__meaning',
         text: fmt.phredMeaning(card.avi.phred),
       }),
     ),
     root as unknown as HTMLElement,
-    el('p', { class: 'gauge-block__legend', text: fmt.PHRED_LEGEND }),
+    el('p', { class: 'gauge-block__legend', text: fmt.phredLegend() }),
     compact
       ? null
       : el(
           'p',
           { class: 'gauge-block__formula' },
-          'PHRED = -10 · log₁₀(1 - cuantil)',
+          t('card.gauge.formula'),
           card.avi.rawScore !== null && card.avi.rawScore !== undefined
-            ? `   ·   score crudo ${fmt.signed2(card.avi.rawScore)}`
+            ? t('card.gauge.rawScore', { value: fmt.signed2(card.avi.rawScore) })
             : '',
         ),
   );
@@ -259,9 +261,7 @@ function waterfall(
     height: String(height),
     viewBox: `0 0 ${width} ${height}`,
     role: 'img',
-    'aria-label':
-      `Cascada de ${card.features.length} contribuciones SHAP al score AVI, ` +
-      'agrupadas en cuatro familias.',
+    'aria-label': t('card.waterfall.ariaLabel', { n: card.features.length }),
   });
 
   // Linea del valor base: de donde parte la explicacion.
@@ -290,7 +290,7 @@ function waterfall(
           y: String(row.y - 5),
           class: 'waterfall__family',
           text:
-            (expected?.label ?? FAMILY_LABEL[feature.family] ?? feature.family) +
+            dataText(`data.family.${feature.family}`, expected?.label ?? familyLabel(feature.family)) +
             (expected?.expectedCount ? ` · ${expected.expectedCount}` : ''),
         }),
         svg('line', {
@@ -347,7 +347,7 @@ function waterfall(
         y: String(row.y + ROW_HEIGHT / 2 + 4),
         class: 'waterfall__label',
         'text-anchor': 'end',
-        text: feature.label,
+        text: dataText(`data.feature.${feature.id}`, feature.label),
       }),
       svg('rect', {
         x: String(x0),
@@ -375,25 +375,25 @@ function waterfall(
       const rect = target.getBoundingClientRect();
       const mouse = event as MouseEvent;
       tip.show(
-        feature.label,
+        dataText(`data.feature.${feature.id}`, feature.label),
         [
           {
-            label: 'Contribucion',
+            label: t('card.waterfall.tooltip.contribution'),
             value: fmt.signed2(feature.contribution),
             swatch: familyColor(feature.family),
             emphasis: true,
           },
           {
-            label: 'Familia',
-            value: FAMILY_LABEL[feature.family] ?? feature.family,
+            label: t('card.waterfall.tooltip.family'),
+            value: familyLabel(feature.family),
           },
           ...(feature.value !== null && feature.value !== undefined
-            ? [{ label: 'Valor del feature', value: fmt.fixed2(feature.value) }]
+            ? [{ label: t('card.waterfall.tooltip.featureValue'), value: fmt.fixed2(feature.value) }]
             : []),
-          { label: 'Acumulado antes', value: fmt.fixed2(row.from) },
-          { label: 'Acumulado despues', value: fmt.fixed2(row.to) },
+          { label: t('card.waterfall.tooltip.before'), value: fmt.fixed2(row.from) },
+          { label: t('card.waterfall.tooltip.after'), value: fmt.fixed2(row.to) },
           ...(linkable
-            ? [{ label: '', value: 'clic para ver esta pista en el locus' }]
+            ? [{ label: '', value: t('card.waterfall.tooltip.linkHint') }]
             : []),
         ],
         mouse.clientX || rect.right,
@@ -441,7 +441,7 @@ function familySummary(card: CardDoc): HTMLElement {
         }),
         el('span', {
           class: 'family-summary__name',
-          text: `${FAMILY_LABEL[row.family] ?? row.family} · ${row.count}`,
+          text: `${familyLabel(row.family)} · ${row.count}`,
         }),
         el(
           'span',
@@ -456,7 +456,7 @@ function familySummary(card: CardDoc): HTMLElement {
         el('span', {
           class: 'family-summary__net',
           text: fmt.signed2(row.net),
-          title: `Magnitud total ${fmt.fixed2(row.magnitude)}`,
+          title: t('card.familySummary.magnitudeTooltip', { value: fmt.fixed2(row.magnitude) }),
         }),
       ),
     ),
@@ -467,7 +467,7 @@ function familySummary(card: CardDoc): HTMLElement {
 function topTracks(card: CardDoc): HTMLElement {
   const all = card.topTracks ?? [];
   if (!all.length) {
-    return el('p', { class: 'state__detail', text: 'Sin tracks destacados.' });
+    return el('p', { class: 'state__detail', text: t('card.topTracks.empty') });
   }
   // Tope por modalidad. Sin el, una modalidad con cientos de tracks copa la
   // lista entera y el panel deja de informar sobre las demas: doce filas de
@@ -545,7 +545,7 @@ export function renderVariantCard(
       card.variant.gene
         ? el('span', { class: 'card__chip', text: card.variant.gene })
         : null,
-      el('span', { class: 'card__chip card__chip--quiet', text: 'GRCh38' }),
+      el('span', { class: 'card__chip card__chip--quiet', text: t('card.meta.grch38') }),
       sourceChip(card.provenance),
     ),
   );
@@ -558,45 +558,34 @@ export function renderVariantCard(
       { class: 'card__grid' },
       panel(
         {
-          title: 'Score AVI',
-          subtitle: 'Posicion de la variante en la escala PHRED del Atlas',
-          hint:
-            'Un PHRED de 20 significa que la variante esta en el 1 % mas alto ' +
-            'de todas las del genoma. La escala es logaritmica.',
+          title: t('card.panel.avi.title'),
+          subtitle: t('card.panel.avi.subtitle'),
+          hint: t('card.panel.avi.hint'),
         },
         gaugeSlot,
       ),
       panel(
         {
-          title: 'Aporte por familia',
-          subtitle: 'Neto con signo y magnitud total de cada grupo de features',
-          hint:
-            'La barra mide la magnitud total del grupo; el numero de la derecha ' +
-            'es el aporte neto, que puede ser chico si hay features que se cancelan.',
+          title: t('card.panel.family.title'),
+          subtitle: t('card.panel.family.subtitle'),
+          hint: t('card.panel.family.hint'),
         },
         familySummary(card),
       ),
     ),
     panel(
       {
-        title: 'Cascada de atribuciones SHAP',
-        subtitle: `${card.features.length} features, agrupados en cuatro familias`,
-        hint:
-          'Cada barra va del score acumulado antes del feature al de despues. ' +
-          'Hacia la derecha sube el score, hacia la izquierda lo baja. La linea ' +
-          'vertical es el valor base del que parte la explicacion. Los features ' +
-          'regulatorios son pinchables: llevan a esa pista a lo largo del locus.',
+        title: t('card.panel.waterfall.title'),
+        subtitle: t('card.panel.waterfall.subtitle', { n: card.features.length }),
+        hint: t('card.panel.waterfall.hint'),
       },
       waterfallSlot,
     ),
     panel(
       {
-        title: 'Tracks mas afectados',
-        subtitle: `Mayor magnitud de efecto, hasta ${3} por modalidad`,
-        hint:
-          'El cuadrito de la izquierda es la modalidad. El color de la barra es ' +
-          'la direccion del efecto: naranja lo sube, azul lo baja. La barra mide ' +
-          'magnitud, no signo.',
+        title: t('card.panel.tracks.title'),
+        subtitle: t('card.panel.tracks.subtitle', { n: 3 }),
+        hint: t('card.panel.tracks.hint'),
       },
       topTracks(card),
     ),

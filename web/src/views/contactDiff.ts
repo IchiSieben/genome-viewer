@@ -45,6 +45,7 @@ import * as fmt from '../lib/format';
 import { divergingScale } from '../lib/color';
 import { panel, predictionNotice, provenanceStrip, sourceChip, tooltip } from '../lib/ui';
 import type { TooltipRow } from '../lib/ui';
+import { dataText, t } from '../i18n';
 import type { ContactsDoc } from '../lib/types';
 
 /** Factor de la lupa. Etiquetado en el boton y en la leyenda; nunca implicito. */
@@ -206,13 +207,13 @@ export function renderContactDiff(container: HTMLElement, doc: ContactsDoc): () 
       el(
         'div',
         { class: 'contacts__legend-head' },
-        el('span', { class: 'contacts__legend-title' }, 'Cambio (ALT − REF)'),
+        el('span', { class: 'contacts__legend-title' }, t('contact.legend.change.title')),
         el(
           'span',
           { class: 'contacts__legend-note' },
           magnified
-            ? `dominio ±${fmt.fixed4(dom)} — magnificado ×${MAGNIFY}`
-            : `dominio fijo ±${fmt.fixed2(dom)}`,
+            ? t('contact.legend.change.magnified', { domain: fmt.fixed4(dom), factor: MAGNIFY })
+            : t('contact.legend.change.fixed', { domain: fmt.fixed2(dom) }),
         ),
       ),
       el('div', { class: 'contacts__bar-wrap' }, bar, markNeg, mark),
@@ -223,7 +224,7 @@ export function renderContactDiff(container: HTMLElement, doc: ContactsDoc): () 
         el(
           'span',
           { class: 'contacts__legend-max' },
-          `máximo observado ${fmt.fixed4(maxAbs)}`,
+          t('contact.legend.max', { value: fmt.fixed4(maxAbs) }),
         ),
         el('span', {}, `+${fmt.fixed2(dom)}`),
       ),
@@ -245,11 +246,11 @@ export function renderContactDiff(container: HTMLElement, doc: ContactsDoc): () 
       el(
         'div',
         { class: 'contacts__legend-head' },
-        el('span', { class: 'contacts__legend-title' }, 'Estructura (REF)'),
+        el('span', { class: 'contacts__legend-title' }, t('contact.legend.structure.title')),
         el(
           'span',
           { class: 'contacts__legend-note' },
-          'escala propia: es el relieve que hay, no una medida de efecto',
+          t('contact.legend.structure.note'),
         ),
       ),
       el('div', { class: 'contacts__bar-wrap' }, bar),
@@ -257,7 +258,7 @@ export function renderContactDiff(container: HTMLElement, doc: ContactsDoc): () 
         'div',
         { class: 'contacts__legend-foot' },
         el('span', {}, fmt.fixed2(-refDomain)),
-        el('span', { class: 'contacts__legend-max' }, 'menos contacto ← → más'),
+        el('span', { class: 'contacts__legend-max' }, t('contact.legend.structure.scale')),
         el('span', {}, fmt.fixed2(refDomain)),
       ),
     );
@@ -278,14 +279,18 @@ export function renderContactDiff(container: HTMLElement, doc: ContactsDoc): () 
         'p',
         { class: 'contacts__verdict-lead' },
         invisible
-          ? `Cambio máximo en esta ventana: ${fmt.fixed4(maxAbs)}. Por debajo del umbral visible (${fmt.fixed2(threshold)}): el color no puede mostrarlo, y no debe fingir que sí.`
-          : `Cambio máximo en esta ventana: ${fmt.fixed4(maxAbs)}, sobre un dominio fijo de ±${fmt.fixed2(domain)}.`,
+          ? t('contact.verdict.invisible', { maxAbs: fmt.fixed4(maxAbs), threshold: fmt.fixed2(threshold) })
+          : t('contact.verdict.visible', { maxAbs: fmt.fixed4(maxAbs), domain: fmt.fixed2(domain) }),
       ),
       relief > 0
         ? el(
             'p',
             { class: 'contacts__verdict-detail' },
-            `La estructura de esta ventana abarca ${fmt.fixed2(relief)} y el mayor cambio es ${fmt.fixed4(maxAbs)}: un ${fmt.percent1(share)} del relieve que ya había. La estructura tridimensional no se mueve.`,
+            t('contact.verdict.relief', {
+              relief: fmt.fixed2(relief),
+              maxAbs: fmt.fixed4(maxAbs),
+              share: fmt.percent1(share),
+            }),
           )
         : el('span', {}),
       doc.maxAbsDeltaAt ? el('p', { class: 'contacts__verdict-detail' }, maxAbsSentence()) : el('span', {}),
@@ -303,11 +308,18 @@ export function renderContactDiff(container: HTMLElement, doc: ContactsDoc): () 
     const at = doc.maxAbsDeltaAt;
     if (!at) return '';
     const where = at.involvesVariantBin
-      ? `Ese máximo sí toca el bin de la variante, a ${fmt.span(at.separationBp)} de distancia: ${fmt.fixed4(at.ref)} → ${fmt.fixed4(at.alt)}. Es el mayor cambio de todo el megabase, y aun así es esto.`
-      : `Ese máximo ni siquiera toca el bin de la variante: está a ${fmt.span(at.separationBp)} de la diagonal, fuera de la fila que mide el AVI.`;
+      ? t('contact.maxAbs.touching', {
+          separation: fmt.span(at.separationBp),
+          ref: fmt.fixed4(at.ref),
+          alt: fmt.fixed4(at.alt),
+        })
+      : t('contact.maxAbs.notTouching', { separation: fmt.span(at.separationBp) });
     if (at.insideDrawnWindow) return where;
-    const half = doc.resolution !== undefined && n > 0 ? fmt.span(((n - 1) / 2) * doc.resolution) : 'el recorte';
-    return `${where} Queda fuera del recorte que se dibuja (±${half}): se midió sobre el megabase entero, no sobre lo dibujado.`;
+    const half =
+      doc.resolution !== undefined && n > 0
+        ? fmt.span(((n - 1) / 2) * doc.resolution)
+        : t('contact.maxAbs.crop');
+    return `${where}${t('contact.maxAbs.outsideWindow', { half })}`;
   }
 
   /**
@@ -322,16 +334,16 @@ export function renderContactDiff(container: HTMLElement, doc: ContactsDoc): () 
     return el(
       'div',
       { class: 'contacts__bridge' },
-      el('h3', { class: 'contacts__bridge-title' }, 'De dónde sale el número del AVI'),
+      el('h3', { class: 'contacts__bridge-title' }, t('contact.bridge.title')),
       el(
         'p',
         { class: 'contacts__bridge-text' },
-        `El feature de mapas de contacto del AVI mide la media de |ALT − REF| sobre todas las interacciones del bin que contiene la variante. Es la cruz resaltada, extendida al megabase entero: ${fmt.fixed4(rowMean)}. La cruz dibuja la parte de esa fila que cae en el recorte, no la fila completa. Y como la matriz es simétrica, su fila y su columna son el mismo conjunto contado dos veces.`,
+        t('contact.bridge.text1', { rowMean: fmt.fixed4(rowMean) }),
       ),
       el(
         'p',
         { class: 'contacts__bridge-text' },
-        'Ese número y este mapa no son la misma magnitud, y conviene no confundirlos: el del AVI va sin signo, es una diferencia cruda y solo mira esa cruz. El mapa va con signo y cubre la ventana entera.',
+        t('contact.bridge.text2'),
       ),
     );
   }
@@ -340,7 +352,7 @@ export function renderContactDiff(container: HTMLElement, doc: ContactsDoc): () 
     return el(
       'p',
       { class: 'contacts__biosample' },
-      `Biosample: ${doc.biosample.name} (${doc.biosample.ontologyCurie}). Los mapas de contacto del catálogo son 28 y todos son líneas celulares de 4D Nucleome: no hay tejido primario donde elegir. Una línea hepática es la biología correcta para esta variante, pero sigue siendo una línea celular, no hígado.`,
+      t('contact.biosample', { name: doc.biosample.name, curie: doc.biosample.ontologyCurie }),
     );
   }
 
@@ -348,12 +360,12 @@ export function renderContactDiff(container: HTMLElement, doc: ContactsDoc): () 
     const button = el(
       'button',
       { class: 'contacts__magnify', type: 'button' },
-      `Magnificar ×${MAGNIFY}`,
+      t('contact.magnify.button', { factor: MAGNIFY }),
     );
     const update = () => {
       button.textContent = magnified
-        ? `Volver a la escala fija`
-        : `Magnificar ×${MAGNIFY}`;
+        ? t('contact.magnify.reset')
+        : t('contact.magnify.button', { factor: MAGNIFY });
       button.setAttribute('aria-pressed', magnified ? 'true' : 'false');
     };
     update();
@@ -370,8 +382,8 @@ export function renderContactDiff(container: HTMLElement, doc: ContactsDoc): () 
         'span',
         { class: 'contacts__controls-note' },
         magnified
-          ? `El dominio está dividido por ${MAGNIFY}. Lo que se ve ahora está magnificado, no es lo que mide la escala comparable.`
-          : 'La escala por defecto es la misma en todos los loci: dos variantes se comparan mirando dos mapas.',
+          ? t('contact.magnify.noteOn', { factor: MAGNIFY })
+          : t('contact.magnify.noteOff'),
       ),
     );
   }
@@ -395,7 +407,7 @@ export function renderContactDiff(container: HTMLElement, doc: ContactsDoc): () 
     container.append(
       panel(
         {
-          title: 'Contactos 3D, REF vs ALT',
+          title: t('contact.title'),
           subtitle: doc.interval
             ? fmt.intervalLabel(
                 doc.interval.chromosome,
@@ -403,10 +415,7 @@ export function renderContactDiff(container: HTMLElement, doc: ContactsDoc): () 
                 doc.interval.end,
               )
             : undefined,
-          hint:
-            'Arriba la estructura que ya hay; abajo lo que la variante le hace. ' +
-            'El recuadro marca la fila y la columna del bin de la variante, que es ' +
-            'exactamente lo que mide el feature de contactos del AVI.',
+          hint: t('contact.hint'),
           actions: [sourceChip(doc.provenance)],
         },
         body,
@@ -428,15 +437,15 @@ export function renderContactDiff(container: HTMLElement, doc: ContactsDoc): () 
     // solo el de su mitad, comparar estructura con cambio obligaria a cruzar
     // la diagonal con el raton y recordar la cifra de enfrente.
     const rows: TooltipRow[] = [
-      { label: 'Estructura REF', value: fmt.signed4(refAt(cell.i, cell.j)), emphasis: upper },
-      { label: 'Cambio ALT menos REF', value: fmt.signed4(deltaAt(cell.i, cell.j)), emphasis: !upper },
-      { label: 'Separacion', value: fmt.span(sep) },
-      { label: 'Bins', value: `${fmt.int(a)} / ${fmt.int(b)}` },
+      { label: t('contact.tooltip.structureRef'), value: fmt.signed4(refAt(cell.i, cell.j)), emphasis: upper },
+      { label: t('contact.tooltip.changeAltRef'), value: fmt.signed4(deltaAt(cell.i, cell.j)), emphasis: !upper },
+      { label: t('contact.tooltip.separation'), value: fmt.span(sep) },
+      { label: t('contact.tooltip.bins'), value: `${fmt.int(a)} / ${fmt.int(b)}` },
     ];
     if (cell.i === vbin || cell.j === vbin) {
-      rows.push({ label: 'Cruz del AVI', value: 'si', emphasis: true });
+      rows.push({ label: t('contact.tooltip.aviCross'), value: t('contact.tooltip.yes'), emphasis: true });
     }
-    return { title: upper ? 'Estructura (REF)' : 'Cambio (ALT menos REF)', rows };
+    return { title: upper ? t('contact.tooltip.titleStructure') : t('contact.tooltip.titleChange'), rows };
   }
 
   function onMove(event: PointerEvent): void {
@@ -490,12 +499,12 @@ function findingBlock(doc: ContactsDoc): HTMLElement {
   return el(
     'section',
     { class: 'finding' },
-    el('h3', { class: 'finding__title' }, 'El hallazgo'),
-    el('p', { class: 'finding__text' }, doc.finding ?? ''),
+    el('h3', { class: 'finding__title' }, t('contact.finding.title')),
+    el('p', { class: 'finding__text' }, dataText(`data.finding.${doc.variant.id}`, doc.finding ?? '')),
     el(
       'p',
       { class: 'finding__method' },
-      `Salió de medir, no de buscar: el dominio del color es una constante del pipeline (±${fmt.fixed2(doc.domain ?? 1)}) y no se ajustó a estos datos, así que un mapa plano aquí significa que no hay nada que pintar. El máximo se midió sobre la ventana de 1 Mb que se le dio al modelo, no sobre el recorte que se dibuja.`,
+      t('contact.finding.method', { domain: fmt.fixed2(doc.domain ?? 1) }),
     ),
   );
 }

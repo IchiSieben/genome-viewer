@@ -19,6 +19,7 @@
 
 import { clear, el, onResize, onThemeChange, setupCanvas, svg, token } from '../lib/dom';
 import * as fmt from '../lib/format';
+import { t, tp } from '../i18n';
 import { MODALITY_ORDER, modalityColor } from '../lib/color';
 import { emptyState, errorState, loadingState, panel, predictionNotice, provenanceStrip, sourceChip, tooltip } from '../lib/ui';
 import { altOf } from '../lib/signal';
@@ -264,7 +265,7 @@ function drawGenes(
       y: String(top + 16),
       class: 'browser__lane-label',
       'text-anchor': 'end',
-      text: 'Genes',
+      text: t('browser.genes.label'),
     }),
   );
 
@@ -274,7 +275,7 @@ function drawGenes(
         x: String(LABEL_WIDTH + 8),
         y: String(top + 16),
         class: 'browser__empty-note',
-        text: 'Sin anotacion disponible para este locus.',
+        text: t('browser.genes.noAnnotation'),
       }),
     );
     return group;
@@ -379,7 +380,7 @@ function drawGenes(
         y: String(top + 14 + MAX_GENE_LANES * GENE_LANE_STEP + 4),
         class: 'browser__empty-note',
         'text-anchor': 'end',
-        text: `+${hidden} genes mas, acerca el zoom para verlos`,
+        text: tp('browser.genes.hidden', hidden),
       }),
     );
   }
@@ -408,10 +409,7 @@ export function renderTrackBrowser(
   const signals = variantSignals ?? locus.signals;
   if (!signals?.overview) {
     container.append(
-      emptyState(
-        'Este locus no tiene bloques de senal congelados.',
-        'El pipeline los emite con el comando fixtures o con una corrida real.',
-      ),
+      emptyState(t('browser.empty.title'), t('browser.empty.detail')),
     );
     return () => {};
   }
@@ -643,19 +641,31 @@ export function renderTrackBrowser(
       span <= DETAIL_THRESHOLD_BP &&
       (view.end <= detail.interval.start || view.start >= detail.interval.end);
 
+    const resolution =
+      level === 'detail'
+        ? t('browser.status.resolutionDetail')
+        : t('browser.status.resolutionBin', { bin: overview.binSize });
+
     status.textContent =
-      `${fmt.intervalLabel(locus.interval.chromosome, view.start, view.end)} · ` +
-      `${fmt.span(span)} · ` +
-      `resolucion ${level === 'detail' ? '1 pb' : `${overview.binSize} pb por bin`}` +
-      (lastFrameMs ? ` · ${lastFrameMs.toFixed(1)} ms por frame` : '') +
-      (data.length ? '' : ' · elige al menos una modalidad') +
+      t('browser.status.main', {
+        interval: fmt.intervalLabel(locus.interval.chromosome, view.start, view.end),
+        span: fmt.span(span),
+        resolution,
+      }) +
+      (lastFrameMs ? t('browser.status.frameTime', { ms: fmt.fixed1(lastFrameMs) }) : '') +
+      (data.length ? '' : t('browser.status.noModality')) +
       (detailOutOfRange
-        ? ` · el bloque de 1 pb solo cubre ${fmt.intervalLabel(
-            detail!.interval.chromosome,
-            detail!.interval.start,
-            detail!.interval.end,
-          )}`
+        ? t('browser.status.detailOutOfRange', {
+            interval: fmt.intervalLabel(
+              detail!.interval.chromosome,
+              detail!.interval.start,
+              detail!.interval.end,
+            ),
+          })
         : '');
+
+    if (lastFrameMs) status.setAttribute('data-frame-ms', lastFrameMs.toFixed(3));
+    else status.removeAttribute('data-frame-ms');
   }
 
   // ---- Interaccion --------------------------------------------------------
@@ -764,7 +774,7 @@ export function renderTrackBrowser(
 
     tip.show(
       fmt.coordinate(locus.interval.chromosome, bp),
-      [{ label: 'REF → ALT (diferencia)', value: '', emphasis: true }, ...rows],
+      [{ label: t('browser.tooltip.diffHeader'), value: '', emphasis: true }, ...rows],
       event.clientX,
       event.clientY,
     );
@@ -843,7 +853,7 @@ export function renderTrackBrowser(
         class: active ? 'chip chip--on' : 'chip',
         type: 'button',
         'aria-pressed': String(active),
-        title: `${ref.tracks} tracks · ${fmt.bytes(ref.bytes)}`,
+        title: t('browser.chip.tooltip', { tracks: ref.tracks, bytes: fmt.bytes(ref.bytes) }),
       });
       chip.append(
         el('span', {
@@ -857,7 +867,7 @@ export function renderTrackBrowser(
         if (selected.has(modality)) selected.delete(modality);
         else selected.add(modality);
         buildChips();
-        status.textContent = 'Cargando senal...';
+        status.textContent = t('browser.status.loading');
         void ensureBlocks().then(scheduleDraw);
       });
       chips.append(chip);
@@ -866,16 +876,18 @@ export function renderTrackBrowser(
       const jump = el('button', {
         class: 'chip chip--action',
         type: 'button',
-        text: 'Ir a la variante (1 pb)',
-        title: `Salta a ${fmt.intervalLabel(
-          detail.interval.chromosome,
-          detail.interval.start,
-          detail.interval.end,
-        )}, la ventana que el bloque de 1 pb cubre.`,
+        text: t('browser.chip.jumpToVariant'),
+        title: t('browser.chip.jumpTooltip', {
+          interval: fmt.intervalLabel(
+            detail.interval.chromosome,
+            detail.interval.start,
+            detail.interval.end,
+          ),
+        }),
       });
       jump.addEventListener('click', () => {
         view = clampView({ start: detail.interval.start, end: detail.interval.end });
-        status.textContent = 'Cargando senal...';
+        status.textContent = t('browser.status.loading');
         void ensureBlocks().then(scheduleDraw);
       });
       chips.append(jump);
@@ -884,7 +896,7 @@ export function renderTrackBrowser(
     const reset = el('button', {
       class: 'chip chip--action',
       type: 'button',
-      text: 'Ver locus completo',
+      text: t('browser.chip.resetView'),
     });
     reset.addEventListener('click', () => {
       view = { ...full };
@@ -900,17 +912,12 @@ export function renderTrackBrowser(
     provenanceStrip(locus.provenance),
     panel(
       {
-        title: 'Navegador de tracks',
-        subtitle: 'Senal predicha REF contra ALT a lo largo del locus',
+        title: t('browser.panel.title'),
+        subtitle: t('browser.panel.subtitle'),
         // La marca de origen viaja con el panel porque esta vista no tiene
         // titulo propio: el sello del pie queda a 900 px de scroll.
         actions: [sourceChip(locus.provenance)],
-        hint:
-          'La linea gris es REF y la de color es ALT. El area sombreada entre ' +
-          'las dos es la diferencia: naranja donde la variante sube la senal, ' +
-          'azul donde la baja. Rueda para acercar, arrastra para desplazar, ' +
-          'tecla 0 para volver al locus completo. Al bajar de 8 kb de ventana ' +
-          'cambia solo a resolucion de 1 pb.',
+        hint: t('browser.panel.hint'),
       },
       el('div', {}, chips, body),
     ),
@@ -919,10 +926,7 @@ export function renderTrackBrowser(
 
   stage.tabIndex = 0;
   stage.setAttribute('role', 'application');
-  stage.setAttribute(
-    'aria-label',
-    'Navegador de tracks. Flechas para desplazar, mas y menos para el zoom, cero para el locus completo.',
-  );
+  stage.setAttribute('aria-label', t('browser.aria.label'));
   stage.addEventListener('wheel', onWheel, { passive: false });
   stage.addEventListener('pointerdown', onPointerDown);
   stage.addEventListener('pointermove', onPointerMove);
@@ -936,7 +940,7 @@ export function renderTrackBrowser(
   });
   const stopTheme = onThemeChange(scheduleDraw);
 
-  status.textContent = 'Cargando senal...';
+  status.textContent = t('browser.status.loading');
   void (async () => {
     try {
       if (locus.annotations) {
@@ -954,7 +958,7 @@ export function renderTrackBrowser(
       clear(body);
       body.append(
         errorState(
-          'No se pudo cargar la senal',
+          t('browser.error.title'),
           error instanceof Error ? error.message : String(error),
         ),
       );
@@ -972,5 +976,5 @@ export function renderTrackBrowser(
 
 /** Estado de carga mientras llega el primer bloque. */
 export function trackBrowserPlaceholder(bytes?: number): HTMLElement {
-  return loadingState('el navegador de tracks', bytes);
+  return loadingState(t('browser.loading.label'), bytes);
 }

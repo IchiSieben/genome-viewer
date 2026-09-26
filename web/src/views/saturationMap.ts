@@ -24,6 +24,7 @@
 
 import { clear, el, onResize, onThemeChange, setupCanvas, svg, token } from '../lib/dom';
 import * as fmt from '../lib/format';
+import { t, tp } from '../i18n';
 import { nucleotideColor, sequentialScale } from '../lib/color';
 import { panel, predictionNotice, provenanceStrip, sourceChip, tooltip } from '../lib/ui';
 import type { AnnotationsDoc, LocusDoc, SaturationDoc } from '../lib/types';
@@ -208,7 +209,7 @@ export function renderSaturationMap(
         y: String(GENE_HEIGHT + SUMMARY_HEIGHT - 3),
         class: 'saturation__row-label saturation__row-label--quiet',
         'text-anchor': 'end',
-        text: 'max',
+        text: t('saturation.row.max'),
       }),
     );
     overlay.append(
@@ -217,7 +218,7 @@ export function renderSaturationMap(
         y: String(seqY + SEQUENCE_HEIGHT / 2 + 4),
         class: 'saturation__row-label saturation__row-label--quiet',
         'text-anchor': 'end',
-        text: 'ref',
+        text: t('saturation.row.ref'),
       }),
     );
 
@@ -345,8 +346,8 @@ export function renderSaturationMap(
     if (refBase === altBase) {
       tip.show(
         fmt.coordinate(doc.interval.chromosome, position),
-        [{ label: 'Base de referencia', value: refBase, emphasis: true },
-         { label: '', value: 'no es una variante' }],
+        [{ label: t('saturation.tooltip.refBase'), value: refBase, emphasis: true },
+         { label: '', value: t('saturation.tooltip.notVariant') }],
         event.clientX,
         event.clientY,
       );
@@ -358,18 +359,21 @@ export function renderSaturationMap(
       `${fmt.coordinate(doc.interval.chromosome, position)} ${refBase}>${altBase}`,
       [
         {
-          label: 'AVI PHRED',
-          value: phred === null || phred === undefined ? 'sin dato' : fmt.fixed2(phred),
+          label: t('saturation.tooltip.aviPhred'),
+          value:
+            phred === null || phred === undefined
+              ? t('saturation.tooltip.noData')
+              : fmt.fixed2(phred),
           swatch: phred ? sequentialScale(maxPhred)(phred) : undefined,
           emphasis: true,
         },
         ...(phred !== null && phred !== undefined
-          ? [{ label: 'Lectura', value: fmt.phredMeaning(phred) }]
+          ? [{ label: t('saturation.tooltip.reading'), value: fmt.phredMeaning(phred) }]
           : []),
         ...(raw !== null && raw !== undefined
-          ? [{ label: 'Score crudo', value: fmt.signed2(raw) }]
+          ? [{ label: t('saturation.tooltip.rawScore'), value: fmt.signed2(raw) }]
           : []),
-        { label: '', value: 'clic para la ficha' },
+        { label: '', value: t('saturation.tooltip.clickForCard') },
       ],
       event.clientX,
       event.clientY,
@@ -394,7 +398,7 @@ export function renderSaturationMap(
           text: fmt.coordinate(doc.interval.chromosome, position),
         }),
         el('span', {
-          text: `  base de referencia ${doc.reference[hit.column]}: no es una variante`,
+          text: t('saturation.readout.refCellNote', { base: doc.reference[hit.column]! }),
         }),
       );
       return;
@@ -420,9 +424,11 @@ export function renderSaturationMap(
       el('span', {
         text:
           phred === null || phred === undefined
-            ? '  sin dato'
-            : `  AVI PHRED ${fmt.fixed2(phred)} · ${fmt.phredMeaning(phred)}` +
-              '  ·  sin ficha congelada: el pipeline congela unas pocas variantes por locus',
+            ? t('saturation.readout.noPhred')
+            : t('saturation.readout.unknownVariant', {
+                phred: fmt.fixed2(phred),
+                meaning: fmt.phredMeaning(phred),
+              }),
       }),
     );
   }
@@ -431,26 +437,21 @@ export function renderSaturationMap(
 
   const coverage =
     doc.coverage !== null && doc.coverage !== undefined
-      ? ` · ${(doc.coverage * 100).toFixed(0)} % de celdas con dato`
+      ? t('saturation.readout.coverage', { percent: fmt.int(doc.coverage * 100) })
       : '';
 
   readout.textContent =
     `${fmt.intervalLabel(doc.interval.chromosome, doc.interval.start, doc.interval.end)}` +
-    ` · ${columns} posiciones × 3 alternativas${coverage}`;
+    ` · ${tp('saturation.readout.summary', columns)}${coverage}`;
 
   container.append(
     provenanceStrip(doc.provenance),
     panel(
       {
-        title: 'Mapa de saturacion',
-        subtitle: 'El AVI de las tres bases alternativas en cada posicion',
+        title: t('saturation.panel.title'),
+        subtitle: t('saturation.panel.subtitle'),
         actions: [sourceChip(doc.provenance)],
-        hint:
-          'Cada columna es una posicion y cada fila una base alternativa. Cuanto ' +
-          'mas oscura la celda, mas alto el AVI. Una columna oscura entera ' +
-          'significa que cambiar esa base importa, sea cual sea el cambio: asi es ' +
-          'como aparecen los motivos. La escala es secuencial y no divergente ' +
-          'porque el AVI mide impacto, no direccion.',
+        hint: t('saturation.panel.hint'),
       },
       el('div', {}, body, legend(maxPhred)),
     ),
@@ -485,10 +486,10 @@ function legend(maxPhred: number): HTMLElement {
     height: '46',
     viewBox: '0 0 260 46',
     role: 'img',
-    'aria-label': `Escala secuencial de AVI PHRED, de 0 a ${maxPhred.toFixed(1)}.`,
+    'aria-label': t('saturation.legend.ariaLabel', { max: fmt.fixed1(maxPhred) }),
   });
   root.append(
-    svg('text', { x: '0', y: '11', class: 'legend__title', text: 'AVI PHRED · impacto' }),
+    svg('text', { x: '0', y: '11', class: 'legend__title', text: t('saturation.legend.title') }),
   );
   for (let i = 0; i < steps; i++) {
     const t = i / (steps - 1);
@@ -514,7 +515,7 @@ function legend(maxPhred: number): HTMLElement {
         y: '41',
         class: 'legend__label',
         'text-anchor': anchor,
-        text: value.toFixed(1),
+        text: fmt.fixed1(value),
       }),
     );
   }
@@ -524,6 +525,6 @@ function legend(maxPhred: number): HTMLElement {
     root as unknown as HTMLElement,
     // El texto va FUERA del SVG. Dentro, un viewBox fijo lo recorta en cuanto
     // crece; fuera fluye y se ajusta al ancho que haya.
-    el('p', { class: 'saturation__legend-note', text: fmt.PHRED_LEGEND }),
+    el('p', { class: 'saturation__legend-note', text: fmt.phredLegend() }),
   );
 }

@@ -1,13 +1,13 @@
 {
-  "name": "alphagenome-platform-web",
+  "name": "genome-viewer",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Visor interactivo de predicciones de AlphaGenome. Sitio estatico, cero llamadas a la API.",
+  "description": "Unofficial interactive viewer for AlphaGenome variant-effect predictions. Static site, zero API calls.",
   "scripts": {
     "sync": "node scripts/sync-data.mjs",
     "dev": "npm run sync && vite",
-    "build": "npm run sync && tsc --noEmit && vite build && node scripts/inline-css.mjs && node scripts/inline-index.mjs",
+    "build": "npm run sync && tsc --noEmit && vite build && node scripts/inline-css.mjs && node scripts/inline-index.mjs && node scripts/build-shells.mjs",
     "preview": "vite preview",
     "check": "tsc --noEmit",
     "verify": "node scripts/serve-subfolder.mjs --run \"node scripts/verify.mjs\"",

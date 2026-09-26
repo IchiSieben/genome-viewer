@@ -77,3 +77,92 @@ cambios de código entremedias, la diferencia es la máquina, no el visor.
 - **Descartado**: pares ambiguos (que/qué, como/cómo, esta/está, mas/más). Un
   guardarraíl que da falsos positivos termina desactivado.
 - **Reversible**: sí; la lista de patrones es una constante.
+
+---
+
+## Fase 1b — i18n (detalle en `docs/08-i18n.md`)
+
+## D-10 · Enrutado: dos páginas reales + hash; no un HTML por ruta **[REVISAR]**
+
+- **Qué**: `/genome-viewer/` (inglés, x-default) y `/genome-viewer/es/`
+  (español) son las únicas páginas reales; las vistas siguen en el hash (D2).
+  Sitemap con esas dos URLs y sus alternates.
+- **Por qué**: un HTML por ruta cabía en bytes, pero exigía reescribir el
+  enrutado y todos los enlaces internos de seis vistas y tres scripts en una
+  sesión sin supervisión, y no se podía comprobar en vivo (el landing despliega
+  con push, que no es de esta sesión). El texto indexable está en la portada y
+  la narrativa, no en las visualizaciones.
+- **Descartado**: HTML por ruta + `.htaccess` (lo pedía el usuario "si cabe").
+- **Reversible**: sí; la receta está en `docs/08-i18n.md`.
+
+## D-11 · El diccionario viaja con el HTML, en dos niveles
+
+- **Qué**: cada cascarón incrusta solo lo que pintan portada, cabecera, locus,
+  ficha y navegador (~5 KB gz); el resto llega como chunk en paralelo con el
+  artefacto de la vista, precargado por el script de arranque, o en reposo
+  tras el `load` de la portada. El JSON va al final del `<body>`.
+- **Por qué**: medido con A/B intercalado (ver abajo). Incrustarlo entero en
+  `<head>` costaba ~+240 ms de documento; el navegador sin sus claves, +400 ms.
+- **Descartado**: diccionarios en el bundle, fetch al arrancar, dos builds.
+- **Reversible**: sí (`INLINE` en `build-shells.mjs`).
+
+## D-12 · Formato numérico propio para el español; coordenadas sin localizar
+
+- `es`: `25,96`, `262 144` (U+202F), `5553`; `en`: `25.96`, `262,144`.
+  Coordenadas `chr12:54,578,515` en los dos idiomas. `es-PE` (lo de antes) no
+  era español en CLDR.
+
+## D-13 · Opción (A) para `data/dist/`, y lo que NO se traduce
+
+- Nombres de biosamples (ontología), genes y exones de Ensembl y notas del
+  sello de proveniencia se quedan como vienen; estas últimas con `lang="es"`.
+- El test de "ES idéntico salvo tildes" cazó en su primera corrida un error
+  real: un reemplazo automático había escrito "artifacto".
+
+## D-14 · Inglés americano
+
+- Ortografía estadounidense (color, catalog, artifact), la más común en la
+  literatura de genómica y la de la documentación de AlphaGenome.
+
+## D-15 · Preferencia de idioma: solo por clic, solo en la portada desnuda
+
+- Sin redirección por `navigator.language`. Ver `docs/08-i18n.md`.
+
+## D-16 · Dos bugs de arranque encontrados de paso (Fase 1a)
+
+- La vista de contactos y la página "sobre los datos" precargaban un
+  `card.json` que no usaban; Chrome lo avisaba en consola de forma
+  intermitente y `verify` fallaba una de cada dos corridas.
+
+### Medición final de la Fase 1b (A/B intercalado, 3 rondas, mediana)
+
+`web/scripts/measure-ab.mjs`, build `008f890` contra el de esta fase, servidos a
+la vez con la CSP del landing. Datos en `docs/evidence/performance-ab.json`.
+
+| Vista (3G lento) | Antes | Después | KiB antes → después | Oleadas | CLS |
+|---|---:|---:|---:|---:|---:|
+| Portada (catálogo) | 1 849 ms | 1 789 ms | 29,9 → 27,0 | 2 → 2 | 0 → 0 |
+| Portada (héroe) | 1 752 ms | 1 768 ms | 29,9 → 27,0 | 2 → 2 | 0 → 0 |
+| Ficha | 1 916 ms | 1 849 ms | 31,1 → 28,1 | 2 → 2 | 0 → 0 |
+| Navegador | 1 843 ms | 1 714 ms | 29,2 → 26,3 | 2 → 2 | 0,0025 → 0,0025 |
+
+El presupuesto es 3G lento, y ahí no hay regresión: menos bytes y las mismas
+oleadas en serie. Los bytes bajan porque el diccionario incrustado solo lleva
+lo que se pinta, y la prosa que antes iba en el bundle ahora vive en el chunk
+perezoso.
+
+En red rápida las cifras sirven de poco con la CPU al 100 %: la misma vista
+varía más de lo que se compara. Dos cosas que sí se comprobaron:
+
+- La "tercera oleada" de la portada y la ficha en red rápida es la precarga
+  ociosa del diccionario completo. Evidencia: la diferencia entre "después" en
+  red rápida (37,6 KiB) y en 3G lento (27,0 KiB) son 10,6 KiB, y el chunk
+  `en-*.js` pesa 10 898 B. En red rápida el `load` ocurre enseguida y el chunk
+  llega antes de la foto; no está en la ruta crítica.
+- Los 234 KiB del navegador en red rápida son bloques `.bin` de señal que en
+  esa ronda llegaron antes de la foto. No es una regresión: por ronda, la línea
+  base contó 291 / 32 / 32 KiB y el build nuevo 364 / 234 / 29 KiB. Con tres
+  rondas, la mediana cae de un lado o del otro según cuántas veces gane la
+  carrera.
+- "Antes" es la interfaz solo en español servida en la raíz; "después" es la
+  raíz inglesa. El A/B compara idiomas distintos, además de builds distintos.

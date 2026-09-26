@@ -24,7 +24,7 @@ mkdirSync(OUT, { recursive: true });
 const browser = await chromium.launch();
 let failures = 0;
 
-async function visit(name, hash, { width = 1280, height = 900, theme = 'light', checks = [], sourceWarn = false } = {}) {
+async function visit(name, hash, { width = 1280, height = 900, theme = 'light', checks = [], sourceWarn = false, lang = 'en' } = {}) {
   const context = await browser.newContext({
     viewport: { width, height },
     deviceScaleFactor: 2,
@@ -47,7 +47,8 @@ async function visit(name, hash, { width = 1280, height = 900, theme = 'light', 
     if (!u.hostname.startsWith('127.0.0.1')) external.push(r.url());
   });
 
-  await page.goto(BASE + hash, { waitUntil: 'networkidle' });
+  // English lives at the root, Spanish one level down at es/ (build-shells.mjs).
+  await page.goto(BASE + (lang === 'es' ? 'es/' : '') + hash, { waitUntil: 'networkidle', timeout: 120000 });
   // El recorrido de introduccion tapa la pagina; se descarta para las capturas.
   await page.evaluate(() => {
     try { localStorage.setItem('agp-tour-seen', '1'); } catch {}
@@ -61,6 +62,21 @@ async function visit(name, hash, { width = 1280, height = 900, theme = 'light', 
     const ok = count >= min;
     if (!ok) failures++;
     results.push(`${ok ? 'OK  ' : 'FALLA'} ${label ?? selector}: ${count} (min ${min})`);
+  }
+
+  const declared = await page.evaluate(() => document.documentElement.lang);
+  if (declared !== lang) {
+    failures++;
+    results.push(`FALLA <html lang="${declared}">, se esperaba "${lang}"`);
+  }
+  // A key without translation is printed as the key itself: never "a.b.c".
+  const rawKeys = await page.evaluate(() =>
+    (document.body.innerText.match(/\b[a-z]+\.[a-z][A-Za-z]*\.[a-zA-Z.]+\b/g) || [])
+      .filter((s) => !/^(www|ichisieben|github)\./.test(s)),
+  );
+  if (rawKeys.length) {
+    failures++;
+    results.push(`FALLA claves sin traducir en pantalla: ${rawKeys.slice(0, 5).join(', ')}`);
   }
 
   const scroll = await page.evaluate(
@@ -299,6 +315,52 @@ await visit('22-contactos-movil', CONTACTOS, {
   width: 390,
   height: 844,
   checks: [{ selector: '.contacts__canvas', label: 'lienzo del diff' }],
+});
+
+// ---- Spanish: the same views through the /es/ shell -----------------------
+const V = '#/variant/ppp1r1a-pde1b/chr12-54578515-C-T';
+await visit('es-01-portada', '', {
+  lang: 'es',
+  checks: [
+    { selector: '.catalog__item', min: 4, label: 'items de catalogo' },
+    { selector: '.hero__featured .gauge', label: 'medidor del heroe' },
+  ],
+});
+await visit('es-03-ficha', `${V}?view=card`, {
+  lang: 'es',
+  checks: [{ selector: '.waterfall__bar', min: 18, label: 'barras de la cascada' }],
+});
+await visit('es-04-ficha-oscuro-movil', `${V}?view=card`, {
+  lang: 'es', theme: 'dark', width: 400, height: 800,
+  checks: [{ selector: '.waterfall__bar', min: 18, label: 'barras de la cascada' }],
+});
+await visit('es-05-mapa-calor', `${V}?view=tracks`, {
+  lang: 'es',
+  checks: [{ selector: '.heatmap__cell', min: 300, label: 'celdas del mapa' }],
+});
+await visit('es-11-navegador', `${V}?view=signal`, {
+  lang: 'es',
+  checks: [{ selector: '.browser__canvas', label: 'canvas de senal' }],
+});
+await visit('es-14-saturacion', `${V}?view=saturation`, {
+  lang: 'es',
+  checks: [{ selector: '.saturation__canvas', label: 'canvas del mapa' }],
+});
+await visit('es-17-sashimi', '#/variant/dnm1/chr9-128226027-G-A?view=splice', {
+  lang: 'es',
+  checks: [{ selector: '.sashimi__plot', label: 'svg del sashimi' }],
+});
+await visit('es-20-contactos-oscuro', CONTACTOS, {
+  lang: 'es', theme: 'dark',
+  checks: [{ selector: '.contacts__canvas', label: 'lienzo del diff' }],
+});
+await visit('es-07-estudio', '#/study/atlas-andino', {
+  lang: 'es', sourceWarn: true,
+  checks: [{ selector: '.status--planned', label: 'estado declarado' }],
+});
+await visit('es-10-sobre-los-datos', '#/about', {
+  lang: 'es',
+  checks: [{ selector: '.facts dd', min: 4, label: 'hechos del contrato' }],
 });
 
 await browser.close();
