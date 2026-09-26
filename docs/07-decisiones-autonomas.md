@@ -363,3 +363,25 @@ ruido de la máquina, no el visor. Lo que no es ruido:
   detecta la licencia como "Other" aunque el texto es MIT estándar.
   **[REVISAR]**: suele resolverse solo; si no, recrear LICENSE desde la
   plantilla de GitHub.
+
+---
+
+## Extras
+
+## D-50 · N6: el buscador va en el mapa tejido × modalidad, no en el navegador **[REVISAR]**
+
+- La hoja de ruta decía "dentro del navegador de pistas". Se construyó sobre
+  el mapa tejido × modalidad (`?view=tracks`), porque ahí está el problema que
+  señaló la auditoría (P2): unas 240 filas sin forma de ir a una concreta. El
+  navegador de señal muestra pocas pistas elegidas; no lo necesitaba.
+- Busca en el nombre del biosample, en el sistema de órganos (traducido y
+  original, así "hígado"/"liver" y "musculo"/"musculoskeletal" funcionan) y
+  en el término de ontología (UBERON, CL, EFO). Sin tildes ni mayúsculas;
+  varias palabras se combinan con Y.
+- Los nombres de tejido siguen en inglés en las dos lenguas: son los de la
+  ontología y vienen de `data/dist/` (opción A, sin tocar). El estado vacío lo
+  dice en español para que nadie crea que el buscador falla.
+- La escala de color se calcula con todas las celdas y no cambia al filtrar:
+  un color significa lo mismo con y sin búsqueda.
+- Commits: `3b66d47` (código) y `85578c2` (capturas). Build recopiado al
+  landing; `verify-live` local 17/17.

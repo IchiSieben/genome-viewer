@@ -42,7 +42,7 @@
   "roadmap.item.H7.body": "Pendiente. Evalúa si el mismo puntaje AVI compra distinta fuerza de evidencia en variantes enriquecidas en ascendencia amerindígena que en variantes europeas emparejadas. Un resultado nulo se publicará con el mismo peso que uno positivo.",
   "roadmap.item.N4.name": "Comparador",
   "roadmap.item.N4.body": "Vista para poner dos variantes o dos loci lado a lado. Todavía no construida.",
-  "roadmap.item.N6.name": "Buscador de pistas",
+  "roadmap.item.N6.name": "Buscador de tracks",
   "roadmap.item.N6.body": "Un campo sobre el mapa tejido × modalidad filtra sus filas por nombre del biosample, sistema de órganos o término de ontología, sin distinguir tildes ni mayúsculas. La escala de color no cambia al filtrar: un color significa lo mismo con y sin búsqueda.",
   "roadmap.item.N7.name": "Vista de gen",
   "roadmap.item.N7.body": "Panel centrado en un gen completo en vez de en una sola variante. Todavía no construida.",

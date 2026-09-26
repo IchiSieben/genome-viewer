@@ -74,8 +74,8 @@ Para actualizar el visor más adelante: `npm run build` en `web/` y copiar
 - **H7** (estudio poblacional): pendiente, como estaba; así se muestra en la
   hoja de ruta. Un resultado nulo se publicará igual.
 - **En vivo**: depende del push del landing (arriba).
-- **Extras N6, N4, N7**: ver el estado al final de este archivo; los que no se
-  hicieron siguen en la hoja de ruta como planeados.
+- **Extras N6, N4, N7**: ver la sección "Extras"; los que no se hicieron
+  siguen en la hoja de ruta como planeados.
 - De la auditoría visual (`docs/05-visual-audit.md`), sin tocar: colapsar el
   mapa de calor por sistema de órganos, plegar la ayuda del navegador en
   móvil, el hueco de las vistas cortas y las capturas de los estados de carga
@@ -103,3 +103,11 @@ Evidencia: `docs/evidence/performance-ab*.json`, `docs/06-qa-publicacion.md`.
 - Build y comprobaciones: `cd web && npm run build && npm run verify && npm run verify:links`
 - A/B: `node scripts/measure-ab.mjs <dist-de-referencia> 3` (`AGP_AB_LANG=es` para el cascarón español)
 - En vivo: `node scripts/verify-live.mjs https://ichisieben.dev/genome-viewer/`
+
+## Extras
+
+| Extra | Estado | Commits | Decisión |
+|---|---|---|---|
+| N6 buscador de tracks | **Hecho**, en el mapa tejido × modalidad | `3b66d47`, `85578c2` | D-50 [REVISAR] |
+| N4 comparador | en curso | — | — |
+| N7 vista de gen | sin empezar | — | — |

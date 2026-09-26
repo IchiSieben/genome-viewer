@@ -53,7 +53,7 @@ tests, y una capa de presentación que respeta una restricción de despliegue re
 | i18n | Español e inglés, sin framework | **Hecho** — ver [`docs/08-i18n.md`](docs/08-i18n.md) |
 | Identidad | Marca desde la visualización, movimiento, imágenes OG | **Hecho** — ver [`docs/05-visual-audit.md`](docs/05-visual-audit.md) |
 | Narrativa | Páginas de por qué, hoja de ruta, cómo está hecho y referencias | **Hecho** |
-| N6 | Buscador de pistas en el mapa tejido × modalidad | **Hecho** |
+| N6 | Buscador de tracks en el mapa tejido × modalidad | **Hecho** |
 | N4, N7 | — | Planeadas |
 | H7 | Estudio poblacional | **Pendiente** — si el resultado es nulo, se publica igual |
 
