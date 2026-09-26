@@ -22,7 +22,7 @@ H0 a H6 hechos, mas N1, N2 y N3. Falta H7, el estudio poblacional.
    detecta el BOM.
 
 2. Detalle que costo media hora: usar el codec `utf-16-le` en vez de `utf-16`
-   deja el BOM vivo como un `﻿` invisible al principio de la linea, y
+   deja el BOM vivo como un `U+FEFF` invisible al principio de la linea, y
    `str.strip()` no lo quita.
 
 ### H0 — la sonda, 39 llamadas

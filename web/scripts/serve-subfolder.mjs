@@ -1,6 +1,6 @@
 // Sirve web/dist/ bajo una SUBCARPETA y corre un comando contra el.
 //
-// El demo se despliega en una ruta como /alphagenome/ dentro del vhost, no en
+// El demo se despliega en una ruta como /genome-viewer/ dentro del vhost, no en
 // la raiz. Servirlo desde la raiz durante las pruebas esconde exactamente la
 // clase de fallo que importa: una ruta absoluta que funciona en localhost y da
 // 404 en produccion.
@@ -14,7 +14,18 @@ import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(here, '../dist');
-const MOUNT = '/alphagenome';
+// El punto de montaje es el de produccion (ichisieben.dev/genome-viewer/).
+const MOUNT = process.env.AGP_MOUNT || '/genome-viewer';
+
+// La CSP del vhost del landing (Landing/public/.htaccess) se aplica a TODO lo
+// que cuelga de el, demos incluidos. Se replica aqui para que una violacion
+// salga en `verify` y no en produccion, donde el navegador la calla.
+const CSP =
+  "default-src 'self'; script-src 'self' 'unsafe-inline'; " +
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+  "img-src 'self' data: https://flagcdn.com; font-src 'self' data: https://fonts.gstatic.com; " +
+  "connect-src 'self' https://api.open-meteo.com; object-src 'none'; base-uri 'self'; " +
+  "form-action 'self'; frame-src https://www.youtube.com; frame-ancestors 'self'";
 const PORT = 8099;
 
 if (!existsSync(ROOT)) {
@@ -61,14 +72,22 @@ const server = createServer(async (req, res) => {
         'content-type': type,
         'content-encoding': 'gzip',
         'vary': 'Accept-Encoding',
+        'content-security-policy': CSP,
       });
       res.end(packed);
       return;
     }
-    res.writeHead(200, { 'content-type': type });
+    res.writeHead(200, { 'content-type': type, 'content-security-policy': CSP });
     res.end(body);
   } catch {
-    res.writeHead(404).end('no encontrado');
+    // Como Hostinger con `ErrorDocument 404`: la pagina 404 propia, si existe.
+    try {
+      const page = await readFile(resolve(ROOT, '404.html'));
+      res.writeHead(404, { 'content-type': TYPES['.html'], 'content-security-policy': CSP });
+      res.end(page);
+    } catch {
+      res.writeHead(404).end('no encontrado');
+    }
   }
 });
 

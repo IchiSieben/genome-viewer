@@ -8,7 +8,7 @@
 
 import { chromium } from 'playwright';
 
-const BASE = 'http://127.0.0.1:8099/alphagenome/';
+const BASE = process.env.AGP_BASE_URL || 'http://127.0.0.1:8099/genome-viewer/';
 const VARIANT = 'ppp1r1a-pde1b/chr12-54578515-C-T';
 
 const browser = await chromium.launch();

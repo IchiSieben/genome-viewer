@@ -58,7 +58,7 @@ def _read_env_lines(path: pathlib.Path) -> list[str]:
     raw = path.read_bytes()
     text: str | None = None
     # Se usan los codecs que CONSUMEN el BOM ("utf-16", "utf-8-sig"). Con
-    # "utf-16-le" el BOM sobrevive como un ﻿ invisible al principio de la
+    # "utf-16-le" el BOM sobrevive como un U+FEFF invisible al principio de la
     # primera linea, y str.strip() no lo quita: el nombre de la variable deja de
     # coincidir y vuelve el mismo diagnostico enganoso de "no hay llave".
     for bom, encoding in (
@@ -79,7 +79,7 @@ def _read_env_lines(path: pathlib.Path) -> list[str]:
     if text is None:
         return []
     # Cinturon y tirantes: se quita cualquier marca de orden residual.
-    return [line.lstrip("﻿") for line in text.splitlines()]
+    return [line.lstrip("\ufeff") for line in text.splitlines()]
 
 
 def load_api_key(env_path: pathlib.Path | None = None) -> str:

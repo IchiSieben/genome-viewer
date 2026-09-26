@@ -74,7 +74,7 @@ Las dos capas se tocan solo por `contracts/v1/*.schema.json`.
 ## Cómo correrlo
 
 Sin llave, que es el camino por defecto. **No hay paso de arranque**: el clon
-ya trae `data/dist/` entero —los JSON del contrato y los bloques de senal—,
+ya trae `data/dist/` entero —los JSON del contrato y los bloques de señal—,
 porque son salida real de la API y sin llave no se regeneran.
 
 ```bash
@@ -84,7 +84,7 @@ python -m alphagenome_platform.cli validate     # esquema + presupuesto
 cd web && npm install && npm run dev            # http://localhost:5173
 ```
 
-Las fixtures sinteticas **no** son ese camino. Son una herramienta de
+Las fixtures sintéticas **no** son ese camino. Son una herramienta de
 desarrollo sin cuota —para tocar el visor sin datos reales delante— y escriben
 en un arbol aparte, `data/fixtures/`, que no se versiona:
 
@@ -92,7 +92,7 @@ en un arbol aparte, `data/fixtures/`, que no se versiona:
 python -m alphagenome_platform.cli fixtures     # -> data/fixtures/, ids demo-*
 ```
 
-Los dos mundos no comparten ni directorio ni nombres: todo locus sintetico
+Los dos mundos no comparten ni directorio ni nombres: todo locus sintético
 lleva el prefijo `demo-`. Antes compartian ambas cosas, y `fixtures` llego a
 sobreescribir artefactos reales que habian costado cuota. Lo que este parrafo
 afirma esta comprobado en `pipeline/tests/test_dos_mundos.py`, no solo escrito

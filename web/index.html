@@ -6,7 +6,7 @@
     <title>Visor de predicciones de AlphaGenome</title>
     <meta
       name="description"
-      content="Visor interactivo de efectos de variante predichos por AlphaGenome. Sitio estatico, sin backend, sin llamadas a la API."
+      content="Visor interactivo de efectos de variante predichos por AlphaGenome. Sitio estático, sin backend, sin llamadas a la API."
     />
     <meta name="color-scheme" content="light dark" />
 
@@ -60,6 +60,9 @@
           if (view === 'tracks') return 'tracks.json';
           if (view === 'saturation') return 'saturation.json';
           if (view === 'splice') return 'splice.json';
+          // Faltaba: la vista de contactos precargaba card.json, que nunca
+          // usa, y Chrome lo avisaba en consola cuando la red iba lenta.
+          if (view === 'contact') return 'contacts.json';
           if (view === 'signal') return null;
           return 'card.json';
         }
@@ -70,7 +73,10 @@
           var parts = half[0].split('/').filter(Boolean);
           var query = new URLSearchParams(half[1] || '');
 
-          if (!parts.length || parts[0] === 'about') {
+          // Solo la portada usa la ficha destacada. `about` la precargaba
+          // tambien y Chrome avisaba de un preload sin usar (intermitente:
+          // depende de cuanto tarde la pagina en asentarse).
+          if (!parts.length) {
             // Portada: el catalogo ya viene incrustado. Lo unico que se puede
             // adelantar es la variante destacada, y el propio indice dice cual
             // es, para que cambiarla no obligue a tocar este script.
@@ -87,6 +93,8 @@
             );
             return;
           }
+
+          if (parts[0] === 'about') return;
 
           if (parts[0] === 'study') {
             if (SAFE.test(parts[1] || '')) preload('data/studies/' + parts[1] + '/manifest.json');
@@ -122,7 +130,7 @@
         <a class="topbar__link" href="#/">Loci</a>
         <a class="topbar__link" href="#/about">Sobre estos datos</a>
         <button class="topbar__button" type="button" id="tour-button">
-          Como se usa
+          Cómo se usa
         </button>
         <button
           class="topbar__button"
@@ -142,12 +150,12 @@
       <p>
         Resultados derivados de AlphaGenome, sujetos a los
         <strong>AlphaGenome Output Terms of Use</strong>. Uso no comercial, de
-        investigacion. No es un dispositivo medico y no constituye consejo
-        medico.
+        investigación. No es un dispositivo médico y no constituye consejo
+        médico.
       </p>
       <p class="footer__quiet">
         Predicciones de un modelo, no mediciones experimentales. El pipeline
-        corre en local con una llave personal; esta pagina solo lee archivos
+        corre en local con una llave personal; esta página solo lee archivos
         congelados y nunca llama a la API.
       </p>
     </footer>

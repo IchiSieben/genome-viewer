@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const OUT = resolve(here, '../../docs/evidence/performance.json');
-const BASE = 'http://127.0.0.1:8099/alphagenome/';
+const BASE = process.env.AGP_BASE_URL || 'http://127.0.0.1:8099/genome-viewer/';
 const VARIANT = '#/variant/ppp1r1a-pde1b/chr12-54578515-C-T';
 
 // 3G lento, los valores que usan las herramientas de desarrollo de Chrome.
@@ -30,11 +30,23 @@ const SLOW_3G = {
 const browser = await chromium.launch();
 const report = { measuredAt: new Date().toISOString(), runs: {} };
 
-async function timeToInteractive(label, hash, selector, throttle) {
-  const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+async function timeToInteractive(label, hash, selector, throttle, viewport) {
+  const context = await browser.newContext({
+    viewport: viewport ?? { width: 1280, height: 900 },
+  });
   const page = await context.newPage();
   await page.addInitScript(() => {
     try { localStorage.setItem('agp-tour-seen', '1'); } catch {}
+    // CLS acumulado desde el primer byte. `buffered` recoge tambien los
+    // desplazamientos que ocurrieron antes de que este observador existiera.
+    window.__cls = 0;
+    try {
+      new PerformanceObserver((list) => {
+        for (const e of list.getEntries()) {
+          if (!e.hadRecentInput) window.__cls += e.value;
+        }
+      }).observe({ type: 'layout-shift', buffered: true });
+    } catch {}
   });
 
   if (throttle) {
@@ -53,7 +65,7 @@ async function timeToInteractive(label, hash, selector, throttle) {
   const timing = await page.evaluate(() => {
     const nav = performance.getEntriesByType('navigation')[0];
     const rows = performance.getEntriesByType('resource').map((e) => ({
-      name: e.name.split('/alphagenome/').pop(),
+      name: e.name.replace(location.origin, '').replace(/^\/[^/]+\//, ''),
       start: Math.round(e.startTime),
       end: Math.round(e.responseEnd),
       bytes: e.transferSize || e.encodedBodySize || 0,
@@ -66,9 +78,14 @@ async function timeToInteractive(label, hash, selector, throttle) {
   });
 
   const transferred = timing.rows.reduce((sum, r) => sum + r.bytes, 0);
+  // CLS: se deja asentar la pagina (animaciones de entrada incluidas) antes de
+  // leerlo. Un desplazamiento que llega despues de "interactivo" tambien cuenta.
+  await page.waitForTimeout(1500);
+  const cls = await page.evaluate(() => Math.round((window.__cls || 0) * 10000) / 10000);
   await context.close();
   return {
     ms,
+    cls,
     transferredBytes: transferred,
     documentEndMs: timing.documentEnd,
     requests: timing.rows,
@@ -138,6 +155,12 @@ report.runs.homeHeroSlow3G = await timeToInteractive(
 report.runs.cardSlow3G = await timeToInteractive('ficha 3G', `${VARIANT}?view=card`, '.waterfall__bar', SLOW_3G);
 report.runs.browserSlow3G = await timeToInteractive('navegador 3G', `${VARIANT}?view=signal`, '.browser__canvas', SLOW_3G);
 
+// CLS en movil: el hueco reservado del heroe y el pie son los que mas se
+// mueven en pantalla estrecha, asi que la portada y la ficha se repiten a 400 px.
+const MOBILE = { width: 400, height: 720 };
+report.runs.homeMobile = await timeToInteractive('portada movil', '', '.hero__featured .gauge', null, MOBILE);
+report.runs.cardMobile = await timeToInteractive('ficha movil', `${VARIANT}?view=card`, '.waterfall__bar', null, MOBILE);
+
 // ---- Frames durante un desplazamiento real --------------------------------
 {
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
@@ -165,7 +188,10 @@ report.runs.browserSlow3G = await timeToInteractive('navegador 3G', `${VARIANT}?
 
   // El propio visor publica el coste del ultimo frame en su linea de estado.
   const status = await page.locator('.browser__status').innerText();
-  const match = /([\d.]+) ms por frame/.exec(status);
+  // El coste del frame se lee de un atributo, no del texto: el texto cambia
+  // con el idioma. El texto se conserva como respaldo para builds antiguos.
+  const frameAttr = await page.locator('.browser__status').getAttribute('data-frame-ms');
+  const match = frameAttr ? [null, frameAttr] : /([\d.,]+) ms/.exec(status);
 
   // Zoom con rueda, midiendo cuantos redibujados provoca.
   await page.evaluate(() => {
@@ -191,7 +217,7 @@ report.runs.browserSlow3G = await timeToInteractive('navegador 3G', `${VARIANT}?
   );
 
   report.runs.interaction = {
-    lastFrameMs: match ? Number(match[1]) : null,
+    lastFrameMs: match ? Number(String(match[1]).replace(',', '.')) : null,
     dragSteps: 24,
     wheelSteps: 12,
     wheelTotalMs: wheelMs,
@@ -210,7 +236,7 @@ writeFileSync(OUT, JSON.stringify(report, null, 2) + '\n');
 const row = (k, r) =>
   `  ${k.padEnd(16)}${String(r.ms).padStart(6)} ms   ` +
   `${(r.transferredBytes / 1024).toFixed(0).padStart(6)} KiB   ` +
-  `${String(r.waves.depth).padStart(5)} saltos`;
+  `${String(r.waves.depth).padStart(5)} saltos   CLS ${r.cls.toFixed(4)}`;
 console.log('\nTiempo hasta interactivo');
 console.log('  vista            tiempo      transferido   en serie');
 for (const k of ['homeFast', 'homeHeroFast', 'cardFast', 'browserFast'])
@@ -218,6 +244,8 @@ for (const k of ['homeFast', 'homeHeroFast', 'cardFast', 'browserFast'])
 console.log('  --- red estrangulada a 3G lento (400 kbps, 400 ms de latencia) ---');
 for (const k of ['homeSlow3G', 'homeHeroSlow3G', 'cardSlow3G', 'browserSlow3G'])
   console.log(row(k, report.runs[k]));
+console.log('  --- movil 400x720, red rapida ---');
+for (const k of ['homeMobile', 'cardMobile']) console.log(row(k, report.runs[k]));
 
 // El desglose de la cadena es lo que permite ver QUE viaje sobra. Sin esto el
 // numero de saltos es una cifra sin agarre.

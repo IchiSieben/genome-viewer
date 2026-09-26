@@ -1,0 +1,19 @@
+# Everything in this repo is UTF-8 with LF line endings.
+# The accent bug of 2026-09 came from Windows tools that default to the ANSI
+# code page (PowerShell 5.1 Get-Content/Set-Content, the cp1252 Python console).
+# Editors honour this file; for Python run with PYTHONUTF8=1.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.bin]
+charset = unset
+end_of_line = unset
+insert_final_newline = unset

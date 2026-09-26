@@ -13,11 +13,11 @@
 //   node scripts/verify.mjs [directorio-de-capturas]
 //
 // Espera un servidor estatico sirviendo el build en
-// http://127.0.0.1:8099/alphagenome/ (ver npm run verify).
+// http://127.0.0.1:8099/genome-viewer/ (ver npm run verify).
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 
-const BASE = 'http://127.0.0.1:8099/alphagenome/';
+const BASE = process.env.AGP_BASE_URL || 'http://127.0.0.1:8099/genome-viewer/';
 const OUT = process.argv[2] || 'shots';
 mkdirSync(OUT, { recursive: true });
 
