@@ -312,3 +312,54 @@ Auditoría de partida: `docs/05-visual-audit.md` (32 capturas).
 - Comparten `app.ts`, `index.html` y `verify.mjs`, y la Fase 3 no compila sin
   la 2. Partirlas a mano en dos commits que compilen cada uno costaba más que
   lo que aporta. Se hace un commit que nombra las dos fases.
+
+### Medición de las Fases 2 y 3 (A/B contra la 1b, 3 rondas, mediana)
+
+`docs/evidence/performance-ab-fase2-{en,es}.json`. Línea base: el build de
+la Fase 1b.
+
+| 3G lento | EN antes → después | ES antes → después | Oleadas | CLS |
+|---|---:|---:|---:|---:|
+| Portada | 2 409 → 2 248 ms | 2 089 → 2 181 ms | 2 → 2 | 0 → 0 |
+| Héroe | 2 128 → 2 141 ms | 1 959 → 2 136 ms | 2 → 2 | 0 → 0 |
+| Ficha | 2 594 → 2 030 ms | 2 100 → 2 350 ms | 2 → 2 | 0 → 0 |
+| Navegador | 2 235 → 1 848 ms | 1 925 → 1 822 ms | 2-3 → 2 | 0,0025 → 0,0025 |
+
+Lectura honesta: en inglés todo mejora y en español la portada y la ficha
+empeoran. Con la misma magnitud en direcciones opuestas y el mismo código, es
+ruido de la máquina, no el visor. Lo que no es ruido:
+
+- Oleadas en serie: iguales. CLS: igual en las diez corridas, en los dos idiomas.
+- Bytes: +3,4 KiB transferidos, de ellos +2,2 KiB gz de bundle (cascada del
+  héroe, movimiento, catálogo). A 400 kbit/s son ~70 ms. Es el coste real de
+  la Fase 2, y se acepta por el héroe vivo.
+- La vista de las páginas de texto salió del bundle principal a un chunk
+  propio (4 KB), que piden solo sus rutas.
+- En red rápida, la cuarta oleada de la portada son los `locus.json` del
+  catálogo, pedidos después del `load`: no están en la ruta crítica.
+
+## D-40 · Orden cambiado: la Fase 4 antes que los extras **[REVISAR]**
+
+- El encargo ponía los extras (N6, N4, N7) antes de publicar. Se publicó
+  primero: sin remoto, todo el trabajo existía en una sola copia en disco, y
+  lo que el usuario pidió encontrar al volver es "publicado y respaldado".
+  Los extras van después, cada uno con su commit.
+
+## D-41 · Historial saneado antes del primer push
+
+- `filter-branch` reescribió la frase de `alphagenome-docs/01` en los 16
+  commits que la tenían. Se comprobó que cada commit reescrito difiere del
+  original en exactamente esa línea, y que el árbol final es idéntico.
+- Respaldo del historial original: `Portfolio/_papelera_claude/genome-viewer-backup/pre-sanitize-2026-09-26.bundle`
+  (verificado con `git bundle verify`). **Contiene los nombres de terceros:
+  no subirlo a ningún sitio.** Se puede borrar cuando el usuario lo decida.
+- Los hashes cambiaron. Commits de fase tras el saneado: 1a `dd0036c`,
+  1b `f4710f9`, 2+3 `320bdd1`.
+- Tres comprobaciones de la llave sobre el historial nuevo: el literal de la
+  llave real de `~/.env` aparece 0 veces; `ALPHAGENOME_API_KEY=` solo aparece
+  con los placeholders `"..."` y `"pega-aqui-tu-llave"`; 0 tokens con forma
+  de llave de Google y ningún `.env` ni `.log` versionado nunca.
+- Repo público `IchiSieben/genome-viewer` creado y subido (`main`). GitHub
+  detecta la licencia como "Other" aunque el texto es MIT estándar.
+  **[REVISAR]**: suele resolverse solo; si no, recrear LICENSE desde la
+  plantilla de GitHub.

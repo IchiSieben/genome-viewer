@@ -16,7 +16,6 @@ import { panel, sourceChip } from '../lib/ui';
 import type { IndexDoc } from '../lib/types';
 
 export type NarrativePage = 'why' | 'roadmap' | 'how' | 'references';
-export const NARRATIVE_PAGES: NarrativePage[] = ['why', 'roadmap', 'how', 'references'];
 
 /** Parrafos numerados `prefix1`, `prefix2`... mientras existan. */
 function paragraphs(prefix: string): HTMLElement[] {

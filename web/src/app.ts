@@ -36,7 +36,10 @@ import {
 } from './lib/ui';
 import { aviGauge, miniCascade, renderVariantCard } from './views/variantCard';
 import { enterView, revealOnScroll } from './lib/motion';
-import { NARRATIVE_PAGES, narrativeTitle, renderNarrative, type NarrativePage } from './views/narrative';
+// Type only: the narrative view itself is a lazy chunk, loaded by its routes.
+import type { NarrativePage } from './views/narrative';
+
+const NARRATIVE_PAGES: NarrativePage[] = ['why', 'roadmap', 'how', 'references'];
 import { renderTissueHeatmap } from './views/tissueHeatmap';
 import { renderStudy } from './views/study';
 import { renderTrackBrowser } from './views/trackBrowser';
@@ -824,13 +827,17 @@ async function route(): Promise<void> {
   // Views outside the inlined dictionary wait for the full one, requested in
   // parallel with their data (never after it: that would add a network wave).
   const fullReady = needsFullDictionary(current) ? loadFull() : Promise.resolve();
-  const narrativeReady = isNarrative(current.name) ? loadNarrative() : Promise.resolve();
+  // Texts and view code of the narrative pages travel together, in parallel
+  // with the index: neither is in the main bundle.
+  const narrativeReady = isNarrative(current.name)
+    ? Promise.all([loadNarrative(), import('./views/narrative')]).then(([, mod]) => mod)
+    : Promise.resolve(null);
   main.append(loadingState(t('app.loading.catalog')));
 
   try {
     indexDoc ??= await loadIndex();
     await fullReady;
-    await narrativeReady;
+    const narrative = await narrativeReady;
     clear(main);
 
     switch (current.name) {
@@ -846,8 +853,8 @@ async function route(): Promise<void> {
       case 'roadmap':
       case 'how':
       case 'references':
-        renderNarrative(main, current.name, indexDoc);
-        setTitle(narrativeTitle(current.name));
+        narrative!.renderNarrative(main, current.name, indexDoc);
+        setTitle(narrative!.narrativeTitle(current.name));
         break;
       case 'locus': {
         const entry = indexDoc.loci.find((l) => l.id === current.params['locus']);
