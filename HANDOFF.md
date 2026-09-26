@@ -1,56 +1,105 @@
-# HANDOFF — AlphaGenome viewer, publication phase  (updated: 2026-09-25)
+# HANDOFF — Visor del genoma / Genome Viewer, publicación (actualizado: 2026-09-26)
 
-## Goal (1-2 lines)
-Publish the existing viewer as a bilingual (ES/EN) portfolio piece in a subfolder of ichisieben.dev,
-in 5 phases: 1 language, 2 visual identity, 3 narrative, 4 publish, 5 close. The full brief is the user's
-2026-09-25 prompt; read NOTES.md first.
+> Sesión autónoma del 2026-09-26. Todas las decisiones que se habrían
+> consultado están en `docs/07-decisiones-autonomas.md`; las marcadas
+> **[REVISAR]** son las primeras que conviene mirar.
+>
+> Llave de la API: **no** está en el historial (tres barridos, D-41). No hay
+> STOP.
 
-## Current state
-- DONE: required reading (NOTES.md, README.md, docs/01, docs/03, alphagenome-docs/01, 02).
-- DONE: name collision check (Quipu/Khipu/RefAlt, all discarded by user) and trademark check (see Decisions).
-- DONE: phase 1a diagnosis (see Decisions). No repo file edited yet.
-- IN PROGRESS: phase 1a — plan sent to the user; waiting for OK on 3 questions (below) before any edit.
-- BLOCKED: every edit, until the user answers the open questions.
+## Dónde está
 
-## Decisions (with the reason, one line each)
-- "PheniGnom" was a voice-transcription error; never use it.
-- Name is descriptive, not a brand; BRAND_NAME is an ordinary i18n string per language.
-- "Visor AlphaGenome"/"AlphaGenome Viewer" as product name conflicts with Google's trademark guideline ("Don't incorporate Google Brand Features into your own product names"); AlphaGenome terms defer to Google APIs ToS §6. "Unofficial" does not cure it.
-- Plan B proposed (pending OK): ES "Visor del genoma" / EN "Genome Viewer", slug `/genome-viewer/`. Plan C: "GenomaViz"/"GenomeViz", `/genomeviz/`.
-- Tagline, always visible with "no oficial"/"unofficial": ES "Qué le hace una variante al genoma, predicho" / EN "What a variant does to the genome, predicted".
-- Destination: subfolder, mirrored into `Landing/public/<slug>/` like Botanica (landing = Astro 4, git auto-deploy on push to `IchiSieben/portfolio-landing@main`). Not a zip deploy to a separate site.
-- Proposed URL layout: EN at `/<slug>/`, ES at `/<slug>/es/`, matching the landing and Botanica.
-- Landing cards already have one file per language (`Landing/src/content/projects/{en,es}/<slug>.md`: title = name, oneLine = tagline, summary = description, demoUrl per language). Add a check that the title is equal in both.
-- Missing accents: an accident, not policy. Source code was ASCII since the first commit (`2f98b5e`); docs have accents; the toolchain is UTF-8 end to end (meta charset, explicit utf-8 in .mjs/.py, dev server charset). The risk is Windows: PS 5.1 Get-Content/Set-Content use ANSI, and the Python console uses cp1252.
+- **Repo público**: https://github.com/IchiSieben/genome-viewer (`main`).
+- **URL final**: https://ichisieben.dev/genome-viewer/ (EN) · https://ichisieben.dev/genome-viewer/es/ (ES)
+  - **NO ESTÁ EN VIVO TODAVÍA.** El build está copiado en
+    `Landing/public/genome-viewer/`, sin commit (la otra sesión trabaja el
+    landing). Queda en vivo con el siguiente push del landing (ver abajo).
+  - Primera subida con `noindex` (meta + `X-Robots-Tag`) y sin tarjeta
+    visible en el landing, hasta que des el OK.
 
-## Tried and failed (so nobody retries it)
-- WebFetch on deepmind.google.com/science/alphagenome/terms returns an empty shell (JS-rendered); read it via Chrome + `document.body.innerText`.
-- The Bash tool here has no curl/gh/ls on PATH; use PowerShell + `python -`.
+## Commits de cada fase (hashes después del saneado del historial)
 
-## Next steps (ordered, each with its verification)
-1. Get user answers (open questions). → verify: answers recorded here.
-2. Phase 1a:
-   - `.editorconfig` (utf-8), `PYTHONUTF8=1` in NOTES.md commands;
-   - a pytest that fails on mojibake markers (cp1252 read-back sequences, U+FFFD, BOM);
-   - a missing-accent guard limited to unambiguous patterns (-cion/-sion, analisis, sintetic*, senal*, biologia, numero, pagina, tambien, despues, segun…), never que/como/esta/mas;
-   - fix accents in `web/index.html`, README, NOTES.
-   → verify: `PYTHONPATH=pipeline/src python -m pytest pipeline/tests -q`, then `cd web && npm run build && npm run verify && npm run verify:links && npm run measure` (record before/after).
-3. Phase 1b design doc in `docs/`:
-   - dictionaries es.json/en.json;
-   - hash routing (D2) blocks per-view sitemap/canonical unless path shells are prerendered, which reopens D2 and needs the landing .htaccess;
-   - `Intl.NumberFormat('es')` does not group 4-digit numbers, so a custom formatter is likely needed;
-   - the TS string accent fixes go straight into es.json during extraction.
-   → verify: same suite.
+| Fase | Commit |
+|---|---|
+| 1a — UTF-8, guardarraíles de mojibake y tildes, CLS medido | `dd0036c` |
+| 1b — i18n ES/EN sin framework, un cascarón por idioma | `f4710f9` |
+| 2 + 3 — identidad, movimiento, héroe vivo; por qué, hoja de ruta, cómo está hecho, referencias | `320bdd1` |
+| 4 (prep) — vista narrativa en chunk propio, verify-live bilingüe, A/B | `ccc3bf3` |
+| 5 — README, QA, HANDOFF | el siguiente a `ccc3bf3` (`git log`) |
 
-## Commands that matter
-- test: `PYTHONPATH=pipeline/src python -m pytest pipeline/tests -q`
-- run: `cd web && npm run dev` · build+checks: `npm run build && npm run verify && npm run verify:links && npm run measure`
-- deploy (new flow): copy `web/dist` into `Landing/public/<slug>/`, push landing `main`, check the Hostinger build.
+## Para ponerlo en vivo (lo hace quien trabaje el landing)
 
-## Open questions for iC7
-1. Confirm plan B name "Visor del genoma"/"Genome Viewer", `/genome-viewer/` (or accept the trademark risk).
-2. Visible Spanish text inside `data/dist/`: feature/modality/organ-system labels, the DNM1 and CELSR2 findings, the study manifest, the index study label.
-   - (A) recommended: override from web dictionaries by stable id, with a test that ES dictionary text == artifact text modulo accents; data/dist untouched.
-   - (B) fix in `loci.py`/`avi.py`/manifest and re-emit text fields without quota; touches data/dist.
-3. OK to fix TS string accents during 1b extraction into es.json, instead of in place now?
-4. ES at `/es/` and EN at root: OK?
+1. En `Landing/`: `git add public/genome-viewer && git commit -m "genome-viewer: primera subida (noindex)" && git push`.
+   No toca nada más del landing: es una carpeta nueva en `public/`.
+2. Cuando Hostinger termine: `cd AlphaGenome/web && node scripts/verify-live.mjs https://ichisieben.dev/genome-viewer/`
+   → `TODO OK` y `X-Robots-Tag noindex en N/N`.
+3. **Tarjeta** (solo con tu OK): `Landing/public/genome-viewer/CARD.json` trae
+   nombre, eslogan, descripción corta y larga, tags, URLs, repo, imagen OG y
+   estado `beta` en los dos idiomas. Pasarlo a
+   `Landing/src/content/projects/{en,es}/genome-viewer.md` con el formato de
+   `botanica.md`. Los slugs de `skills` existen hoy en `src/content/skills`.
+   El `title` tiene que coincidir con el `brand.name` de cada idioma.
+4. **Quitar el noindex** (con tu OK): `cd AlphaGenome/web && AGP_NOINDEX=0 npm run build`,
+   volver a copiar `dist/` sobre `Landing/public/genome-viewer/` y añadir
+   `Sitemap: https://ichisieben.dev/genome-viewer/sitemap.xml` al
+   `robots.txt` del landing.
+
+Para actualizar el visor más adelante: `npm run build` en `web/` y copiar
+`web/dist/` sobre `Landing/public/genome-viewer/` (el `CARD.json` está en
+`web/deploy/`).
+
+## Decisiones autónomas para revisar (detalle en docs/07)
+
+- **D-10** Enrutado: dos páginas reales (EN raíz, ES `/es/`) + hash. No se
+  generó un HTML por ruta; la receta para hacerlo está en `docs/08-i18n.md`.
+- **D-31 [VERIFICAR]** La frase de la "interfaz permanente" **no está en
+  alphagenome-docs** y no se publicó. El párrafo 7 de "Por qué" usa en su
+  lugar las restricciones R1/R2/R3. Para cerrarlo: pegar la frase limpia en
+  `alphagenome-docs/` y sustituir `why.p7` en `web/src/i18n/narrative.{es,en}.json`.
+- **D-30** Referencias: "Radivojac 2026" es Hoffing R, …, Radivojac P;
+  Sun/Mews/Bush y Hoffing son preprints; Zoonomia dice 240 especies.
+- **D-40** Se publicó antes de hacer los extras (N4, N6, N7), para no tener
+  todo el trabajo en una sola copia en disco.
+- **D-41** Historial reescrito con `filter-branch` para quitar dos nombres de
+  terceros. El respaldo del historial original está en
+  `Portfolio/_papelera_claude/genome-viewer-backup/pre-sanitize-2026-09-26.bundle`
+  y **contiene esos nombres: no subirlo a ningún sitio**. Borrarlo cuando
+  quieras.
+- **D-22 / D-24** Héroe con cascada SHAP viva y catálogo con AVI en miniatura:
+  +2,2 KB gz de bundle, medido y aceptado.
+- GitHub detecta la licencia como "Other" aunque el texto es MIT estándar.
+
+## PENDIENTE y por qué
+
+- **H7** (estudio poblacional): pendiente, como estaba; así se muestra en la
+  hoja de ruta. Un resultado nulo se publicará igual.
+- **En vivo**: depende del push del landing (arriba).
+- **Extras N6, N4, N7**: ver el estado al final de este archivo; los que no se
+  hicieron siguen en la hoja de ruta como planeados.
+- De la auditoría visual (`docs/05-visual-audit.md`), sin tocar: colapsar el
+  mapa de calor por sistema de órganos, plegar la ayuda del navegador en
+  móvil, el hueco de las vistas cortas y las capturas de los estados de carga
+  y error.
+- Tiempos 3G de la última pasada local (5,4 y 6,2 s en dos vistas) tomados con
+  la CPU al 100 %: repetirlos en vivo.
+
+## Antes → después (esta sesión)
+
+| Medida | Antes (`008f890`) | Después |
+|---|---|---|
+| Tests pytest | 110 aprox. (README anterior) | 134 |
+| Escenarios de `verify` | 22 capturas | 39 capturas + 2 pasadas con movimiento |
+| Bundle principal (gz) | 28,4 KB | 27,5 KB (el texto salió del bundle; entraron la cascada y el movimiento) |
+| Portada, 3G lento (A/B, mediana) | 1 849 ms | 1 789 ms tras la 1b; 2 248 / 2 181 ms (EN/ES) en el A/B de la 2 con otra carga de máquina, sin diferencia fuera del ruido |
+| Oleadas en serie (3G) | 2 | 2 |
+| CLS portada / ficha / navegador | 0 / 0 / 0,0025 | 0 / 0 / 0,0025 |
+| Idiomas | ES (sin tildes en el código) | ES + EN, tildes vigiladas por test |
+
+Evidencia: `docs/evidence/performance-ab*.json`, `docs/06-qa-publicacion.md`.
+
+## Comandos que importan
+
+- Tests: `PYTHONUTF8=1 PYTHONPATH=pipeline/src python -m pytest pipeline/tests -q`
+- Build y comprobaciones: `cd web && npm run build && npm run verify && npm run verify:links`
+- A/B: `node scripts/measure-ab.mjs <dist-de-referencia> 3` (`AGP_AB_LANG=es` para el cascarón español)
+- En vivo: `node scripts/verify-live.mjs https://ichisieben.dev/genome-viewer/`

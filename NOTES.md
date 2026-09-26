@@ -1,10 +1,51 @@
 # NOTES — Plataforma AlphaGenome
 
-## Estado: EN LINEA con datos reales
+## Estado (2026-09-26): publicado en GitHub; en vivo con el próximo push del landing
 
-<https://darkgray-alpaca-401605.hostingersite.com/>
+- Nombre: **Visor del genoma** / **Genome Viewer** (no oficial).
+- Repo público: <https://github.com/IchiSieben/genome-viewer>
+- URL final: <https://ichisieben.dev/genome-viewer/> (EN) y `/es/` (ES), con
+  `noindex` en esta primera subida. Build copiado en
+  `Landing/public/genome-viewer/`, sin commit en el landing.
+- Despliegue anterior (H6): <https://darkgray-alpaca-401605.hostingersite.com/>
 
-H0 a H6 hechos, mas N1, N2 y N3. Falta H7, el estudio poblacional.
+H0 a H6 hechos, más N1, N2, N3, V4 y V5. Falta H7, el estudio poblacional.
+
+---
+
+## 2026-09-26 — sesión autónoma de publicación
+
+Qué se hizo, por fase (detalle y decisiones en `docs/07-decisiones-autonomas.md`,
+estado para retomar en `HANDOFF.md`):
+
+- **1a**: UTF-8 de punta a punta; tests contra mojibake y tildes faltantes; CLS
+  en `measure.mjs`; servidor de pruebas con la CSP del landing en
+  `/genome-viewer/`.
+- **1b**: i18n ES/EN sin framework (`web/src/i18n/`, `docs/08-i18n.md`), un
+  cascarón HTML por idioma generado en el build, `data/dist/` intacto (opción
+  A), formato numérico propio para el español.
+- **2**: marca de cuatro barras, favicon, OG por idioma con datos reales,
+  tokens de display y medida, cascada SHAP viva en el héroe, movimiento con
+  IntersectionObserver/WAAPI respetando `prefers-reduced-motion`, catálogo con
+  AVI en miniatura. Auditoría en `docs/05-visual-audit.md`.
+- **3**: `#/why`, `#/roadmap`, `#/how`, `#/references`; 13 referencias
+  verificadas en PubMed.
+- **4**: historial saneado (dos nombres de terceros), llave comprobada tres
+  veces, repo público creado y subido, build copiado al landing,
+  `verify-live.mjs` en verde contra esa copia en local.
+- **5**: README.md (ES) y README.en.md (EN), `docs/06-qa-publicacion.md`,
+  HANDOFF.
+
+Aprendido:
+
+- Con la CPU saturada, una medición suelta en 3G varía más de 1 s. Solo sirve
+  el A/B intercalado (`measure-ab.mjs`), mirando oleadas y bytes, que no
+  tienen ruido.
+- Una captura de página entera no hace scroll: con entradas al hacer scroll,
+  las capturas se toman con `reducedMotion: 'reduce'` y el movimiento se
+  prueba aparte.
+- `Intl.NumberFormat('es-PE')` no da números en español de norma (decimal con
+  punto); se usa `es` con el separador de miles cambiado a U+202F.
 
 ---
 
