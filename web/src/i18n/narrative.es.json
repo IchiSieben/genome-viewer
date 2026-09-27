@@ -45,7 +45,7 @@
   "roadmap.item.N6.name": "Buscador de tracks",
   "roadmap.item.N6.body": "Un campo sobre el mapa tejido × modalidad filtra sus filas por nombre del biosample, sistema de órganos o término de ontología, sin distinguir tildes ni mayúsculas. La escala de color no cambia al filtrar: un color significa lo mismo con y sin búsqueda.",
   "roadmap.item.N7.name": "Vista de gen",
-  "roadmap.item.N7.body": "Panel centrado en un gen completo en vez de en una sola variante. Todavía no construida.",
+  "roadmap.item.N7.body": "Panel centrado en un gen completo en vez de en una sola variante. Planeada: los datos publicados tienen el modelo de cada gen pero predicciones solo alrededor de 11 variantes, así que hoy sería repetir la vista del locus. Necesita puntuar el gen entero, es decir, consultas nuevas a la API.",
   "roadmap.gates.title": "Compuertas del estudio poblacional",
   "roadmap.gates.lead": "Seis verificaciones de viabilidad, en orden: si una falla, el estudio se detiene ahí y se reporta, no se avanza a la siguiente.",
   "roadmap.gate.G1": "El VCF de ancestría local de gnomAD v3.1 existe y es accesible sin autenticación ni cargo por solicitante, con sus campos de frecuencia por componente de ascendencia confirmados en la cabecera.",

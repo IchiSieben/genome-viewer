@@ -110,4 +110,4 @@ Evidencia: `docs/evidence/performance-ab*.json`, `docs/06-qa-publicacion.md`.
 |---|---|---|---|
 | N6 buscador de tracks | **Hecho**, en el mapa tejido × modalidad | `3b66d47`, `85578c2` | D-50 [REVISAR] |
 | N4 comparador | **Hecho**, `#/compare` y enlace en cada ficha | ver `git log` | D-51 |
-| N7 vista de gen | sin empezar | — | — |
+| N7 vista de gen | **Planeada** (no se construye: necesita consultas nuevas a la API) | — | D-52 |

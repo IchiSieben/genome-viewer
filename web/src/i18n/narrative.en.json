@@ -45,7 +45,7 @@
   "roadmap.item.N6.name": "Track search",
   "roadmap.item.N6.body": "A field above the tissue × modality map filters its rows by biosample name, organ system or ontology term, ignoring case and accents. The color scale does not change when filtering: a color means the same with or without a search.",
   "roadmap.item.N7.name": "Gene view",
-  "roadmap.item.N7.body": "A panel centered on a whole gene instead of a single variant. Not yet built.",
+  "roadmap.item.N7.body": "A panel centred on a whole gene instead of a single variant. Planned: the published data has each gene's model but predictions only around 11 variants, so today it would repeat the locus view. It needs the whole gene scored, which means new API queries.",
   "roadmap.gates.title": "Population-study gates",
   "roadmap.gates.lead": "Six feasibility checks, in order: if one fails, the study stops there and is reported, rather than moving on to the next.",
   "roadmap.gate.G1": "gnomAD v3.1's local-ancestry VCF exists and is reachable without authentication or requester-pays charges, with its per-ancestry-component frequency fields confirmed in the header.",

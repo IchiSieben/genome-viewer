@@ -405,3 +405,15 @@ ruido de la máquina, no el visor. Lo que no es ruido:
   dañina", "peor").
 - Bundle principal: 27,5 → 28,2 KB gz sumando N6 (buscador en el mapa) y la
   ruta y el enlace de N4. Aceptado.
+
+## D-52 · N7 (vista de gen) se queda en la hoja de ruta
+
+- Comprobado en `data/dist/`: `annotations.json` trae el modelo de ~430 genes
+  (exones, transcritos) en los 9 loci, pero predicciones solo hay alrededor de
+  11 variantes. Una vista de gen con eso redibujaría el carril de anotación
+  del navegador y la lista de variantes del locus: duplicaría la vista del
+  locus, no sería N7.
+- Una vista de gen útil necesita puntuar el gen entero (saturación o ventanas
+  a lo largo del gen): consultas nuevas a la API y cambios en `data/dist/`.
+  Las dos cosas están prohibidas en esta sesión. Queda planeada, y la hoja de
+  ruta explica por qué.
