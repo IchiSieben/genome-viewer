@@ -11,6 +11,7 @@
  * Carga como chunk propio, solo en `#/compare`.
  */
 
+import '../styles/compare.css';
 import { clear, el, onResize } from '../lib/dom';
 import * as fmt from '../lib/format';
 import { dataText, t } from '../i18n';
@@ -188,6 +189,16 @@ function valueCell(value: number | undefined): HTMLElement {
     : el('td', { class: 'num', text: fmt.signed4(value) });
 }
 
+/** Swatch and text stay on one line; the text wraps beside the swatch. */
+function rowLabel(color: string, text: string): HTMLElement {
+  return el(
+    'span',
+    { class: 'compare-table__label' },
+    el('span', { class: 'compare-table__swatch', style: `background:${color}` }),
+    el('span', { text }),
+  );
+}
+
 function table(headers: string[], rows: HTMLElement[]): HTMLElement {
   return el(
     'div',
@@ -217,8 +228,7 @@ function familyTable(a: CardDoc, b: CardDoc): HTMLElement {
       el(
         'th',
         { scope: 'row' },
-        el('span', { class: 'compare-table__swatch', style: `background:${familyColor(id)}` }),
-        dataText(`data.family.${id}`, labels.get(id) ?? familyLabel(id)),
+        rowLabel(familyColor(id), dataText(`data.family.${id}`, labels.get(id) ?? familyLabel(id))),
       ),
       valueCell(sa.get(id) ?? 0),
       valueCell(sb.get(id) ?? 0),
@@ -249,8 +259,7 @@ function featureTable(a: CardDoc, b: CardDoc): HTMLElement {
       el(
         'th',
         { scope: 'row' },
-        el('span', { class: 'compare-table__swatch', style: `background:${familyColor(feature.family)}` }),
-        dataText(`data.feature.${id}`, feature.label),
+        rowLabel(familyColor(feature.family), dataText(`data.feature.${id}`, feature.label)),
       ),
       valueCell(ma.get(id)?.contribution),
       valueCell(mb.get(id)?.contribution),
@@ -327,8 +336,10 @@ export async function renderCompare(
   );
 
   let drawnWidth = -1;
+  // The column count is CSS's call (a media query); the width of what is
+  // drawn comes from the real column, never from a split computed here.
   const draw = (width: number) => {
-    const sideWidth = Math.floor(width >= 720 ? (width - 32) / 2 : width);
+    const sideWidth = Math.floor((sides.firstElementChild as HTMLElement | null)?.clientWidth || width);
     if (sideWidth === drawnWidth) return;
     const first = drawnWidth < 0;
     drawnWidth = sideWidth;

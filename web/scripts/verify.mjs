@@ -412,6 +412,10 @@ await visit('es-28-comparador-oscuro-movil', '#/compare?a=dnm1%2Fchr9-128226027-
   lang: 'es', theme: 'dark', width: 390, height: 844,
   checks: COMPARE_CHECKS,
 });
+await visit('30-comparador-tableta', '#/compare?a=ppp1r1a-pde1b%2Fchr12-54578515-C-T', {
+  width: 820, height: 1180,
+  checks: COMPARE_CHECKS,
+});
 await visit('29-comparador-enlace-roto', '#/compare?a=no-existe%2Fchr0-1-A-C', {
   checks: [
     { selector: '.state--empty', label: 'aviso de enlace roto' },

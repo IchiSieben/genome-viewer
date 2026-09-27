@@ -382,9 +382,13 @@ export function renderTissueHeatmap(
     normalize(
       [
         b.label,
-        // Translated and original organ label: "hígado" and "liver" both work.
+        // Organ system three ways: the label in the page language, the
+        // artifact's label (Spanish, unaccented) and its id (English), so
+        // "nervioso", "nervous" and "musculoskeletal" work in either language.
+        // Biosample names are ontology terms, in English only.
         b.organSystem ? dataText(`data.organ.${b.organSystem}`, b.organSystem) : '',
         organLabel.get(b.organSystem ?? '') ?? '',
+        b.organSystem ?? '',
         b.ontologyCurie ?? '',
       ].join(' '),
     ),

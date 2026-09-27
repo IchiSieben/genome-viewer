@@ -25,7 +25,7 @@
 | 1b — i18n ES/EN sin framework, un cascarón por idioma | `f4710f9` |
 | 2 + 3 — identidad, movimiento, héroe vivo; por qué, hoja de ruta, cómo está hecho, referencias | `320bdd1` |
 | 4 (prep) — vista narrativa en chunk propio, verify-live bilingüe, A/B | `ccc3bf3` |
-| 5 — README, QA, HANDOFF | el siguiente a `ccc3bf3` (`git log`) |
+| 5 — README, QA, HANDOFF | `6b3a9b9` |
 
 ## Para ponerlo en vivo (lo hace quien trabaje el landing)
 
@@ -70,6 +70,10 @@ Para actualizar el visor más adelante: `npm run build` en `web/` y copiar
   `Portfolio/_papelera_claude/genome-viewer-backup/pre-sanitize-2026-09-26.bundle`
   y **contiene esos nombres: no subirlo a ningún sitio**. Borrarlo cuando
   quieras.
+- En `Portfolio/_papelera_claude/genome-viewer-landing-*` hay dos copias
+  anteriores del build (unos 11 MB cada una), creadas en esta sesión al
+  recopiar al landing. Se pueden borrar; la de las `18:27` es el build de antes
+  de los extras y sirve de referencia para el A/B.
 - **D-22 / D-24** Héroe con cascada SHAP viva y catálogo con AVI en miniatura:
   +2,2 KB gz de bundle, medido y aceptado.
 - GitHub detecta la licencia como "Other" aunque el texto es MIT estándar.
@@ -113,5 +117,5 @@ Evidencia: `docs/evidence/performance-ab*.json`, `docs/06-qa-publicacion.md`.
 | Extra | Estado | Commits | Decisión |
 |---|---|---|---|
 | N6 buscador de tracks | **Hecho**, en el mapa tejido × modalidad | `3b66d47`, `85578c2` | D-50 [REVISAR] |
-| N4 comparador | **Hecho**, `#/compare` y enlace en cada ficha | ver `git log` | D-51 |
+| N4 comparador | **Hecho**, `#/compare` y enlace en cada ficha | `5abcbc8` | D-51 |
 | N7 vista de gen | **Planeada** (no se construye: necesita consultas nuevas a la API) | — | D-52 |

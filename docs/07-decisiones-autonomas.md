@@ -374,10 +374,16 @@ ruido de la máquina, no el visor. Lo que no es ruido:
   el mapa tejido × modalidad (`?view=tracks`), porque ahí está el problema que
   señaló la auditoría (P2): unas 240 filas sin forma de ir a una concreta. El
   navegador de señal muestra pocas pistas elegidas; no lo necesitaba.
-- Busca en el nombre del biosample, en el sistema de órganos (traducido y
-  original, así "hígado"/"liver" y "musculo"/"musculoskeletal" funcionan) y
-  en el término de ontología (UBERON, CL, EFO). Sin tildes ni mayúsculas;
-  varias palabras se combinan con Y.
+- Busca en el nombre del biosample, en el sistema de órganos y en el término
+  de ontología (UBERON, CL, EFO). El sistema de órganos se busca de tres
+  formas: la etiqueta del idioma de la página, la del artefacto (español sin
+  tildes) y su id (inglés), así que "nervioso", "nervous" y
+  "musculoskeletal" funcionan en los dos idiomas. Sin tildes ni mayúsculas;
+  varias palabras se combinan con Y. Probado por `verify`: "liver" en EN deja
+  3 de 240 filas, "musculo" en ES deja 19.
+- "hígado" NO encuentra nada: no hay sistema "hígado" y los tejidos se llaman
+  "hepatocyte", "liver"… Por eso el texto de ayuda en español pone "liver"
+  como ejemplo.
 - Los nombres de tejido siguen en inglés en las dos lenguas: son los de la
   ontología y vienen de `data/dist/` (opción A, sin tocar). El estado vacío lo
   dice en español para que nadie crea que el buscador falla.
@@ -417,3 +423,21 @@ ruido de la máquina, no el visor. Lo que no es ruido:
   a lo largo del gen): consultas nuevas a la API y cambios en `data/dist/`.
   Las dos cosas están prohibidas en esta sesión. Queda planeada, y la hoja de
   ruta explica por qué.
+
+## D-53 · Un desplazamiento de 0,0012 en 3G, y su causa: CSS incrustado de más
+
+- El A/B de 3G lento contra el build previo a los extras dio CLS 0,0012 en
+  portada y ficha (antes 0). Rastreado con un `PerformanceObserver` de
+  `layout-shift` con fuentes: el desplazado era `nav.topbar__nav`, que pasaba
+  de 307 a 443 px. El navegador pintaba el HTML a medio llegar: "Theme" y
+  "Español" aún no habían llegado, y al llegar empujaban la nav a la
+  izquierda.
+- Causa: todo `base.css` va incrustado en el HTML, delante de la cabecera. Los
+  ~2,3 KB del comparador empujaron el final de la nav fuera del primer tramo
+  de red.
+- Arreglo: el CSS del comparador pasa a `src/styles/compare.css`, importado
+  desde `views/compare.ts`; viaja con su chunk (0,7 KB gz) y solo en
+  `#/compare`. Medido tras el cambio: CLS 0 en portada EN, portada ES y
+  ficha, dos pasadas.
+- Límite conocido: cualquier CSS que se añada a `base.css` acerca de nuevo ese
+  corte. Lo que solo use una vista diferida debe ir con su chunk.
