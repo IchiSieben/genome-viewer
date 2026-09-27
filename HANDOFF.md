@@ -65,12 +65,14 @@ Para actualizar el visor más adelante: `npm run build` en `web/` y copiar
 - **D-51** N4 comparador en `#/compare`; las cascadas no comparten escala
   porque el valor base cambia de ficha a ficha (medido).
 - **D-52** N7 no se construyó: necesita consultas nuevas a la API.
+- **D-53** CLS 0,0012 en 3G por CSS incrustado de más; corregido moviendo el
+  CSS del comparador a su chunk. Lo que use solo una vista diferida, con su chunk.
 - **D-41** Historial reescrito con `filter-branch` para quitar dos nombres de
   terceros. El respaldo del historial original está en
   `Portfolio/_papelera_claude/genome-viewer-backup/pre-sanitize-2026-09-26.bundle`
   y **contiene esos nombres: no subirlo a ningún sitio**. Borrarlo cuando
   quieras.
-- En `Portfolio/_papelera_claude/genome-viewer-landing-*` hay dos copias
+- En `Portfolio/_papelera_claude/genome-viewer-landing-*` hay tres copias
   anteriores del build (unos 11 MB cada una), creadas en esta sesión al
   recopiar al landing. Se pueden borrar; la de las `18:27` es el build de antes
   de los extras y sirve de referencia para el A/B.
