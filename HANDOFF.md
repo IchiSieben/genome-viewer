@@ -60,6 +60,11 @@ Para actualizar el visor más adelante: `npm run build` en `web/` y copiar
   Sun/Mews/Bush y Hoffing son preprints; Zoonomia dice 240 especies.
 - **D-40** Se publicó antes de hacer los extras (N4, N6, N7), para no tener
   todo el trabajo en una sola copia en disco.
+- **D-50 [REVISAR]** N6 se puso en el mapa tejido × modalidad, no en el
+  navegador de señal como decía la hoja de ruta.
+- **D-51** N4 comparador en `#/compare`; las cascadas no comparten escala
+  porque el valor base cambia de ficha a ficha (medido).
+- **D-52** N7 no se construyó: necesita consultas nuevas a la API.
 - **D-41** Historial reescrito con `filter-branch` para quitar dos nombres de
   terceros. El respaldo del historial original está en
   `Portfolio/_papelera_claude/genome-viewer-backup/pre-sanitize-2026-09-26.bundle`
@@ -74,8 +79,7 @@ Para actualizar el visor más adelante: `npm run build` en `web/` y copiar
 - **H7** (estudio poblacional): pendiente, como estaba; así se muestra en la
   hoja de ruta. Un resultado nulo se publicará igual.
 - **En vivo**: depende del push del landing (arriba).
-- **Extras N6, N4, N7**: ver la sección "Extras"; los que no se hicieron
-  siguen en la hoja de ruta como planeados.
+- **N7** (vista de gen): planeada; necesita puntuar genes enteros (D-52).
 - De la auditoría visual (`docs/05-visual-audit.md`), sin tocar: colapsar el
   mapa de calor por sistema de órganos, plegar la ayuda del navegador en
   móvil, el hueco de las vistas cortas y las capturas de los estados de carga
@@ -87,9 +91,9 @@ Para actualizar el visor más adelante: `npm run build` en `web/` y copiar
 
 | Medida | Antes (`008f890`) | Después |
 |---|---|---|
-| Tests pytest | 110 aprox. (README anterior) | 134 |
-| Escenarios de `verify` | 22 capturas | 39 capturas + 2 pasadas con movimiento |
-| Bundle principal (gz) | 28,4 KB | 27,5 KB (el texto salió del bundle; entraron la cascada y el movimiento) |
+| Tests pytest | 110 aprox. (README anterior) | 136 |
+| Escenarios de `verify` | 22 capturas | 43 capturas + 2 pasadas con movimiento + 2 del buscador |
+| Bundle principal (gz) | 28,4 KB | 28,2 KB (el texto salió del bundle; entraron la cascada, el movimiento, N6 y la ruta de N4; el comparador es un chunk de 2,2 KB) |
 | Portada, 3G lento (A/B, mediana) | 1 849 ms | 1 789 ms tras la 1b; 2 248 / 2 181 ms (EN/ES) en el A/B de la 2 con otra carga de máquina, sin diferencia fuera del ruido |
 | Oleadas en serie (3G) | 2 | 2 |
 | CLS portada / ficha / navegador | 0 / 0 / 0,0025 | 0 / 0 / 0,0025 |

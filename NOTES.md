@@ -9,7 +9,8 @@
   `Landing/public/genome-viewer/`, sin commit en el landing.
 - Despliegue anterior (H6): <https://darkgray-alpaca-401605.hostingersite.com/>
 
-H0 a H6 hechos, más N1, N2, N3, V4 y V5. Falta H7, el estudio poblacional.
+H0 a H6 hechos, más N1, N2, N3, N4, N6, V4 y V5. Falta H7, el estudio
+poblacional. N7 planeada (necesita consultas nuevas).
 
 ---
 
@@ -35,6 +36,9 @@ estado para retomar en `HANDOFF.md`):
   `verify-live.mjs` en verde contra esa copia en local.
 - **5**: README.md (ES) y README.en.md (EN), `docs/06-qa-publicacion.md`,
   HANDOFF.
+- **Extras**: N6 buscador de tracks en el mapa tejido × modalidad (D-50);
+  N4 comparador `#/compare` (D-51); N7 se queda planeada (D-52). Build
+  recopiado al landing, `verify-live` local 18/18.
 
 Aprendido:
 

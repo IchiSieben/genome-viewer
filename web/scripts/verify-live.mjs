@@ -82,6 +82,7 @@ await visit('tejido x modalidad', `#/variant/${VARIANT}?view=tracks`, '.heatmap_
 await visit('navegador de tracks', `#/variant/${VARIANT}?view=signal`, '.browser__canvas');
 await visit('mapa de saturacion', `#/variant/${VARIANT}?view=saturation`, '.saturation__canvas');
 await visit('estudio', '#/study/atlas-andino', '.honesty__limits li', { min: 5 });
+await visit('comparador es', '#/compare?a=ppp1r1a-pde1b%2Fchr12-54578515-C-T', '.compare-side .gauge', { min: 2, lang: 'es' });
 
 console.log('\n  --- red estrangulada a 3G lento ---');
 await visit('portada 3G', '', '.catalog__item', { throttle: SLOW_3G, min: 4 });

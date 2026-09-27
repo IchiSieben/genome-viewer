@@ -14,11 +14,11 @@ ese push no lo hace esta sesión, porque otra sesión trabaja el landing.
 
 | Comprobación | Cómo | Resultado |
 |---|---|---|
-| Tests del pipeline y del contrato | `pytest pipeline/tests` | 134 pasan |
+| Tests del pipeline y del contrato | `pytest pipeline/tests` | 136 pasan |
 | Build | `npm run build` (tsc, vite, cascarones, iconos, OG) | OK |
 | Vistas, dos idiomas, dos temas, móvil | `npm run verify` (39 escenarios + 2 pasadas con movimiento) | TODO OK |
 | Enlaces compartidos y estado en URL | `npm run verify:links` | TODO OK |
-| Copia del landing, con su CSP | `verify-live.mjs` contra `Landing/public/genome-viewer` servido en `/genome-viewer/` | 17/17 OK |
+| Copia del landing, con su CSP | `verify-live.mjs` contra `Landing/public/genome-viewer` servido en `/genome-viewer/` | 18/18 OK (con el comparador, tras N6 y N4) |
 | Errores de consola (incluida CSP) | los tres scripts | 0 |
 | Peticiones fuera del propio host | los tres scripts | 0 |
 | 3G lento | `measure-ab.mjs`, 3 rondas, EN y ES | sin oleadas nuevas; CLS 0 salvo el navegador (0,0025, igual que antes) |
