@@ -68,6 +68,8 @@ const INLINE = [
   'brand.', 'meta.', 'skip', 'nav.', 'footer.', 'home.', 'locus.', 'variant.',
   'app.', 'fmt.', 'error.', 'ui.', 'card.', 'legend.', 'data.family.',
   'data.feature.', 'data.note.', 'study.status.', 'notfound.',
+  // The comparator's entry link sits on the variant card, an inlined view.
+  'compare.link',
   // The signal track browser is one of the four main views: its texts (~1 KB
   // gzipped) are inlined so a deep link to it does not wait for the chunk.
   // Measured: +400 ms on slow 3G when it did.

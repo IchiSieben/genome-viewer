@@ -54,7 +54,8 @@ tests, y una capa de presentación que respeta una restricción de despliegue re
 | Identidad | Marca desde la visualización, movimiento, imágenes OG | **Hecho** — ver [`docs/05-visual-audit.md`](docs/05-visual-audit.md) |
 | Narrativa | Páginas de por qué, hoja de ruta, cómo está hecho y referencias | **Hecho** |
 | N6 | Buscador de tracks en el mapa tejido × modalidad | **Hecho** |
-| N4, N7 | — | Planeadas |
+| N4 | Comparador de dos variantes | **Hecho** |
+| N7 | — | Planeada |
 | H7 | Estudio poblacional | **Pendiente** — si el resultado es nulo, se publica igual |
 
 Los datos son **reales**, del Atlas API y del Model API. El generador de

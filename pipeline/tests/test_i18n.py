@@ -329,6 +329,19 @@ def test_narrative_respects_the_wording_guardrail(d, banned):
     assert not bad, bad
 
 
+@pytest.mark.parametrize("d,banned", [(ES, ES_CLINICAL + PROMISES), (EN, EN_CLINICAL + PROMISES)])
+def test_comparator_respects_the_wording_guardrail(d, banned):
+    # N4 only subtracts displayed values; its copy must not slide into a verdict.
+    texts = {k: v for k, v in d.items() if k.startswith("compare.")}
+    assert texts, "no compare.* keys"
+    bad = {k: _guarded(v, banned + VERDICTS) for k, v in texts.items()}
+    bad = {k: v for k, v in bad.items() if v}
+    assert not bad, bad
+
+
+VERDICTS = ("mas dan", "more damag", "mas grave", "more severe", "peor", "worse")
+
+
 def test_the_wording_guard_catches_what_it_should():
     assert _guarded("This variant causes disease", EN_CLINICAL)
     assert _guarded("Un avance que revolucionará la medicina", PROMISES)

@@ -385,3 +385,23 @@ ruido de la máquina, no el visor. Lo que no es ruido:
   un color significa lo mismo con y sin búsqueda.
 - Commits: `3b66d47` (código) y `85578c2` (capturas). Build recopiado al
   landing; `verify-live` local 17/17.
+
+## D-51 · N4: comparador de dos variantes, solo aritmética sobre lo mostrado
+
+- Ruta `#/compare?a=<locus>/<variante>&b=<locus>/<variante>`, chunk propio
+  (2,2 KB gz) que se pide en paralelo con el índice. Usa solo `card.json` y
+  `locus.json` ya publicados: `data/dist/` sin tocar.
+- Pareja por defecto: desde una ficha, A es esa variante y B otra alternativa
+  de la MISMA posición (C>T frente a C>A en PPP1R1A/PDE1B), que es la
+  comparación más limpia disponible. Enlace roto: aviso + pareja por defecto.
+- Se midió antes de escribir el texto: el `baseValue` de la cascada es
+  distinto en cada una de las 11 fichas (−0,038 a −0,060). Por eso las dos
+  cascadas se dibujan cada una con su escala y el texto lo dice; el medidor
+  AVI sí comparte escala (eje fijo 0–40).
+- Tablas por familia y por rasgo (unión de los 6 de más peso de cada una) con
+  B − A a 4 decimales: con 2, casi todo salía +0,00.
+- Nada de veredicto: `test_i18n.py` añade una guarda de redacción sobre las
+  claves `compare.*` en los dos idiomas (lenguaje clínico, promesas, "más
+  dañina", "peor").
+- Bundle principal: 27,5 → 28,2 KB gz sumando N6 (buscador en el mapa) y la
+  ruta y el enlace de N4. Aceptado.

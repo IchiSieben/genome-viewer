@@ -51,7 +51,7 @@ import { dataText, loadFull, loadNarrative, otherLang, otherLangHref, rememberLa
 import type { IndexDoc, LocusDoc } from './lib/types';
 
 interface Route {
-  name: 'home' | 'locus' | 'variant' | 'study' | 'about' | NarrativePage;
+  name: 'home' | 'locus' | 'variant' | 'study' | 'about' | 'compare' | NarrativePage;
   params: Record<string, string>;
   query: URLSearchParams;
 }
@@ -67,6 +67,7 @@ function parseRoute(): Route {
 
   if (!parts.length) return { name: 'home', params: {}, query };
   if (parts[0] === 'about') return { name: 'about', params: {}, query };
+  if (parts[0] === 'compare') return { name: 'compare', params: {}, query };
   if ((NARRATIVE_PAGES as string[]).includes(parts[0]!)) {
     return { name: parts[0] as NarrativePage, params: {}, query };
   }
@@ -555,6 +556,13 @@ async function renderVariant(
     ...(record.artifacts.saturation ? [tabFor('saturation', t('variant.tab.saturation'))] : []),
     ...(record.artifacts.splice ? [tabFor('splice', t('variant.tab.splice'))] : []),
     ...(record.artifacts.contact ? [tabFor('contact', t('variant.tab.contact'))] : []),
+    record.artifacts.card
+      ? el('a', {
+          class: 'tabs__compare',
+          href: href(`compare?a=${encodeURIComponent(`${locusId}/${variantId}`)}`),
+          text: t('compare.link'),
+        })
+      : null,
     el(
       'a',
       { class: 'tabs__back', href: href(`locus/${locusId}`) },
@@ -775,7 +783,14 @@ function isNarrative(name: Route['name']): name is NarrativePage {
 }
 
 function needsFullDictionary(current: Route): boolean {
-  if (current.name === 'about' || current.name === 'study' || isNarrative(current.name)) return true;
+  if (
+    current.name === 'about' ||
+    current.name === 'study' ||
+    current.name === 'compare' ||
+    isNarrative(current.name)
+  ) {
+    return true;
+  }
   if (current.name !== 'variant') return false;
   const view = current.query.get('view') ?? 'card';
   return view !== 'card' && view !== 'signal';
@@ -832,12 +847,15 @@ async function route(): Promise<void> {
   const narrativeReady = isNarrative(current.name)
     ? Promise.all([loadNarrative(), import('./views/narrative')]).then(([, mod]) => mod)
     : Promise.resolve(null);
+  // The comparator is its own chunk too, fetched in parallel with the index.
+  const compareReady = current.name === 'compare' ? import('./views/compare') : Promise.resolve(null);
   main.append(loadingState(t('app.loading.catalog')));
 
   try {
     indexDoc ??= await loadIndex();
     await fullReady;
     const narrative = await narrativeReady;
+    const compare = await compareReady;
     clear(main);
 
     switch (current.name) {
@@ -855,6 +873,10 @@ async function route(): Promise<void> {
       case 'references':
         narrative!.renderNarrative(main, current.name, indexDoc);
         setTitle(narrative!.narrativeTitle(current.name));
+        break;
+      case 'compare':
+        cleanup = await compare!.renderCompare(main, indexDoc, current.query);
+        setTitle(t('compare.title'));
         break;
       case 'locus': {
         const entry = indexDoc.loci.find((l) => l.id === current.params['locus']);

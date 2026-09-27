@@ -151,6 +151,37 @@ if (navigated) {
     (await page.locator('.waterfall__bar').count()) >= 18);
 }
 
+// N4: la ficha enlaza al comparador; los selectores y el intercambio viven
+// en la URL, y un enlace compartido restaura la misma pareja.
+await page.goto(`${BASE}#/variant/${VARIANT}?view=card`, { waitUntil: 'networkidle' });
+await settle();
+await page.locator('.tabs__compare').click();
+await settle(1200);
+const cmpHash = await page.evaluate(() => decodeURIComponent(location.hash));
+check('la ficha abre el comparador con ella como A',
+  cmpHash.startsWith('#/compare?a=') && cmpHash.includes(VARIANT),
+  cmpHash);
+await page.waitForSelector('.compare-side[data-side="b"] .gauge', { timeout: 60000 }).catch(() => {});
+check('el comparador dibuja A y B',
+  (await page.locator('.compare-side').count()) === 2);
+const [selA, selB] = await Promise.all([
+  page.locator('select[data-side="a"]').inputValue(),
+  page.locator('select[data-side="b"]').inputValue(),
+]);
+check('A y B son distintas', selA !== selB, `${selA} / ${selB}`);
+await page.locator('.compare-picker__swap').click();
+await page.waitForFunction((b) => document.querySelector('select[data-side="a"]')?.value === b, selB, { timeout: 60000 }).catch(() => {});
+const swapped = await page.evaluate(() => location.href);
+check('intercambiar A y B cambia la URL',
+  (await page.locator('select[data-side="a"]').inputValue()) === selB);
+await page.goto('about:blank');
+await page.goto(swapped, { waitUntil: 'networkidle' });
+await page.waitForSelector('select[data-side="a"]', { timeout: 60000 }).catch(() => {});
+await settle(600);
+check('un enlace compartido restaura la pareja',
+  (await page.locator('select[data-side="a"]').inputValue()) === selB &&
+  (await page.locator('select[data-side="b"]').inputValue()) === selA);
+
 console.log(`\nerrores de consola: ${errors.length ? errors.join(' | ') : 'ninguno'}`);
 if (errors.length) failures++;
 await browser.close();

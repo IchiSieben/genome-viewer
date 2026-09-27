@@ -393,6 +393,32 @@ await visit('es-26-referencias', '#/references', {
   checks: [{ selector: '.reference', min: 13, label: 'referencias' }],
 });
 
+// N4: comparador. Dos medidores, dos cascadas, 4 familias, tabla de rasgos.
+const COMPARE_CHECKS = [
+  { selector: '.compare-side', min: 2, label: 'dos columnas' },
+  { selector: '.compare-side .gauge', min: 2, label: 'dos medidores AVI' },
+  { selector: '.compare-side .mini-cascade', min: 2, label: 'dos cascadas' },
+  { selector: '.compare-table__row[data-family]', min: 4, label: 'filas por familia' },
+  { selector: '.compare-table__row[data-feature]', min: 6, label: 'filas por rasgo' },
+];
+await visit('27-comparador', '#/compare?a=ppp1r1a-pde1b%2Fchr12-54578515-C-T&b=ppp1r1a-pde1b%2Fchr12-54578515-C-A', {
+  checks: COMPARE_CHECKS,
+});
+await visit('es-27-comparador', '#/compare?a=ppp1r1a-pde1b%2Fchr12-54578515-C-T', {
+  lang: 'es',
+  checks: COMPARE_CHECKS,
+});
+await visit('es-28-comparador-oscuro-movil', '#/compare?a=dnm1%2Fchr9-128226027-G-A&b=apoa1%2Fchr11-116837649-T-G', {
+  lang: 'es', theme: 'dark', width: 390, height: 844,
+  checks: COMPARE_CHECKS,
+});
+await visit('29-comparador-enlace-roto', '#/compare?a=no-existe%2Fchr0-1-A-C', {
+  checks: [
+    { selector: '.state--empty', label: 'aviso de enlace roto' },
+    { selector: '.compare-side .gauge', min: 2, label: 'pareja por defecto' },
+  ],
+});
+
 // Motion ON: the hero draws, scroll entries end visible, nothing is left at
 // opacity 0 after scrolling to the bottom, and the catalog digests fill in.
 async function checkMotion(lang) {

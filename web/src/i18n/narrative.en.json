@@ -41,7 +41,7 @@
   "roadmap.item.H7.name": "Andean Atlas population study",
   "roadmap.item.H7.body": "Pending. It tests whether the same AVI score buys a different strength of evidence in variants enriched for Indigenous American ancestry than in matched European variants. A null result will be published with the same weight as a positive one.",
   "roadmap.item.N4.name": "Comparator",
-  "roadmap.item.N4.body": "A view for placing two variants or two loci side by side. Not yet built.",
+  "roadmap.item.N4.body": "Two variants with a card side by side (#/compare): their AVI on the same scale, their cascades, and the contributions by family and by feature with the B − A difference. Each card opens it with that variant as A and another alternate at the same position as B. It only subtracts values already shown; it gives no verdict.",
   "roadmap.item.N6.name": "Track search",
   "roadmap.item.N6.body": "A field above the tissue × modality map filters its rows by biosample name, organ system or ontology term, ignoring case and accents. The color scale does not change when filtering: a color means the same with or without a search.",
   "roadmap.item.N7.name": "Gene view",
