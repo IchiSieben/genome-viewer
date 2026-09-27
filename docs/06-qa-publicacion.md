@@ -43,15 +43,18 @@ Tiene que dar `TODO OK` y `X-Robots-Tag noindex en N/N documentos`. Si la
 cabecera no aparece, el hosting no está leyendo el `.htaccess` de la
 subcarpeta. El meta `noindex` sigue protegiendo, pero hay que saberlo.
 
-## Tiempos de la última pasada local (máquina cargada)
+## Tiempos 3G lento: A/B antes y después de los extras (máquina cargada)
 
-| Vista, 3G lento | ms |
-|---|---:|
-| Portada EN | 2 615 |
-| Ficha EN | 2 090 |
-| Navegador EN | 5 389 |
-| Portada ES | 6 176 |
+`measure-ab.mjs`, 3 rondas intercaladas, EN, contra el build de la fase 5
+(`docs/evidence/performance-ab-extras-en.json`):
 
-Las dos últimas cifras están muy por encima de lo que dio `measure-ab` en la
-misma tarde (1 822 y 2 181 ms en mediana). La CPU estaba al 100 % por otros
-procesos. Hay que repetirlas en vivo antes de dar por buena ninguna.
+| Vista, 3G lento | Antes (ms) | Después (ms) | KiB | Oleadas | CLS |
+|---|---:|---:|---|---|---|
+| Portada | 2 101 | 1 957 | 29,2 → 29,9 | 2 → 2 | 0 → 0 |
+| Ficha | 1 791 | 2 025 | 30,3 → 31,0 | 2 → 2 | 0 → 0 |
+| Navegador | 1 686 | 2 796 | 28,4 → 31,5 | 2 → 3 | 0,0025 → 0,0025 |
+
+La CPU estaba al 100 % por otros procesos: la pasada anterior dio el
+navegador al revés (3 → 2 oleadas) y una portada "rápida" de 5 s. Bytes y CLS
+son fiables; los milisegundos, no. Repetirlos en vivo. Un primer A/B detectó
+CLS 0,0012 en portada y ficha, rastreado y corregido (D-53).

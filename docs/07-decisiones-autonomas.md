@@ -410,7 +410,13 @@ ruido de la máquina, no el visor. Lo que no es ruido:
   claves `compare.*` en los dos idiomas (lenguaje clínico, promesas, "más
   dañina", "peor").
 - Bundle principal: 27,5 → 28,2 KB gz sumando N6 (buscador en el mapa) y la
-  ruta y el enlace de N4. Aceptado.
+  ruta y el enlace de N4. Medido con A/B en 3G lento contra el build previo a
+  los extras (3 rondas, EN, `docs/evidence/performance-ab-extras-en.json`, tras
+  D-53): +0,7 KiB por vista, las mismas oleadas en portada y ficha, CLS igual
+  que antes. Mediana 3G: portada 2 101 → 1 957 ms, ficha 1 791 → 2 025 ms,
+  navegador 1 686 → 2 796 ms. El navegador marcó 3 oleadas en esta pasada y
+  3 → 2 en la anterior: con la CPU cargada no es separable del
+  ruido. Aceptado; repetir en vivo.
 
 ## D-52 · N7 (vista de gen) se queda en la hoja de ruta
 
