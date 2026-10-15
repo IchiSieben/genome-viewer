@@ -38,7 +38,8 @@ document.addEventListener('click', (ev) => {
   const before = block?.getBoundingClientRect().top ?? 0;
   applyRegister(b.dataset.set as Register, true);
   // Keep the block the reader clicked in the same place: other blocks change height.
-  if (block) window.scrollBy(0, block.getBoundingClientRect().top - before);
+  // `instant`: the page has scroll-behavior: smooth, which would animate the correction.
+  if (block) window.scrollBy({ top: block.getBoundingClientRect().top - before, behavior: 'instant' });
 });
 
 // ---- caption: which real structure is on screen ------------------------------------------
@@ -80,7 +81,7 @@ const ruler = document.getElementById('st-ruler');
 const scaleLabel = document.getElementById('st-scale-label');
 type Stop = { nm: number; id?: string; label: string };
 const stops: Stop[] = scale ? JSON.parse(scale.dataset.stops || '[]') : [];
-const fmt = new Intl.NumberFormat(html.lang === 'es' ? 'es-PE' : 'en-US', { maximumFractionDigits: 1 });
+const fmt = new Intl.NumberFormat(html.lang === 'es' ? 'es' : 'en-US', { maximumFractionDigits: 1 });
 function human(nm: number): string {
   if (nm < 1000) return `${fmt.format(nm)} nm`;
   if (nm < 1e6) return `${fmt.format(nm / 1000)} µm`;

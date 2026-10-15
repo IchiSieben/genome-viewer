@@ -145,3 +145,33 @@ confundirlas. Las marcadas **[REVISAR]** son las primeras que conviene mirar.
   CLS 0 · TBT 0; `/es/` igual con LCP 1 443 ms. El SEO 63 es el `noindex` (se quita en E7).
 - Los JSON se quedaron en el worktree de la Mac (el contrato tenía `push: false`); los contratos
   siguientes llevan `push: true`.
+
+## E-16 · Las nubes son reproducibles en otra máquina
+
+- Carril `clouds` en la Mac (macOS arm64, Python propio, mmCIF descargados de nuevo de RCSB):
+  **8 idénticas, 0 distintas** byte a byte con `data/stage/` de Windows, y `test_stage.py` verde
+  en el nodo. Rama `mac/stage-clouds`.
+
+## E-17 · Revisión del verificador antes del despliegue del escenario
+
+- **Bloqueo encontrado y corregido:** al pulsar el registro, el bloque se movía 21–48 px porque
+  `scroll-behavior: smooth` animaba la corrección de `scrollBy`. Ahora la corrección es
+  `behavior: 'instant'`, y la prueba también hace su `scrollIntoView` instantáneo.
+- Notas corregidas: decimales con coma en español (`Intl` con `es` y no `es-PE`, que usa
+  punto); 0,3347 nm por par de bases en la cuenta de los 2,04 m (con 0,335 sale 2,05); los
+  enlaces del 404 llevan al visor (`app/`); el pie de estructura y la etiqueta de escala ya no
+  son `aria-live` (un lector de pantalla los anunciaba en cada scroll).
+- **Se deja como está [REVISAR]:** la frase permanente afirma que los datos de entrenamiento
+  están sesgados hacia ascendencia europea. El texto es del dueño (prompt maestro) y se publica
+  literal, pero ninguna referencia de `refs.json` lo respalda tal cual (la nota de `sun2026`
+  pide no citarlo para eso). Ver MORNING-REPORT.
+- También queda: el capítulo 6 da dos resoluciones de 5XJC, 3,76 Å del resumen del artículo y
+  3,6 Å del título de la entrada PDB; las dos tienen fuente.
+
+## E-18 · La ficha del landing, en rama y sin tocar el índice ajeno
+
+- El subagente commiteó la ficha en `genome/ficha` (`39be2bc`, solo los dos `.md`) usando un
+  índice temporal, porque `Landing/.git/index.lock` existe desde las 08:55 (otra sesión, no se
+  borró). El Landing quedó en esa rama; se devolvió a `main` con `git symbolic-ref HEAD
+  refs/heads/main` (no toca el índice) y los dos `.md` se apartaron a la carpeta temporal de la
+  sesión: el índice real de `main` ya coincidía con `main`.

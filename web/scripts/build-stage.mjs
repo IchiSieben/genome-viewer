@@ -63,7 +63,7 @@ const urlOf = (dir) => `${SITE}${BASE}${dir}`;
 const byId = Object.fromEntries(stageIndex.structures.map((s) => [s.id, s]));
 
 function fmtNum(lang, x, digits = 1) {
-  return new Intl.NumberFormat(lang === 'es' ? 'es-PE' : 'en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(x);
+  return new Intl.NumberFormat(lang === 'es' ? 'es' : 'en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(x);
 }
 
 // Two decimals for the expert register (the range is 1.08-1.26: one decimal would collapse it);
@@ -140,7 +140,7 @@ function scaleHtml(L) {
 <h2 id="scale-t" class="st-num">${esc(d['scale.title'])}</h2>
 <p class="st-scale-label">${esc(d['scale.lead'])}</p>
 <p class="st-scale-ruler" id="st-ruler" aria-hidden="true">2 nm</p>
-<p class="st-scale-label" id="st-scale-label" aria-live="polite">${esc(stops[0].label)}</p>
+<p class="st-scale-label" id="st-scale-label">${esc(stops[0].label)}</p>
 <details class="st-scale-all"><summary>${esc(d['scale.all'])}</summary><ol>${stops.map((s) => `<li>${esc(s.label)}</li>`).join('')}</ol>
 <p>${(scaleStops.refs ?? []).map((k) => { const n = cite(k); return `<a class="st-ref" href="#ref-${n}">[${n}]</a>`; }).join(' ')}</p></details>
 </div>
@@ -199,7 +199,7 @@ ${refsHtml(L)}
 <p>${esc(d['foot.data'])}</p>
 <p><a href="${esc(REPO)}" target="_blank" rel="noopener">${esc(d['foot.repo'])}</a> · <a href="https://ichisieben.dev/" target="_blank" rel="noopener">${esc(d['foot.author'])}</a></p>
 </footer>
-<p class="st-caption" id="st-caption" aria-live="polite">${caption('1BNA', L)}</p>
+<p class="st-caption" id="st-caption">${caption('1BNA', L)}</p>
 ${templates}`;
 }
 

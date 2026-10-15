@@ -160,7 +160,7 @@ for (const lang of ['en', 'es']) {
     await page.waitForTimeout(300);
     const target = page.locator('.st-reg button[data-set="phd"]').nth(1);
     const topOf = () => target.evaluate((b) => (b.closest('.st-block') ?? b).getBoundingClientRect().top);
-    await target.evaluate((b) => b.scrollIntoView({ block: 'center' }));
+    await target.evaluate((b) => b.scrollIntoView({ block: 'center', behavior: 'instant' }));
     await page.waitForTimeout(200);
     const before = await topOf();
     await target.click();

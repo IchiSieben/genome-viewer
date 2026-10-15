@@ -251,12 +251,12 @@ a{color:var(--link)}
 <section lang="en">
 <h1>${esc(en['notfound.title'])}</h1>
 <p>${esc(en['notfound.body'])}</p>
-<p><a href="${BASE}">${esc(en['notfound.home'])} · ${esc(en['brand.name'])}</a></p>
+<p><a href="${BASE}${APP}">${esc(en['notfound.home'])} · ${esc(en['brand.name'])}</a></p>
 </section>
 <section lang="es">
 <h1>${esc(es['notfound.title'])}</h1>
 <p>${esc(es['notfound.body'])}</p>
-<p><a href="${BASE}es/">${esc(es['notfound.home'])} · ${esc(es['brand.name'])}</a></p>
+<p><a href="${BASE}es/${APP}">${esc(es['notfound.home'])} · ${esc(es['brand.name'])}</a></p>
 </section>
 </main>
 </body>
