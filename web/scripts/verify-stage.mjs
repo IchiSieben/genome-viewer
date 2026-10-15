@@ -89,7 +89,9 @@ async function posterMode(lang, label, opts) {
   await context.close();
 }
 
-for (const lang of ['en', 'es']) {
+// AGP_STAGE_LANGS=es runs one language in its own browser (the Mac lane runs them apart: on Metal
+// the second language of one browser fell back to the poster, visual4).
+for (const lang of (process.env.AGP_STAGE_LANGS || 'en,es').split(',')) {
   console.log(`\n=== escenario (${lang}) ===`);
 
   // a, b, c: default load
