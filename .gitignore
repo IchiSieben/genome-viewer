@@ -62,3 +62,6 @@ _dist/
 Thumbs.db
 .idea/
 .vscode/
+
+# enjambre lane selector (written by a node agent, never committed)
+.enjambre-lane

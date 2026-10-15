@@ -10,12 +10,14 @@
 ## Dónde está
 
 - **Repo público**: https://github.com/IchiSieben/genome-viewer (`main`).
-- **URL final**: https://ichisieben.dev/genome-viewer/ (EN) · https://ichisieben.dev/genome-viewer/es/ (ES)
-  - **NO ESTÁ EN VIVO TODAVÍA.** El build está copiado en
-    `Landing/public/genome-viewer/`, sin commit (la otra sesión trabaja el
-    landing). Queda en vivo con el siguiente push del landing (ver abajo).
-  - Primera subida con `noindex` (meta + `X-Robots-Tag`) y sin tarjeta
-    visible en el landing, hasta que des el OK.
+- **EN VIVO desde el 2026-10-15 18:20 (Lima)**: https://genome.ichisieben.dev/ (EN) ·
+  https://genome.ichisieben.dev/es/ (ES). Subdominio propio, docroot `public_html/genome-app`,
+  subido por TUS con `tools/deploy_tus.py`. `noindex` puesto. Sesión del escenario en curso:
+  ver `docs/09-decisiones-autonomas.md` y `MORNING-REPORT.md`.
+  - La copia de `Landing/public/genome-viewer/` es el layout viejo y **no** se publica.
+  - Build para el subdominio desde PowerShell (Git Bash convierte `AGP_BASE=/` en una ruta de
+    Windows, E-02): `$env:AGP_SITE='https://genome.ichisieben.dev'; $env:AGP_BASE='/'; npm run build`
+    o en Git Bash `MSYS_NO_PATHCONV=1 AGP_SITE=... AGP_BASE=/ npm run build`.
 
 ## Commits de cada fase (hashes después del saneado del historial)
 
