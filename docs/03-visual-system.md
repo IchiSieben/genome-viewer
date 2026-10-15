@@ -201,3 +201,32 @@ interruptor gana en las dos direcciones.
 - Marcas finas, rejilla y ejes discretos. La densidad de información es el lujo.
 - Cifras tabulares en todo número, coordenada y score: en una tabla las columnas
   tienen que alinearse por dígito.
+
+## El escenario
+
+El producto tiene dos capas con una sola identidad. Se reconcilian así:
+
+- **El escenario** (`/` y `/es/`): portada y narrativa en dos registros, con una
+  nube de puntos 3D de estructuras moleculares reales del PDB detrás del texto.
+  Usa sus propios tokens, en `web/src/styles/stage-tokens.css`: fondo negro
+  `#000000`, una sola acción violeta `#8052ff`, ámbar `#ffb829` para énfasis y
+  enlaces, y Inter autoalojada (peso 200 en el cuerpo, 400 en los titulares).
+- **Las vistas de datos** (`/app/` y `/es/app/`): el visor, con los tokens de
+  `tokens.css`, la paleta medida con CIEDE2000 y sus dos temas. No se le impone
+  el negro puro ni el violeta.
+- **Lo que comparten**: la familia tipográfica, los radios, la escala de
+  espaciado y el interruptor de idioma.
+- **Color con significado también en el escenario**: hebra 1 de ADN violeta,
+  hebra 2 teal `#15846e`, proteína ámbar, ARN `#e8e4dc`, otro `#9a9a9a`. Los
+  colores de nucleótido (A, C, G, T) siguen reservados a bases literales.
+- Regla de diseño del escenario: una sola acción violeta por pantalla, sin
+  bordes, tarjetas ni sombras; movimiento solo con `opacity` y `transform`, y
+  `prefers-reduced-motion` respetado (sin WebGL, con pósters).
+
+**Regla I6.** Nada de 3D dentro de los gráficos de datos: la profundidad solo se usa para estructuras moleculares reales del escenario; las vistas de datos del visor siguen siendo 2D.
+
+El 3D del escenario no codifica ningún dato del visor: son coordenadas atómicas
+medidas, y su agitación sale del factor B de cada átomo.
+
+Detalle técnico en [09-escenario.md](09-escenario.md); catálogo de estructuras,
+citas y licencia en [10-estructuras.md](10-estructuras.md).

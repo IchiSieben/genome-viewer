@@ -40,6 +40,11 @@ const TYPES = {
   '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
   '.bin': 'application/octet-stream',
+  '.agsc': 'application/octet-stream',
+  '.woff2': 'font/woff2',
+  '.webp': 'image/webp',
+  '.png': 'image/png',
+  '.xml': 'application/xml',
   '.svg': 'image/svg+xml',
 };
 

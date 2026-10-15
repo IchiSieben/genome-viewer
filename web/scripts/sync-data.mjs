@@ -24,3 +24,31 @@ await rm(dst, { recursive: true, force: true });
 await mkdir(dst, { recursive: true });
 await cp(src, dst, { recursive: true });
 console.log(`data/dist -> web/public/data`);
+
+// ---- stage clouds: data/stage -> web/public/stage --------------------------------------
+// Same rule as the gate above, for the stage: only real structures (source rcsb-pdb) reach
+// public/. A synthetic cloud is for local integration and never ships.
+{
+  const { readFileSync } = await import('node:fs');
+  const stageSrc = resolve(here, '../../data/stage');
+  const stageDst = resolve(here, '../public/stage');
+  if (existsSync(stageSrc)) {
+    const idx = JSON.parse(readFileSync(resolve(stageSrc, 'index.json'), 'utf8'));
+    const bad = idx.structures.filter((s) => s.provenance?.source !== 'rcsb-pdb');
+    if (bad.length) {
+      console.error(`stage: refusing non-PDB clouds: ${bad.map((s) => s.id).join(', ')}`);
+      process.exit(1);
+    }
+    const posters = resolve(stageDst, 'posters');
+    const keep = existsSync(posters);
+    if (keep) await cp(posters, resolve(here, '../.posters-tmp'), { recursive: true });
+    await rm(stageDst, { recursive: true, force: true });
+    await mkdir(stageDst, { recursive: true });
+    await cp(stageSrc, stageDst, { recursive: true });
+    if (keep) {
+      await cp(resolve(here, '../.posters-tmp'), posters, { recursive: true });
+      await rm(resolve(here, '../.posters-tmp'), { recursive: true, force: true });
+    }
+    console.log(`data/stage -> web/public/stage (${idx.structures.length} structures)`);
+  }
+}

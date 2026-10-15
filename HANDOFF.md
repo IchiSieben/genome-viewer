@@ -10,7 +10,7 @@
 ## Dónde está
 
 - **Repo público**: https://github.com/IchiSieben/genome-viewer (`main`).
-- **EN VIVO desde el 2026-10-15 18:20 (Lima)**: https://genome.ichisieben.dev/ (EN) ·
+- **EN VIVO desde el 2026-10-15 13:20 (Lima)**: https://genome.ichisieben.dev/ (EN) ·
   https://genome.ichisieben.dev/es/ (ES). Subdominio propio, docroot `public_html/genome-app`,
   subido por TUS con `tools/deploy_tus.py`. `noindex` puesto. Sesión del escenario en curso:
   ver `docs/09-decisiones-autonomas.md` y `MORNING-REPORT.md`.

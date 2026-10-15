@@ -14,8 +14,8 @@ AlphaGenome is still named as the data source.
 ![License](https://img.shields.io/badge/license-MIT-1f5fd0)
 ![static](https://img.shields.io/badge/static-0%20API%20calls-6f7c8a)
 
-**Live:** <https://ichisieben.dev/genome-viewer/> ·
-<https://ichisieben.dev/genome-viewer/es/> (Spanish)
+**Live:** <https://genome.ichisieben.dev/> (the story) ·
+<https://genome.ichisieben.dev/app/> (the viewer) · Spanish under `es/`
 
 This is a beta. In this first upload it ships with `noindex`: it does not
 show up in search engines yet.
@@ -47,7 +47,7 @@ constraint.
 | H3 | Views V1 and V2 | **Done** — both themes, responsive, clean console |
 | H4 | Real data for three loci | **Done** — PPP1R1A/PDE1B, RASGEF1B, RPL13A |
 | H5 | V3, track browser | **Done** — canvas and SVG, zoom, dual resolution |
-| H6 | Deployment | **Done** — [live](https://ichisieben.dev/genome-viewer/) |
+| H6 | Deployment | **Done** — [live](https://genome.ichisieben.dev/) |
 | N1 | Saturation map | **Done** — 512 positions × 3 alternates |
 | N2 | Cross-linking between views | **Done** |
 | N3 | State in the URL | **Done** — locus, variant, view, tracks and zoom |
@@ -58,11 +58,32 @@ constraint.
 | N4 | Two-variant comparator | **Done** |
 | N7 | — | Planned |
 | H7 | Population study | **Pending** — a null result will be published too |
+| E0–E7 | The stage: a seven-chapter story over real PDB structures | See below and [`docs/09-escenario.md`](docs/09-escenario.md) (Spanish) |
 
 The data is **real**, from the Atlas API and the Model API. The synthetic
 fixture generator still exists for developing without spending quota, and
 whatever it produces is sealed `source: "synthetic"` and flagged in the web
 UI with an amber band. Nothing synthetic is published.
+
+## The stage
+
+The site root is now a seven-chapter story, from DNA to a variant's effect, read in two
+registers (for an 8-year-old or for a PhD, with a remembered switch). Behind the text, a WebGL2
+point cloud draws real Protein Data Bank structures (1BNA, 4UG0, 1KX5, 1CDW, 5FLM, 5XJC, 5KKQ
+and the Zika capsid, 5IRE), read from their mmCIF files with gemmi; each point jitters with the
+thermal amplitude of its B-factor. Every chapter ends in the viewer view that shows it, now at
+`/app/`.
+
+- Numbers are computed or cited, never rounded from memory: the protein-coding fraction (1.25%,
+  range 1.08–1.26%) comes from GENCODE 50 via `tools/coding_fraction.py`; the 2.04 m of DNA per
+  cell from the helix rise measured on 1BNA via `tools/dna_rise.py`. 32 references checked on
+  PubMed.
+- Without WebGL2, with reduced motion, or if anything fails, a poster of the same render shows.
+- Depth is only for real molecules: the viewer's data charts stay 2D.
+
+Plan, budgets and measurement: [`docs/09-escenario.md`](docs/09-escenario.md). Structure
+catalog and citations: [`docs/10-estructuras.md`](docs/10-estructuras.md). Session decisions:
+[`docs/09-decisiones-autonomas.md`](docs/09-decisiones-autonomas.md).
 
 ## The three constraints that shape the architecture
 

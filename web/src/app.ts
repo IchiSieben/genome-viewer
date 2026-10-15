@@ -47,7 +47,7 @@ import { renderSaturationMap } from './views/saturationMap';
 import { renderContactDiff } from './views/contactDiff';
 import { renderSpliceSashimi } from './views/spliceSashimi';
 import { maybeStartTour } from './tour';
-import { dataText, loadFull, loadNarrative, otherLang, otherLangHref, rememberLang, t, tp } from './i18n';
+import { dataText, loadFull, loadNarrative, otherLang, rememberLang, t, tp } from './i18n';
 import type { IndexDoc, LocusDoc } from './lib/types';
 
 interface Route {
@@ -821,11 +821,12 @@ function setTitle(page?: string): void {
 
 /**
  * The language toggle points at the SAME view in the other language: the view
- * lives in the hash, the language in the path, so the hash is carried over.
+ * lives in the hash, the language in the path, so the hash is carried over. The path is
+ * the static href build-shells writes per shell (the viewer lives under `app/`).
  */
 function syncLangToggle(): void {
   const toggle = document.getElementById('lang-toggle') as HTMLAnchorElement | null;
-  if (toggle) toggle.href = otherLangHref();
+  if (toggle) toggle.hash = window.location.hash;
 }
 
 async function route(): Promise<void> {

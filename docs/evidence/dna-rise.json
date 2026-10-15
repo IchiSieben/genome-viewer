@@ -1,0 +1,11 @@
+{
+ "pdb": "1BNA",
+ "method": "base-pair centres (midpoint of paired C1' atoms), axis = PCA of the centres; rise = axial span of the 10 inner pairs / 9 steps",
+ "steps": 9,
+ "riseA": 3.347,
+ "stepMinA": 2.859,
+ "stepMaxA": 4.017,
+ "diploidBp": 6110000000,
+ "diploidLengthM": 2.04,
+ "command": "python tools/dna_rise.py"
+}

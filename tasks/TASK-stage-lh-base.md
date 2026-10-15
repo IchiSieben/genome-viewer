@@ -1,6 +1,6 @@
 ---
 kind: tests
-push: false
+push: true
 ---
 # TASK — stage-lh-base (Lighthouse baseline of the live viewer, before the stage exists)
 

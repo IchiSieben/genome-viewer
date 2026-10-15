@@ -37,9 +37,12 @@ const NOINDEX = (process.env.AGP_NOINDEX ?? '1') === '1';
 const REPO = process.env.AGP_REPO || 'https://github.com/IchiSieben/genome-viewer';
 const AUTHOR_URL = 'https://ichisieben.dev/';
 
+// The site root (dist/index.html, dist/es/index.html) belongs to the stage since 2026-10-15,
+// written after this script by build-stage.mjs (docs/09-escenario.md). The viewer is in app/.
+const APP = 'app/';
 const LANGS = [
-  { lang: 'en', dir: '', root: './', locale: 'en_US' },
-  { lang: 'es', dir: 'es/', root: '../', locale: 'es_PE' },
+  { lang: 'en', dir: APP, root: '../', locale: 'en_US', toggle: '../es/app/' },
+  { lang: 'es', dir: `es/${APP}`, root: '../../', locale: 'es_PE', toggle: '../../app/' },
 ];
 
 const dicts = Object.fromEntries(
@@ -131,7 +134,7 @@ function head(L) {
     NOINDEX ? `<meta name="robots" content="noindex, nofollow" />` : '',
     `<link rel="canonical" href="${url}" />`,
     ...LANGS.map((x) => `<link rel="alternate" hreflang="${x.lang}" href="${urlOf(x.dir)}" />`),
-    `<link rel="alternate" hreflang="x-default" href="${urlOf('')}" />`,
+    `<link rel="alternate" hreflang="x-default" href="${urlOf(APP)}" />`,
     `<meta name="agp-shell" content="1" />`,
     `<meta property="og:type" content="website" />`,
     `<meta property="og:site_name" content="${esc(d['brand.name'])}" />`,
@@ -188,6 +191,7 @@ function shell(L) {
     /<meta name="agp-root" content="[^"]*" \/>/,
     `<meta name="agp-root" content="${L.root}" />`,
   );
+  html = html.replace(/<meta name="agp-app" content="[^"]*" \/>/, `<meta name="agp-app" content="${APP}" />`);
   const inline = JSON.stringify(inlined(d)).replace(/</g, '\\u003c');
   const ld = JSON.stringify(jsonLdOf(L)).replace(/</g, '\\u003c');
   html = html.replace(
@@ -200,7 +204,7 @@ function shell(L) {
   // Static href of the language toggle, for crawlers and no-JS visitors.
   html = html.replace(
     /(id="lang-toggle"[^>]*?\shref=")[^"]*(")/,
-    `$1${L.lang === 'en' ? 'es/' : '../'}$2`,
+    `$1${L.toggle}$2`,
   );
   if (L.root !== './') {
     // Every relative URL in the shell was written for the root. One level down,
@@ -265,18 +269,34 @@ a{color:var(--link)}
 // ---- sitemap: only real pages ---------------------------------------------
 {
   const today = new Date().toISOString().slice(0, 10);
-  const alternates = LANGS.map(
-    (x) => `    <xhtml:link rel="alternate" hreflang="${x.lang}" href="${urlOf(x.dir)}"/>`,
-  ).join('\n');
-  const urls = LANGS.map(
-    (L) => `  <url>\n    <loc>${urlOf(L.dir)}</loc>\n    <lastmod>${today}</lastmod>\n${alternates}\n  </url>`,
-  ).join('\n');
+  // Four real pages: the stage (/, /es/) and the viewer (app/, es/app/); each pair alternates.
+  const pairs = [
+    [{ lang: 'en', dir: '' }, { lang: 'es', dir: 'es/' }],
+    LANGS.map((x) => ({ lang: x.lang, dir: x.dir })),
+  ];
+  const urls = pairs.flatMap((pair) => {
+    const alternates = pair.map(
+      (x) => `    <xhtml:link rel="alternate" hreflang="${x.lang}" href="${urlOf(x.dir)}"/>`,
+    ).join('\n');
+    return pair.map((L) => `  <url>\n    <loc>${urlOf(L.dir)}</loc>\n    <lastmod>${today}</lastmod>\n${alternates}\n  </url>`);
+  }).join('\n');
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${urls}
 </urlset>
 `;
   writeFileSync(resolve(DIST, 'sitemap.xml'), xml);
+}
+
+// ---- robots.txt: only when the site owns its host root (the genome subdomain) -----
+// Under a subfolder the host's own robots.txt rules. With noindex on, crawling stays allowed so
+// that crawlers can read the noindex; the sitemap is announced only once indexing is wanted.
+if (BASE === '/') {
+  writeFileSync(resolve(DIST, 'robots.txt'), `User-agent: *
+Allow: /
+${NOINDEX ? '' : `
+Sitemap: ${SITE}${BASE}sitemap.xml
+`}`);
 }
 
 // ---- .htaccess (LiteSpeed/Apache on Hostinger honour it per directory) -----
@@ -292,7 +312,7 @@ ${urls}
         '  Header set X-Robots-Tag "noindex, nofollow"'
       : null,
     '  # Hashed bundles never change; shells and data must revalidate.',
-    '  <FilesMatch "\\.(js|css)$">',
+    '  <FilesMatch "\\.(js|css|woff2|agsc)$">',
     '    Header set Cache-Control "public, max-age=31536000, immutable"',
     '  </FilesMatch>',
     '  <FilesMatch "\\.(html|json|bin|xml)$">',
@@ -301,6 +321,8 @@ ${urls}
     '</IfModule>',
     '<IfModule mod_mime.c>',
     '  AddType application/octet-stream .bin',
+    '  AddType application/octet-stream .agsc',
+    '  AddType font/woff2 .woff2',
     '</IfModule>',
   ].filter((l) => l !== null);
   writeFileSync(resolve(DIST, '.htaccess'), lines.join('\n') + '\n');

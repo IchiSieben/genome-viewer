@@ -1,0 +1,54 @@
+{
+ "_comment": "Scale journey stops. Structure sizes are the largest extent of each cloud's own coordinates (data/stage/index.json, maxExtentA; 1BNA uses its smallest extent, the helix width). Cell sizes are quoted from the abstract of the cited paper. The last stop is computed: tools/dna_rise.py -> docs/evidence/dna-rise.json.",
+ "refs": [
+  "yamada2017",
+  "davie2025",
+  "nakatani2020"
+ ],
+ "stops": [
+  {
+   "nm": 2.2,
+   "structure": "1BNA",
+   "es": "La doble hélice del ADN: 2,2 nm de ancho, medidos en sus coordenadas (PDB 1BNA)",
+   "en": "The DNA double helix: 2.2 nm wide, measured from its coordinates (PDB 1BNA)"
+  },
+  {
+   "nm": 15.5,
+   "structure": "1KX5",
+   "es": "Un nucleosoma, ADN enrollado en proteínas: 15,5 nm (PDB 1KX5)",
+   "en": "A nucleosome, DNA wrapped around proteins: 15.5 nm (PDB 1KX5)"
+  },
+  {
+   "nm": 29.6,
+   "structure": "4UG0",
+   "es": "Un ribosoma humano: 29,6 nm (PDB 4UG0)",
+   "en": "A human ribosome: 29.6 nm (PDB 4UG0)"
+  },
+  {
+   "nm": 46.9,
+   "structure": "5IRE",
+   "es": "La cubierta del virus del Zika: 46,9 nm (PDB 5IRE)",
+   "en": "The Zika virus shell: 46.9 nm (PDB 5IRE)"
+  },
+  {
+   "nm": 2470,
+   "es": "Una bacteria E. coli: 2,47 µm de largo de media (Yamada 2017)",
+   "en": "An E. coli bacterium: 2.47 µm long on average (Yamada 2017)"
+  },
+  {
+   "nm": 10000,
+   "es": "El núcleo de una célula de mamífero: entre 5 y 15 µm (Davie 2025)",
+   "en": "A mammalian cell nucleus: 5 to 15 µm across (Davie 2025)"
+  },
+  {
+   "nm": 15000,
+   "es": "Una célula de mamífero típica: entre 10 y 20 µm (Nakatani 2020)",
+   "en": "A typical mammalian cell: 10 to 20 µm across (Nakatani 2020)"
+  },
+  {
+   "nm": 2040000000.0,
+   "es": "Todo el ADN de una de tus células, estirado: unos 2,04 m (cálculo propio con el paso medido en 1BNA)",
+   "en": "All the DNA in one of your cells, stretched out: about 2.04 m (our calculation from the rise measured in 1BNA)"
+  }
+ ]
+}

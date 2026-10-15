@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#000000" />
+    <!-- stage:head -->
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <script>
+      // Links shared before 2026-10-15 point at the viewer's hash on the site root
+      // (/#/variant/...). The viewer now lives in app/: forward them, same hash.
+      if (location.hash.indexOf('#/') === 0) location.replace('app/' + location.hash);
+    </script>
+    <script type="module" src="./src/stage/main.ts"></script>
+  </head>
+  <body>
+    <!-- stage:body -->
+  </body>
+</html>

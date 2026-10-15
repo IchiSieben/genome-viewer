@@ -1,0 +1,888 @@
+{
+ "chapters": [
+  {
+   "n": 1,
+   "title": "Three billion letters, two meters per nucleated cell",
+   "kicker": "A book written in four letters, coiled inside nearly every cell.",
+   "cta": "Open the viewer: 9 places in the genome",
+   "blocks": [
+    {
+     "id": "c1.b1",
+     "kid": "Imagine a recipe book written with only four letters: A, C, G and T. The recipe book of your body is called DNA. It has about three billion letters. Imagine reading one letter every second, never sleeping, never stopping. One single copy would take you almost one hundred years. And your body holds two versions: one from your mum and one from your dad.",
+     "phd": "T2T-CHM13 assembles 3.055 × 10⁹ bp of haploid sequence, with gapless assemblies for all chromosomes except Y, and the previous reference had left 8% of the genome unfinished (Nurk 2022). Build 35 (2004), which followed the first draft (Lander 2001), reached 2.85 × 10⁹ nucleotides with 341 gaps and about 99% of the euchromatin (IHGSC 2004). A G1 diploid nucleus therefore holds roughly 6.11 × 10⁹ bp (2 × 3.055 × 10⁹). This is our own calculation; it ignores XX/XY differences, the content of Y and individual structural variation.",
+     "refs": [
+      "nurk2022",
+      "ihgsc2004",
+      "lander2001"
+     ]
+    },
+    {
+     "id": "c1.b2",
+     "kid": "All of that book is coiled up inside almost every cell. Cells are the tiny living bricks of your body. They are too small to see. Stretch out the DNA thread of one cell and it would be about two meters long. That is nearly as tall as a door. A grown-up has around thirty million million cells. Nobody counted them one by one. It is a careful guess.",
+     "phd": "DNA length per diploid nucleus is computed, not measured: 6.11 × 10⁹ bp × 0.335 nm/bp ≈ 2.04 m, our own calculation assuming a 2n nucleus. We measured the axial rise (3.35 Å per base pair) on the coordinates of the structure on screen, 1BNA: base-pair centers, principal-component axis, terminal pairs excluded. Drew 1981 supports the B-helix geometry (9.8 bp per turn). Sender 2016 estimate 3.0 × 10¹³ human cells in the 70 kg reference man; Bianconi 2013 estimate 3.72 × 10¹³ and note that earlier values spanned 10¹² to 10¹⁶. Multiplying gives 6.1–7.6 × 10¹³ m, a very loose upper bound rather than an estimate: many cells, such as mature erythrocytes, have no nucleus (the hematopoietic lineage is about 90% of cells; Sender 2016). Every nucleus is also assumed 2n, ignoring gametes (n) and S/G2 cells (up to 4n).",
+     "refs": [
+      "sender2016",
+      "bianconi2013",
+      "drew1981"
+     ]
+    },
+    {
+     "id": "c1.b3",
+     "kid": "Out of every hundred letters, only about {coding_pct} tell your body how to build its parts. Many of the other letters seem to work like light switches. They say when and where to use each recipe. Nobody knows yet how many switches there are. The whole book is called the genome.",
+     "phd": "The protein-coding fraction is {coding_pct}% of the genome (declared range {coding_lo}–{coding_hi}% depending on isoform handling; computed here from GENCODE 50 CDS on the GRCh38 assembly, not taken from the literature; Frankish 2023 documents GENCODE, not this figure). Yet 88% of trait-associated SNPs in the 2009 GWAS catalog were intronic (45%) or intergenic (43%), although that share is not above expectation in introns and is depleted in intergenic regions (Hindorff 2009); associations concentrate instead in regulatory DNA marked by DNase I hypersensitive sites (Maurano 2012). How much of this non-coding DNA is functional remains contested and depends on the definition of function: ENCODE 2012 assigned biochemical function to ~80% of the genome, whereas Graur 2013 argues that the fraction under purifying selection is below 10%, and Christmas 2023 find ~10.7% (332 Mb) evolutionarily constrained across mammals; Kellis 2014 argue that biochemical, evolutionary and genetic approaches are complementary.",
+     "refs": [
+      "hindorff2009",
+      "maurano2012",
+      "frankish2023",
+      "encode2012",
+      "graur2013",
+      "christmas2023",
+      "kellis2014"
+     ]
+    },
+    {
+     "id": "c1.b4",
+     "kid": "Change one letter in a switch and a light might stay on when it should be off. A computer has learned to guess what such a change does. The Genome Viewer shows you those guesses. They are only guesses, not proofs: someone must check them in a laboratory.",
+     "phd": "A deep-learning model from Google DeepMind (Avsec 2026) takes 1 Mb of sequence and predicts thousands of functional tracks at up to single-base-pair resolution, although current models often fail to predict the direction of effect of individual variants (Sasse 2023; Huang 2023). Sun 2026, a preprint without peer review, finds weak agreement between Borzoi and the DeepMind model and nominal eQTL effect sizes (Spearman ≤ 0.138), with better discrimination for variants at PIP ≥ 0.9; the authors recommend using such scores to prioritise, not as standalone predictors. The Genome Viewer shows those predictions, not measurements, for 9 loci.",
+     "refs": [
+      "avsec2026",
+      "sasse2023",
+      "huang2023",
+      "sun2026"
+     ]
+    }
+   ],
+   "figures": [
+    {
+     "value": "3 055 000 000 bp (3,055 × 10⁹ / 3.055 × 10⁹), haploid",
+     "ref": "nurk2022",
+     "block": "c1.b1"
+    },
+    {
+     "value": "8 % of the genome unfinished in the previous reference",
+     "ref": "nurk2022",
+     "block": "c1.b1"
+    },
+    {
+     "value": "2,85 × 10⁹ / 2.85 × 10⁹ nucleotides, 341 gaps, ~99 % euchromatin (Build 35, 2004)",
+     "ref": "ihgsc2004",
+     "block": "c1.b1"
+    },
+    {
+     "value": "6,11 × 10⁹ / 6.11 × 10⁹ bp G1 diploid (2 × 3.055 × 10⁹)",
+     "ref": "computed:dna_length",
+     "block": "c1.b1"
+    },
+    {
+     "value": "almost one hundred years to read one copy at 1 letter/s (3.055 × 10⁹ s / 3.156 × 10⁷ s per year = 96.8 y)",
+     "ref": "computed:read_years",
+     "block": "c1.b1"
+    },
+    {
+     "value": "four bases A, C, G, T; two versions (maternal, paternal) in diploid nuclei",
+     "ref": "common-knowledge",
+     "block": "c1.b1"
+    },
+    {
+     "value": "~2 m (2,08 m / 2.08 m) of DNA per diploid nucleus (6.11 × 10⁹ bp × 0.34 nm); own calculation",
+     "ref": "computed:dna_length",
+     "block": "c1.b2"
+    },
+    {
+     "value": "0,34 nm/pb / 0.34 nm/bp axial rise, B-DNA (not in Drew 1981 abstract; to verify against PDB 1BNA)",
+     "ref": "computed:dna_length",
+     "block": "c1.b2"
+    },
+    {
+     "value": "9,8 pb por vuelta / 9.8 bp per turn, B helix",
+     "ref": "drew1981",
+     "block": "c1.b2"
+    },
+    {
+     "value": "3,0 × 10¹³ human cells (about thirty million million in the 8-year text), 70 kg reference man",
+     "ref": "sender2016",
+     "block": "c1.b2"
+    },
+    {
+     "value": "hematopoietic lineage ~90 % of human cells",
+     "ref": "sender2016",
+     "block": "c1.b2"
+    },
+    {
+     "value": "3,72 × 10¹³ / 3.72 × 10¹³ cells",
+     "ref": "bianconi2013",
+     "block": "c1.b2"
+    },
+    {
+     "value": "earlier values 10¹² to 10¹⁶",
+     "ref": "bianconi2013",
+     "block": "c1.b2"
+    },
+    {
+     "value": "6,2–7,7 × 10¹³ m / 6.2–7.7 × 10¹³ m loose upper bound (3.0 and 3.72 × 10¹³ cells × 2.08 m)",
+     "ref": "computed:dna_total",
+     "block": "c1.b2"
+    },
+    {
+     "value": "{coding_pct} % (point estimate) and range {coding_lo}–{coding_hi} %, build-time placeholders (GENCODE 50 CDS on GRCh38)",
+     "ref": "computed:coding_pct",
+     "block": "c1.b3"
+    },
+    {
+     "value": "88 % of trait-associated SNPs intronic (45 %) or intergenic (43 %); not overrepresented in introns, depleted in intergenic regions",
+     "ref": "hindorff2009",
+     "block": "c1.b3"
+    },
+    {
+     "value": "associations concentrated in DNase I hypersensitive sites (no numeric fraction)",
+     "ref": "maurano2012",
+     "block": "c1.b3"
+    },
+    {
+     "value": "~80 % of the genome with biochemical function",
+     "ref": "encode2012",
+     "block": "c1.b3"
+    },
+    {
+     "value": "<10 % under purifying selection",
+     "ref": "graur2013",
+     "block": "c1.b3"
+    },
+    {
+     "value": "~10,7 % / 10.7 % (332 Mb) evolutionarily constrained across mammals",
+     "ref": "christmas2023",
+     "block": "c1.b3"
+    },
+    {
+     "value": "1 Mb input, thousands of tracks, up to single-base-pair resolution",
+     "ref": "avsec2026",
+     "block": "c1.b4"
+    },
+    {
+     "value": "Spearman ≤ 0,138 / 0.138 weak agreement with nominal eQTL effect sizes; PIP ≥ 0,9 / 0.9 (preprint)",
+     "ref": "sun2026",
+     "block": "c1.b4"
+    },
+    {
+     "value": "9 loci in the viewer catalog (CTA: 9 places in the genome)",
+     "ref": "repo:F15",
+     "block": "c1.b4"
+    },
+    {
+     "value": "9 places in the genome (CTA)",
+     "ref": "repo:F15",
+     "block": "cta"
+    }
+   ],
+   "verificar": [
+    "Axial rise 0.34 nm/bp and the PDB code 1BNA: not in the Drew 1981 abstract (it gives 36.9 degrees per step and 9.8 bp per turn). Confirm against the 1BNA coordinates in the PDB entry before publishing; until then 2.08 m is labeled as our own calculation.",
+    "Fraction of cells without a nucleus (mature erythrocytes, platelets): Sender 2016 abstract supports only the ~90 % hematopoietic share. Marked [VERIFICAR] in c1.b2 esPhd/enPhd; confirm in the full text of Sender 2016.",
+    "CHM13 derives from a 46,XX hydatidiform mole and has no Y chromosome: general knowledge, not in the Nurk 2022 abstract (which says 'gapless for all chromosomes except Y'). Marked [VERIFICAR] in c1.b1 esPhd/enPhd; confirm in the Nurk 2022 full text which version (v1.1 or v2.0) the 3.055 Gbp refers to.",
+    "Common biological knowledge without a verified ref: four bases A, C, G, T; two versions (maternal and paternal) in diploid nucleated cells; gametes are n and S/G2 cells up to 4n; 'ladrillitos/bricks' as a child's image of cells.",
+    "Reading time (one letter per second, almost one hundred years) is computed:read_years from the T2T size (96.8 years); it is arithmetic, not a cited figure. Door height (~2 m) in the 8-year text is a common-knowledge comparison.",
+    "{coding_pct}, {coding_lo}, {coding_hi} are build-time placeholders from the GENCODE 50 computation on GRCh38 (denominator and CDS-union definition to be stated in the public methods note). The build must assert that no '{' placeholder survives and format with decimal comma in ES and point in EN; in the 8-year texts 'unas {coding_pct}' / 'about {coding_pct}' reads as a number of letters per hundred, so the build should keep it as a short decimal.",
+    "The '9 loci' count is verified in the repo (loci.py / data/dist/index.json) but has no literature ref; keyed as repo:F15.",
+    "Block c1.b4 was added (model and caveats split from c1.b3) to keep every PhD text within 170 words; ids c1.b1-c1.b3 are unchanged. Sun 2026 is a bioRxiv preprint (not peer reviewed) and is cited only for weak agreement with eQTL effect sizes and prioritisation use."
+   ]
+  },
+  {
+   "n": 2,
+   "title": "The little that is translated, and all the rest",
+   "kicker": "Most of your DNA holds no recipes for proteins, and it still seems to matter.",
+   "cta": "Explore these regions in the Genome Viewer",
+   "blocks": [
+    {
+     "id": "c2.b1",
+     "kid": "Think of your DNA as a giant cookbook. Only a few pages hold recipes. The recipes are for proteins, which are tiny parts of your body. A tiny machine called the ribosome reads a copy of each recipe and makes the part. Out of every 100 letters in the book, only about {coding_pct} are part of a recipe. Count it in other ways and you get between {coding_lo} and {coding_hi} out of 100. We counted this ourselves, letter by letter, using an official list of recipes.",
+     "phd": "Protein-coding sequence is a small fraction of the genome. From GENCODE 50 (the project is described in Frankish 2023; the figure itself is ours and release-dependent) we merged the CDS of all isoforms into non-overlapping intervals (a base covered by ten transcripts counts once) and divided by the length of the GRCh38 primary assembly (chromosomes 1–22, X, Y and mitochondrial): {coding_pct}% of bases. The range {coding_lo}–{coding_hi}% spans the isoform sets (MANE Select, basic, all) and the two denominators (GRCh38 primary, T2T-CHM13). Adding the UTRs of the coding transcripts' exons, which are transcribed but not translated, raises the figure to {exons_pct}%: that is not the coding fraction and is not part of the range. The figure is computed rather than cited because it depends on the annotation release and on what is counted. The 2001 draft (Lander 2001) was the first draft sequence of the human genome; the 2004 report (IHGSC 2004) concluded that the genome seems to encode only 20,000–25,000 protein-coding genes, an estimate of that date. The T2T-CHM13 assembly, gapless for all chromosomes except Y, is 3.055 billion base pairs (Nurk 2022).",
+     "refs": [
+      "frankish2023",
+      "lander2001",
+      "ihgsc2004",
+      "nurk2022"
+     ]
+    },
+    {
+     "id": "c2.b2",
+     "kid": "Some people called the rest of the book “junk DNA”, like an attic nobody climbs into. In 2012 a huge project called ENCODE said that 80 out of every 100 letters did something, like a fridge making a humming noise. Other scientists answered: making noise is not the same as cooling the food. By their count at the time, fewer than 10 out of every 100 letters stay almost the same across species, and that is a good clue they matter.",
+     "phd": "Part of the sequence outside protein-coding genes was often summarised as “junk DNA”. ENCODE (2012) assigned biochemical function to 80% of the genome, particularly outside protein-coding regions; that is a claim about biochemical function, not selected-effect function. Graur et al. (2013) countered that ENCODE adopted the causal-role definition of function and inflated its estimates of functionality, putting the fraction conserved under purifying selection at less than 10%. Doolittle (2013), by a different route (the C-value paradox), argued that ENCODE's definition picks out many sites that standard biological usage would not call functional.",
+     "refs": [
+      "encode2012",
+      "graur2013",
+      "doolittle2013"
+     ]
+    },
+    {
+     "id": "c2.b3",
+     "kid": "Here is another clue: compare letters across 240 mammals, animals that feed their babies milk. If a letter hardly changes in almost any of them, it probably has a job. That is how scientists found that at least 10.7 out of every 100 human letters have barely changed. Of the ones that look well kept one by one, 8 out of 10 are not in recipes. Some may be like light switches that turn a recipe on or off. The Genome Viewer lets you explore this kind of letter.",
+     "phd": "Zoonomia (Christmas 2023), aligning 240 mammal genomes, finds at least 332 Mb (~10.7%) of the human genome under evolutionary constraint, and 101 million significantly constrained single bases, 80% of them outside protein-coding exons. That is somewhat above the “less than 10%” bound Graur et al. (2013) gave for the fraction under purifying selection; the studies differ in year and method, so the figures are not directly comparable. This does not contradict the ~80% biochemical figure (ENCODE 2012): “function” has at least two readings. Selected-effect function: the element persists because of its fitness effect, with evolutionary constraint as the evidence. Causal role: it contributes to a system capacity, the definition Graur et al. (2013) say ENCODE used, typically evidenced by a reproducible biochemical assay signal. Whether active but nonconserved regions are functional remains open (Kellis 2014; Doolittle 2013).",
+     "refs": [
+      "christmas2023",
+      "graur2013",
+      "kellis2014",
+      "doolittle2013",
+      "encode2012"
+     ]
+    }
+   ],
+   "figures": [
+    {
+     "value": "{coding_pct} % (merged CDS / GRCh38 primary assembly length)",
+     "ref": "computed:coding_fraction",
+     "block": "c2.b1"
+    },
+    {
+     "value": "{coding_lo}–{coding_hi} % (range by method)",
+     "ref": "computed:coding_fraction",
+     "block": "c2.b1"
+    },
+    {
+     "value": "GENCODE 50 (project described in Frankish 2023; figure is computed)",
+     "ref": "frankish2023",
+     "block": "c2.b1"
+    },
+    {
+     "value": "2001 draft",
+     "ref": "lander2001",
+     "block": "c2.b1"
+    },
+    {
+     "value": "2004 report; 20,000-25,000 protein-coding genes",
+     "ref": "ihgsc2004",
+     "block": "c2.b1"
+    },
+    {
+     "value": "3.055 billion base pairs (T2T-CHM13), gapless except chromosome Y",
+     "ref": "nurk2022",
+     "block": "c2.b1"
+    },
+    {
+     "value": "100 (letters, per-hundred framing of the computed fraction)",
+     "ref": "computed:coding_fraction",
+     "block": "c2.b1"
+    },
+    {
+     "value": "2012; 80 % biochemical function (80 of every 100 letters)",
+     "ref": "encode2012",
+     "block": "c2.b2"
+    },
+    {
+     "value": "less than 10 % conserved under purifying selection (fewer than 10 of every 100)",
+     "ref": "graur2013",
+     "block": "c2.b2"
+    },
+    {
+     "value": "2013 (Graur et al.; Doolittle)",
+     "ref": "doolittle2013",
+     "block": "c2.b2"
+    },
+    {
+     "value": "240 mammal genomes",
+     "ref": "christmas2023",
+     "block": "c2.b3"
+    },
+    {
+     "value": "at least 332 Mb (~10.7 %); 10.7 of every 100 letters",
+     "ref": "christmas2023",
+     "block": "c2.b3"
+    },
+    {
+     "value": "101 million constrained single bases, 80 % outside coding exons (8 of 10)",
+     "ref": "christmas2023",
+     "block": "c2.b3"
+    },
+    {
+     "value": "~80 % biochemical (ENCODE) compared with constraint",
+     "ref": "encode2012",
+     "block": "c2.b3"
+    },
+    {
+     "value": "less than 10 % (Graur bound, compared with 10.7 %)",
+     "ref": "graur2013",
+     "block": "c2.b3"
+    },
+    {
+     "value": "2014 (Kellis et al.)",
+     "ref": "kellis2014",
+     "block": "c2.b3"
+    }
+   ],
+   "verificar": [
+    "c2.b2: the 'junk DNA' label as a common summary of non-coding sequence has no verified ref for its origin, author or date; no [VERIFICAR] marker remains in the text and the term is left undated and unattributed. Add Ohno 1972 only after it is verified.",
+    "c2.b3 (PhD): the two-way scheme 'selected-effect function / causal role' is not defined in the verified abstracts (only Graur 2013 supports 'causal role' as ENCODE's definition; Doolittle 2013 does not use the terms); confirm wording against the full text of Graur 2013 or a philosophy-of-biology source before publishing.",
+    "c2.b3 (PhD): the comparison of Graur 2013 ('less than 10%') with Christmas 2023 (at least 10.7%) is stated only as 'different year and method'; the basis of Graur's estimate was not checked against the full text.",
+    "c2.b3: the ENCODE-unannotated fraction of constrained bases was removed because it is not in the Christmas 2023 abstract; reinstate only after reading the full text with a page citation.",
+    "c2.b1: {coding_pct} and {coding_lo}–{coding_hi} must be filled from the GENCODE 50 computation, and the denominator assembly (GRCh38 vs T2T-CHM13) must be declared at build time and checked; the text says only 'reference assembly'. The placeholders must be formatted per locale (decimal comma in ES, point in EN) and carry no % sign in the 8-year versions.",
+    "c2.b1: the ribosome/mRNA-copy wording and the 80S ribosome / PDB 4UG0 caption belong to the structure panel; no verified ref supports a PDB id here, so none is stated in the text. Check figure captions contain neither 'simulación' nor 'simulation' nor AlphaGenome as product name.",
+    "c2.b3 (8 years): the 'light switches' image is a hedged metaphor ('podrían ser'/'may be'), not a verified claim about the mechanism of constrained non-coding bases; add a verified regulation ref (lettice2003 or maurano2012) if it is made firmer.",
+    "Chapter 1 must define 'letras' (A, C, G, T) and 'ADN = el libro'; if it does not, add at the start of c2.b1 'Las letras del libro son cuatro: A, C, G y T.' / 'The book is written with four letters: A, C, G and T.'",
+    "Title avoids the master prompt's hard-coded '2 % y 98 %' because the coding fraction is computed at build time."
+   ]
+  },
+  {
+   "n": 3,
+   "title": "How DNA is packed",
+   "kicker": "DNA is not loose: it is wound up, and the more open the winding, the more readily it can be read.",
+   "cta": "Open the track browser at a locus with a predicted accessibility signal",
+   "blocks": [
+    {
+     "id": "c3.b1",
+     "kid": "Picture a thread so long it will not fit in your backpack. To store it, you wind it around tiny spools, like the ones in a sewing kit. Your DNA is like that thread: it holds the recipes for your body, and it gets wound up too. The spools sit one after another, strung on a cord. Then the cord is folded and pressed tight. That is how it fits inside every cell, a piece of your body too small to see.",
+     "phd": "The basic packaging unit is the nucleosome: a histone octamer around which 146 base pairs (bp) of DNA are organized in a superhelix (Luger 1997, X-ray crystallography). The real structure shown in the Genome Viewer is a PDB entry; the exact DNA length is the one recorded in that entry. Consecutive nucleosomes, joined by linker DNA, form a chromatin fiber; how it folds into higher orders in vivo remains debated. As a rule, DNA wound on the octamer is less accessible to transcription factors than linker DNA (although pioneer factors can bind nucleosomal DNA); that difference is what the assays in the next block measure.",
+     "refs": [
+      "luger1997"
+     ]
+    },
+    {
+     "id": "c3.b2",
+     "kid": "But if the whole thread is wound up, how can it be read? It is much easier to read where the thread is loose, with no spool on top. Think of a library. Books on open shelves can be read. Books in closed boxes cannot. Scientists have a tool that cuts the thread only where it is loose. Then they count where the cuts landed. Where many cuts pile up, there are open shelves: places in the DNA that might be in use.",
+     "phd": "Chromatin accessibility is inferred from which DNA is exposed to an enzyme. DNase-seq maps DNase I hypersensitive sites, which mark candidate regulatory elements; in primary human CD4+ T cells, Boyle 2008 reported 94,925 sites, of which only 16–21% lie in promoters or first exons; the rest lie elsewhere, many of them candidates for distal regulation. ATAC-seq uses a transposase and, in its original formulation, worked with 500–50,000 cells; besides open sites, it reveals DNA-binding proteins and nucleosome positions (Buenrostro 2013). Non-coding variants identified by GWAS concentrate in DNase I hypersensitive regions (Maurano 2012). Caveat: in bulk assays the signal is an average over a population of cells, and accessibility does not by itself demonstrate function.",
+     "refs": [
+      "boyle2008",
+      "buenrostro2013",
+      "maurano2012"
+     ]
+    },
+    {
+     "id": "c3.b3",
+     "kid": "In the Genome Viewer, a map of DNA, there are some lines. Each line is a little mountain: the taller it is, the looser the thread is at that spot. We show two lines: one with the original DNA letter and one with a changed letter. If the mountain goes up or down, maybe that change opened or closed a shelf. Careful: nobody measured that mountain in a lab. It is drawn by an artificial-intelligence program from Google DeepMind that calculates what it would look like.",
+     "phd": "The Genome Viewer's track browser (V3) shows predicted accessibility (ATAC and DNase) for the reference and alternative alleles at a locus. The predictions come from the model described in Avsec 2026 (Google DeepMind), which takes 1 Mb of sequence as input and predicts thousands of functional tracks at up to single-base-pair resolution; accessibility (ATAC, DNase) is one of its outputs. These are model predictions, not measurements. For gene expression, independent evaluations of earlier models show limited performance in explaining variation across individuals and frequent errors in the direction of effect (Huang 2023; Sasse 2023), and a recent non-peer-reviewed preprint (Sun 2026) finds weak agreement between AlphaGenome/Borzoi and eQTL effect sizes; none of these studies assesses accessibility. In any case, an ALT−REF accessibility difference is a hypothesis to be tested, not an observed effect.",
+     "refs": [
+      "avsec2026",
+      "huang2023",
+      "sasse2023",
+      "sun2026"
+     ]
+    }
+   ],
+   "figures": [
+    {
+     "value": "ES: 146 pb · EN: 146 bp",
+     "ref": "luger1997",
+     "block": "c3.b1"
+    },
+    {
+     "value": "ES: 94 925 sitios · EN: 94,925 sites",
+     "ref": "boyle2008",
+     "block": "c3.b2"
+    },
+    {
+     "value": "ES: 16–21 % · EN: 16–21%",
+     "ref": "boyle2008",
+     "block": "c3.b2"
+    },
+    {
+     "value": "ES: 500–50 000 células · EN: 500–50,000 cells",
+     "ref": "buenrostro2013",
+     "block": "c3.b2"
+    },
+    {
+     "value": "1 Mb",
+     "ref": "avsec2026",
+     "block": "c3.b3"
+    }
+   ],
+   "verificar": []
+  },
+  {
+   "n": 4,
+   "title": "The switches",
+   "kicker": "Where a gene is switched on, and what switches it on from far away",
+   "cta": "Open the tissue × modality map (body parts and signals) in the viewer",
+   "blocks": [
+    {
+     "id": "c4.b1",
+     "kid": "Picture DNA as a giant recipe book. Before many recipes sits a \"start\" button, like on a blender. A small piece called TBP grabs that button. It bends the DNA, like a wire. The bend tells the machine that copies recipes: \"start here.\" Look at the picture. It is a real structure: in a lab, people found where each tiny bit sits. That button is a switch. But in one kind of cell, only about 1 in 5 control spots sat next to a start button.",
+     "phd": "The core promoter is the stretch of DNA around the transcription start site where the basal machinery positions RNA polymerase II. At TATA-containing promoters, TATA-binding protein (TBP) distorts the DNA on binding; PDB entry 1CDW, a human TBP–DNA complex, records that distortion in atomic coordinates (no bend angle is given here). PDB entry 5FLM, a mammalian elongation complex, shows the polymerase transcribing the template strand into RNA. In human CD4+ T cells, only 16–21% of 94,925 DNase I hypersensitive sites lay in promoters or first exons (Boyle 2008); the remainder includes candidate enhancers, silencers, insulators and locus control regions. That figure comes from a single cell type and should not be extrapolated genome-wide.",
+     "refs": [
+      "boyle2008"
+     ]
+    },
+    {
+     "id": "c4.b2",
+     "kid": "Sometimes a switch sits far, far away from the lamp it turns on. Think of a button in the hallway. It lights a lamp on another floor through a cable hidden in the wall. DNA works the same way. One switch that helps build fingers sits a million letters away from the recipe it turns on. When a single letter in that switch changes, some people are born with extra fingers. Scientists saw this in four families that are not related.",
+     "phd": "The ZRS lies within intron 5 of Lmbr1, 1 Mb from its target gene Shh; its point mutations cause preaxial polydactyly in four unrelated families (Lettice 2003). That distance is of the order of the model's 1 Mb input window (Avsec 2026). With the window centered on the element, each side reaches only half of it and Shh falls outside; only an off-center window, with the ZRS and Shh at its ends, would include both. Contacts are organized in topological domains (megabase-sized in Dixon 2012; median about 185 kb in Rao 2014). In the lymphoblastoid line GM12878, in situ Hi-C described about 10,000 loops that frequently link promoters and enhancers, and CTCF sites at loop anchors were convergent in more than 90% of cases (Rao 2014). At the EPHA4 locus, deletions, inversions and duplications that disrupt a CTCF-associated boundary rewire long-range enhancers and cause human limb malformations (Lupiáñez 2015). These references do not by themselves demonstrate the ZRS–Shh loop.",
+     "refs": [
+      "lettice2003",
+      "avsec2026",
+      "dixon2012",
+      "rao2014",
+      "lupianez2015"
+     ]
+    },
+    {
+     "id": "c4.b3",
+     "kid": "Another switch sits in a region called FTO. One changed letter makes two recipes glow twice as bright. This happens in lab-grown fat cells that are still maturing. They used to burn energy; now they store it and give off five times less heat. The viewer has a map. Each row is a part of the body. Each column is a kind of signal: a trace that DNA leaves when it works. The map shows what a computer program works out in advance, not what anyone measured.",
+     "phd": "At the FTO locus, the variant rs1421085 (T>C) disrupts a conserved ARID5B repressor motif and doubles IRX3 and IRX5 expression during early adipocyte differentiation; it shifts beige adipocytes toward white and reduces mitochondrial thermogenesis five-fold. IRX3/IRX5 knockdown restored thermogenesis (a 7-fold increase), and CRISPR-Cas9 repair of rs1421085 restored it in primary adipocytes from a risk-allele carrier (Claussnitzer 2015). This case and the ZRS are experimental results. The viewer's tissue × modality map poses the analogous question, but with predictions, which are hypotheses. For gene expression across individuals, earlier models often fail on the direction of the effect (Sasse 2023; Huang 2023). A non-peer-reviewed preprint finds that the viewer's model agrees only weakly with eQTL effect sizes, with direction concordance only marginally above chance, and that it is better suited to prioritizing fine-mapped variants (Sun 2026).",
+     "refs": [
+      "claussnitzer2015",
+      "sasse2023",
+      "huang2023",
+      "sun2026"
+     ]
+    }
+   ],
+   "figures": [
+    {
+     "value": "16–21 %",
+     "ref": "boyle2008",
+     "block": "c4.b1"
+    },
+    {
+     "value": "94 925 / 94,925",
+     "ref": "boyle2008",
+     "block": "c4.b1"
+    },
+    {
+     "value": "1 de cada 5 / 1 in 5 (about, from 16–21 %, single cell type)",
+     "ref": "boyle2008",
+     "block": "c4.b1"
+    },
+    {
+     "value": "PDB 1CDW",
+     "ref": "pdb-entry-identifier-from-chapter-brief (not a bibliographic ref; cited as database record)",
+     "block": "c4.b1"
+    },
+    {
+     "value": "PDB 5FLM",
+     "ref": "pdb-entry-identifier-from-chapter-brief (not a bibliographic ref; cited as database record)",
+     "block": "c4.b1"
+    },
+    {
+     "value": "1 Mb ZRS–Shh / un millón de letras / a million letters",
+     "ref": "lettice2003",
+     "block": "c4.b2"
+    },
+    {
+     "value": "intrón 5 / intron 5",
+     "ref": "lettice2003",
+     "block": "c4.b2"
+    },
+    {
+     "value": "cuatro familias / four families",
+     "ref": "lettice2003",
+     "block": "c4.b2"
+    },
+    {
+     "value": "una sola letra / a single letter (point mutation)",
+     "ref": "lettice2003",
+     "block": "c4.b2"
+    },
+    {
+     "value": "1 Mb (ventana del modelo / model window)",
+     "ref": "avsec2026",
+     "block": "c4.b2"
+    },
+    {
+     "value": "la mitad de la ventana / half of it",
+     "ref": "computed:half_window",
+     "block": "c4.b2"
+    },
+    {
+     "value": "mediana de unos 185 kb / median about 185 kb",
+     "ref": "rao2014",
+     "block": "c4.b2"
+    },
+    {
+     "value": "unos 10 000 / about 10,000 loops",
+     "ref": "rao2014",
+     "block": "c4.b2"
+    },
+    {
+     "value": "más del 90 % / more than 90%",
+     "ref": "rao2014",
+     "block": "c4.b2"
+    },
+    {
+     "value": "rs1421085, T>C",
+     "ref": "claussnitzer2015",
+     "block": "c4.b3"
+    },
+    {
+     "value": "duplica / el doble / doubles / twice as bright",
+     "ref": "claussnitzer2015",
+     "block": "c4.b3"
+    },
+    {
+     "value": "dos recetas / two recipes (IRX3, IRX5)",
+     "ref": "claussnitzer2015",
+     "block": "c4.b3"
+    },
+    {
+     "value": "una sola letra / one changed letter",
+     "ref": "claussnitzer2015",
+     "block": "c4.b3"
+    },
+    {
+     "value": "factor de 5 / cinco veces menos / five-fold / five times less",
+     "ref": "claussnitzer2015",
+     "block": "c4.b3"
+    },
+    {
+     "value": "7 veces / 7-fold",
+     "ref": "claussnitzer2015",
+     "block": "c4.b3"
+    },
+    {
+     "value": "concordancia de dirección apenas superior al azar / direction concordance marginally above chance",
+     "ref": "sun2026",
+     "block": "c4.b3"
+    }
+   ],
+   "verificar": [
+    "TBP-induced DNA distortion at TATA promoters (PDB 1CDW, human TBP-DNA complex) and polymerase transcribing the template strand (PDB 5FLM, mammalian elongation complex) are cited only as PDB database records; the structure papers (authors, year) are not in the verified refs, so no author-year and no bend angle appear in the text. No bracketed marker remains in the public text [c4.b1, PhD; the 8y versions describe the picture only as a real structure].",
+    "Not claimed and not in the verified refs: the ZRS-Shh looping itself (the text states the references do not demonstrate it), the FTO-IRX3/IRX5 genomic distance, whether rs1421085 lies in an FTO intron, and the TATA-box position.",
+    "The 'half of the window' remark (computed:half_window) assumes the 1 Mb window is centered on the element. The build must register the computed id (1,048,576 bp / 2 = 524,288 bp); the text shows no number for it.",
+    "Heatmap layout in the 8y text (rows = parts of the body, columns = kinds of signal) comes from repo facts F13/F14 (rows grouped by organ system, 11 modalities), which carry no bibliographic ref. Check the wording against the V2 view before shipping.",
+    "Author line of the Avsec 2026 ref: PubMed lists Google DeepMind. Keep 'Avsec 2026' in running text only after confirming the author line; in the bibliography use the title 'Advancing regulatory variant effect prediction' and never name the product in body text.",
+    "The 8y figure '1 in 5 control spots' is a rounding of Boyle 2008's 16-21% (single cell type, DNase I hypersensitive sites as 'control spots'); confirm the rounding is acceptable for the child register.",
+    "Spelling and formatting: American English (centered, organized, prioritizing) chosen for the whole chapter; confirm it matches the rest of the site. Spanish thousands use a no-break space (94 925, 10 000, 90 %); the build should format with Intl.NumberFormat."
+   ]
+  },
+  {
+   "n": 5,
+   "title": "One letter changes",
+   "kicker": "A tiny edit in the text, one big question: does it matter?",
+   "cta": "Open the change card and the saturation map",
+   "blocks": [
+    {
+     "id": "c5.b1",
+     "kid": "DNA is the instruction book of your body, like a recipe book with about three billion letters. Some parts are the recipes. In the rest there are, among other things, notes that work like light switches: they say when to read a recipe. Sometimes a letter changes, like \"cat\" to \"cut\", or letters go missing. In 2009, almost 9 in 10 signals linked to illnesses and other body features were outside the recipes. Next to the text is a real 3D picture of a tiny machine that reads the book.",
+     "phd": "A single-nucleotide variant (SNV) substitutes one base; an indel inserts or deletes bases. In the 2009 genome-wide association study (GWAS) catalog, 88% of trait-associated SNPs (single-nucleotide polymorphisms) were intronic (45%) or intergenic (43%) (Hindorff 2009); in that study they were not overrepresented in introns and were depleted in intergenic regions, so the figure largely reflects that most of the genome is non-coding: protein-coding sequence (CDS) is about {coding_pct}% (range {coding_lo}–{coding_hi}%; our own computation from GENCODE 50 with isoforms merged; the annotation is described in Frankish 2023). Non-coding GWAS signals concentrate in DNase I hypersensitive sites, markers of putative regulatory DNA (Maurano 2012). Association is not causation: the lead SNP is often a tag in linkage disequilibrium with the causal variant, and the signal does not say which cis-regulatory element or gene is involved. Real structure shown: atomic coordinates of PDB 5FLM (experimental structure).",
+     "refs": [
+      "hindorff2009",
+      "maurano2012",
+      "frankish2023",
+      "nurk2022"
+     ]
+    },
+    {
+     "id": "c5.b2",
+     "kid": "The viewer gives every change a score called AVI. First, a program from Google DeepMind, AlphaGenome, reads the DNA. It guesses what the change does. Then a second program combines 18 signals, some from the first and some from other data, and gives the score. Imagine a race with every possible change. At 10, the change finishes in the first 10 of every 100. At 20, it finishes first out of 100. At 30, it finishes first out of 1,000. It is an informed guess, not a measurement.",
+     "phd": "AVI is the summary score of the viewer's Atlas, developed independently and not endorsed by Google DeepMind. It is not a model output but a neural network trained on AlphaGenome's predictions (Avsec 2026; 1 Mb input) that takes 18 features: 10 regulatory (maxima across tissues of splicing, ATAC, DNase, TF ChIP, histone ChIP, CAGE, PRO-cap, RNA-seq, polyadenylation and contact maps), 4 protein, 2 conservation and 2 indel. That selection is a design decision of the viewer. The training label is a proxy: gnomAD FAF95_GRPMAX, the 95%-confidence filtering allele frequency in the ancestry group where it is highest (among afr, amr, eas, mid, nfe, sas), so common variants stand in for tolerated ones. AVI therefore reflects resemblance to variation that selection does not remove, not a measured functional effect; allele frequency and ancestry are not inputs. SHAP contributions are shown grouped into 4 families. The viewer's own PHRED-style scale, −10·log10(1 − quantile), is logarithmic, with quantiles estimated genome-wide: 10 is the top 10%, 20 the top 1% and 30 the top 0.1%. It ranks for prioritization; it is not an effect size.",
+     "refs": [
+      "avsec2026"
+     ]
+    },
+    {
+     "id": "c5.b3",
+     "kid": "The saturation map tests every possible change in one stretch of the book. The book has only four letters, so each letter can change in three ways. The map tries all three, for 512 letters in a row. Then it paints what the program guesses: where a change matters most, and where it hardly shows. Careful: it guesses for a typical cell, not for you. It helps rank the suspects we already have; the lab checks them. A guess is not a measurement.",
+     "phd": "View N1 is a saturation map: 512 positions × 3 alternative bases = 1,536 SNVs, precomputed for two loci (APOA1 and CELSR2). What is painted is the AVI, which takes the maximum across tissues and measures impact, not direction. Card V1 shows APOA1 chr11:116837649 T>G (GRCh38; no rsID in dbSNP 155) at PHRED 25.96: roughly the top 0.25% (about 1 in 400, from the scale's formula). Interpret it with caution: the model predicts, for each reference cell type or tissue, the effect in a typical cell, not in an individual. Earlier models explain expression variation across individuals poorly and often miss the direction of effect (Sasse 2023; Huang 2023). A non-peer-reviewed preprint (Sun 2026, bioRxiv) evaluated Borzoi and AlphaGenome: weak agreement with nominal eQTL effect sizes (Spearman ≤ 0.138), direction only marginally above chance, and better discrimination for fine-mapped variants at PIP ≥ 0.9 (AUROC ≈ 0.82–0.84); it suggests prioritizing already fine-mapped variants rather than using the scores as standalone predictors. AVI was not tested there. A prediction is a hypothesis, not a measurement.",
+     "refs": [
+      "sasse2023",
+      "huang2023",
+      "sun2026"
+     ]
+    }
+   ],
+   "figures": [
+    {
+     "block": "c5.b1",
+     "value": "unos tres mil millones de letras / about three billion letters (8-year versions; haploid reference 3,055 Gb)",
+     "ref": "nurk2022"
+    },
+    {
+     "block": "c5.b1",
+     "value": "88 % intrónicos o intergénicos (45 % + 43 %), catálogo de 2009; sin sobrerrepresentación en intrones y reducidos en intergénicas",
+     "ref": "hindorff2009"
+    },
+    {
+     "block": "c5.b1",
+     "value": "casi 9 de cada 10 señales fuera de las recetas, en 2009 (8-year versions, from 88 %)",
+     "ref": "hindorff2009"
+    },
+    {
+     "block": "c5.b1",
+     "value": "{coding_pct} %, rango {coding_lo}–{coding_hi} % (CDS fusionado / genoma)",
+     "ref": "computed:gencode50_coding"
+    },
+    {
+     "block": "c5.b1",
+     "value": "PDB 5FLM (estructura experimental)",
+     "ref": "computed:brief_pdb_5flm"
+    },
+    {
+     "block": "c5.b2",
+     "value": "entrada de 1 Mb / 1 Mb sequence input",
+     "ref": "avsec2026"
+    },
+    {
+     "block": "c5.b2",
+     "value": "18 características (10 reguladoras, 4 proteína, 2 conservación, 2 indel) / 18 features",
+     "ref": "computed:viewer_avi_features_F10"
+    },
+    {
+     "block": "c5.b2",
+     "value": "4 familias SHAP / 4 SHAP families",
+     "ref": "computed:viewer_avi_features_F10"
+    },
+    {
+     "block": "c5.b2",
+     "value": "seis grupos de ascendencia (afr, amr, eas, mid, nfe, sas); IC 95 % de FAF95",
+     "ref": "computed:viewer_avi_features_F10"
+    },
+    {
+     "block": "c5.b2",
+     "value": "PHRED 10 = 10 %, 20 = 1 %, 30 = 0,1 %",
+     "ref": "computed:phred_scale"
+    },
+    {
+     "block": "c5.b2",
+     "value": "nota 10 = entre los 10 primeros de cada 100; 20 = primero entre 100; 30 = primero entre 1000 (8-year versions)",
+     "ref": "computed:phred_scale"
+    },
+    {
+     "block": "c5.b3",
+     "value": "512 posiciones × 3 bases = 1536 SNV",
+     "ref": "computed:saturation_n"
+    },
+    {
+     "block": "c5.b3",
+     "value": "cuatro letras, cada letra puede cambiar de tres formas (8-year versions; 3 bases alternativas por posición)",
+     "ref": "computed:saturation_n"
+    },
+    {
+     "block": "c5.b3",
+     "value": "dos loci (APOA1, CELSR2)",
+     "ref": "computed:viewer_saturation_loci_F15"
+    },
+    {
+     "block": "c5.b3",
+     "value": "APOA1 PHRED 25,96 / 25.96, ≈0,25 % superior (10^-2,596 = 0,2535 %), ≈1 de cada 400",
+     "ref": "computed:apoa1_phred_top_pct"
+    },
+    {
+     "block": "c5.b3",
+     "value": "Spearman ≤ 0,138; PIP ≥ 0,9; AUROC ≈ 0,82–0,84 (AlphaGenome 0,820; Borzoi 0,837)",
+     "ref": "sun2026"
+    }
+   ],
+   "verificar": [
+    "PDB 5FLM: organism, method and primary paper were not verified against rcsb.org and no verified ref covers them, so the text says only 'experimental structure' (PDB 5FLM); the pairing with this chapter comes from the owner's brief.",
+    "gnomAD FAF95_GRPMAX definition (95%-confidence filtering allele frequency, ancestry group with the highest value) has no verified ref and is marked [VERIFICAR] in the PhD texts; a formal gnomAD citation is also missing from the verified list.",
+    "SHAP has no formal citation (Lundberg 2017 is not in the verified refs), so the PhD texts name SHAP without citing it.",
+    "PHRED definition, the 10/20/30 thresholds, the 18-feature composition, the FAF95_GRPMAX label and the 512 x 3 saturation shape are viewer-internal facts from the repo (F10, F11, F15), not literature claims; Kircher 2014 deliberately not cited for PHRED. The 'genome-wide' quantile estimation comes from docs/02-data-contract.md (recalibration of 2026-06-18).",
+    "The map paints the AVI (saturation.panel.subtitle in web/src/i18n/es.json), resolved from the repo. APOA1 has no rsID in dbSNP 155 (docs/02-data-contract.md:99-101); its position relative to the TSS and consequence class are not recorded, so they are left out.",
+    "The Enformer name suggested in the review was left out because it is not in the verified refs; Sasse 2023 and Huang 2023 are cited only for 'earlier models'. The nonsynonymous-enrichment remark from Hindorff 2009 was also left out because the verified abstract summary does not state it."
+   ]
+  },
+  {
+   "n": 6,
+   "title": "Cut and paste",
+   "kicker": "How a cell edits its own instructions, and how a single changed letter could throw off the cut.",
+   "cta": "Open the DNM1 splice junctions in the Genome Viewer",
+   "blocks": [
+    {
+     "id": "c6.b1",
+     "kid": "Picture a very long strip of film. Between the good scenes there are bits that never get shown, like ads. Someone cuts out those bits and glues the scenes together, one after another. Your body does this too. Its instructions are a strip written in letters. Each cell cuts away the parts that are not used and glues the parts that are. This cut-and-glue job is called splicing. If a cut goes wrong, the movie ends up with scenes missing, or with extra ones.",
+     "phd": "Splicing removes introns from the pre-mRNA and joins the exons; each intron is bounded by a 5′ donor site and a 3′ acceptor site. Unlike most ribonucleoprotein (RNP) enzymes, the spliceosome shows exceptional compositional and structural dynamics through assembly, catalytic activation and active-site remodeling. These dynamics provide accuracy in splice-site recognition and flexibility for alternative splicing, in which one pre-mRNA can give rise to more than one isoform depending on which sites are used (Wahl and Will 2009).",
+     "refs": [
+      "wahl2009"
+     ]
+    },
+    {
+     "id": "c6.b2",
+     "kid": "The scissors in this movie are not scissors. It is a tiny machine. Its pieces snap together just when they are needed. It is called the spliceosome (say SPLY-see-oh-sohm). It looks for the marks that say \"ad starts here\" and \"ad ends here\". First it cuts and, at the end, it glues. The picture beside this text is a real structure. Scientists froze the machine and used a special microscope to see its parts. It is a snapshot, just before the last gluing.",
+     "phd": "The structure shown beside this chapter (PDB 5XJC; Zhang et al. 2017) is an atomic model of the human spliceosome in the C* state, just before exon ligation, built into a cryo-EM map at an average resolution of 3.76 Å and deposited in the Protein Data Bank. It is a snapshot of a transient state of a complex whose composition changes at every stage (Wahl and Will 2009); it does not represent the ensemble of conformations present in the cell, nor does it explain by itself which sites are chosen. Site choice depends largely on the sequence context around each site, in addition to cellular factors and transcription dynamics. Among its outputs, the model predicts splice-site usage and splice junctions (Avsec et al. 2026; these outputs are described in the paper's main text, not its abstract).",
+     "refs": [
+      "wahl2009",
+      "avsec2026",
+      "zhang2017"
+     ]
+    },
+    {
+     "id": "c6.b3",
+     "kid": "The machine follows marks on the strip. Sometimes changing one letter is enough to draw a fake mark. The letter may be near the real mark, or far. Now the machine might cut in the wrong place. The Genome Viewer shows an example: the strip called DNM1. There, the changed letter is just seven letters from the mark. It moves one cut by six letters. It changes four joins between scenes. A Google DeepMind artificial-intelligence program calculated this (Avsec et al. 2026). Nobody measured it in a lab.",
+     "phd": "As of 2017, deep intronic variants, more than 100 bp from exon-intron junctions, had been described in over 75 disease-associated genes; their most common effect is pseudo-exon inclusion, through activation of non-canonical (cryptic) splice sites or changes in splicing regulatory elements (Vaz-Drago et al. 2017). In the Genome Viewer, the sashimi plot shows the prediction of Google DeepMind's model (Avsec et al. 2026) for chr9:128226027 G>A (GRCh38) in DNM1, in glutamatergic neurons (CL:0000679): it predicts a 6 bp shift of the acceptor site for both upstream donors and changes in four junctions, two gaining usage and two losing it. The variant lies 7 bp from the annotated acceptor: it is not deep intronic, and it illustrates how to read the model output, not the thesis of Vaz-Drago et al. (Own calculation on the Viewer's frozen output; not a published or experimentally validated result.) It is a prediction, not a measurement.",
+     "refs": [
+      "vazdrago2017",
+      "avsec2026"
+     ]
+    }
+   ],
+   "figures": [
+    {
+     "value": "PDB 5XJC, estado C* / C* state (modelo atómico, crio-EM)",
+     "ref": "zhang2017",
+     "block": "c6.b2"
+    },
+    {
+     "value": "3,76 Å / 3.76 Å (resolución media del mapa crio-EM / average cryo-EM map resolution)",
+     "ref": "zhang2017",
+     "block": "c6.b2"
+    },
+    {
+     "value": "2017 (recuento de Vaz-Drago et al. / count date)",
+     "ref": "vazdrago2017",
+     "block": "c6.b3"
+    },
+    {
+     "value": "más de 100 pb / over 100 bp",
+     "ref": "vazdrago2017",
+     "block": "c6.b3"
+    },
+    {
+     "value": "más de 75 genes / over 75 genes",
+     "ref": "vazdrago2017",
+     "block": "c6.b3"
+    },
+    {
+     "value": "6 pb / 6 bp (also 'seis letras / six letters', es8 and en8)",
+     "ref": "computed:v4-dnm1-acceptor-shift",
+     "block": "c6.b3"
+    },
+    {
+     "value": "cuatro uniones / four junctions (two gain, two lose; also 'cuatro / four' in es8 and en8)",
+     "ref": "computed:v4-dnm1-junctions",
+     "block": "c6.b3"
+    },
+    {
+     "value": "7 pb / 7 bp (128226034 minus 128226027; also 'siete letras / seven letters' in es8 and en8)",
+     "ref": "computed:v4-dnm1-variant-to-acceptor",
+     "block": "c6.b3"
+    },
+    {
+     "value": "dos donadores aguas arriba / both upstream donors",
+     "ref": "computed:v4-dnm1-donors",
+     "block": "c6.b3"
+    },
+    {
+     "value": "chr9:128226027 G>A (GRCh38), CL:0000679",
+     "ref": "computed:v4-dnm1-locus",
+     "block": "c6.b3"
+    }
+   ],
+   "verificar": [
+    "Sources and build: add zhang2017 (Zhang X, Yan C, Hang J, Finci LI, Lei J, Shi Y. An atomic structure of the human spliceosome. Cell 169(5):918-929, 2017; PMID 28502770; DOI 10.1016/j.cell.2017.04.033) to the verified refs list. I checked it on PubMed: the abstract reports the C complex structure 'just before exon ligation' by cryo-EM at an average resolution of 3.76 Å. The reviewer cited 3.6 Å (RCSB entry); the text uses the abstract's 3.76 Å. Confirm the PDB 5XJC / EMD entry value on RCSB or drop the number.",
+    "c6.b1 (removed, not left as marker): the recognition signals (branch point) and the enhancing/silencing role of exonic and intronic cis elements were dropped because they have no verified ref (Wahl and Will 2009 does not state them). No [VERIFICAR] marker remains in the public text. The donor 5′ / acceptor 3′ definition of an intron boundary is textbook, not from the Wahl and Will abstract; add a review ref if a source is wanted.",
+    "c6.b2: 'depende en buena parte del contexto de secuencia' / 'depends largely on sequence context' is uncited and hedged. The splice-site-usage and splice-junction outputs of the model are not in the Avsec et al. 2026 abstract; the text says so. Confirm against the paper's main text before shipping.",
+    "c6.b3: the DNM1 values (6 bp acceptor shift, four junctions, two gained and two lost, both upstream donors, variant 7 bp from the annotated acceptor 128226034) come from the viewer's frozen data (NOTES.md:262-300), tagged computed:v4-dnm1-*; they have no published ref. The ids must be backed by a build-time computation from the frozen sashimi JSON. Add a build check that each digit-word in es8/en8 (seis/six, cuatro/four, siete/seven) matches one registered figure.",
+    "c6.b3: confirm in the frozen data that the assembly is GRCh38 for chr9:128226027 before shipping '(GRCh38)' (loci.py states GRCh38 for the 9 loci). The 'since 2017 / over 75 genes' count is dated explicitly; no clinical claim is made about this variant."
+   ]
+  },
+  {
+   "n": 7,
+   "title": "The genome in 3D and the limits of the model",
+   "kicker": "When the model predicts no change in the structure, that is a result too.",
+   "cta": "See the predicted contact map at CELSR2/PSRC1/SORT1",
+   "blocks": [
+    {
+     "id": "c7.b1",
+     "kid": "Picture DNA, the body's instruction book, as a very long string squeezed into a tiny box. Inside, the string folds into drawers, like the ones in a chest of drawers. Bits in the same drawer touch each other more than bits in different drawers. A tiny helper called CTCF is often found right where a drawer ends. Scientists think it helps close the drawer. A contact map uses colors to show which bits of the string touch. The strongest touches look like mountains.",
+     "phd": "Hi-C maps show that the genome folds into domains: regions where interactions are more frequent within than between domains. Dixon et al. 2012 described megabase-scale \"topological domains\" (TADs), stable across cell types and conserved across species, with boundaries enriched for CTCF. Rao et al. 2014, using in situ Hi-C at 1 kb resolution (4.9 billion contacts in GM12878), defined contact domains with a median length of 185 kb (not one-to-one equivalent to the TADs of Dixon et al.) and about 10,000 loops linking promoters and enhancers; at loop anchors, CTCF sites occur in a convergent orientation in more than 90% of cases. Dixon et al. suggested that CTCF \"may have a role\" at the boundaries; that CTCF establishes them is a hypothesis consistent with these data, and enrichment alone does not demonstrate it.",
+     "refs": [
+      "dixon2012",
+      "rao2014"
+     ]
+    },
+    {
+     "id": "c7.b2",
+     "kid": "A big change in the DNA can break the edge of a drawer and mix up two drawers. Then the hands and feet of some children form differently. Here we look at a change of just one letter, near CELSR2, PSRC1 and SORT1. The map the model predicts hardly moves: the biggest change is 1.46% of the gap between the highest and lowest points of the map from before. Maybe the problem is not in the folding, though the model can be wrong.",
+     "phd": "Lupiáñez et al. 2015 showed that deletions, inversions and duplications at the WNT6/IHH/EPHA4/PAX3 locus rewire long-range enhancer–promoter interactions and cause limb malformations, but only when the variant disrupts a CTCF-associated boundary. In the Genome Viewer, the underlying model's predictions (Avsec et al. 2026, Google DeepMind) for rs12740374 (GRCh38 chr1:109274968 G>T, CELSR2–PSRC1–SORT1 locus) in HepG2 show no appreciable remodeling: the maximum |ALT−REF| change across the 1 Mb window is 1.46% of the reference map's dynamic range (max−min), on a log scale (in-house calculation). All 28 available contact tracks come from cell lines, none from primary tissue, and a predicted absence of change does not prove an absence of real change. This is consistent with a mechanism that does not act through 3D architecture, but this chapter does not demonstrate it.",
+     "refs": [
+      "lupianez2015",
+      "avsec2026"
+     ]
+    },
+    {
+     "id": "c7.b3",
+     "kid": "A variant is a difference in DNA; many are one-letter changes. The model is like a weather forecast: it tells you where to look first, not what will happen at your house.\n\nIt can help choose variants to check first. It is weak at saying how much something changes in one person, and often wrong about whether it goes up or down. We know little about how it works for people all over the world. Treat each prediction as a good question, not as an answer.",
+     "phd": "Huang et al. 2023 (four deep-learning models) found limited performance in explaining expression variation across individuals, with frequent failures in the direction of effect. Sasse et al. 2023 (839 individuals, ROSMAP) point out that the methods then available did not predict the direction of variant effects well. Both studies predate AlphaGenome and did not evaluate it. Sun et al. 2026, a preprint without peer review, evaluated Borzoi and AlphaGenome (the model behind the predictions in the Genome Viewer) and found weak agreement with nominal eQTL effect sizes (Spearman ≤ 0.138) and direction concordance only marginally above chance. Discrimination is better for fine-mapped variants at PIP ≥ 0.9 (distance-matched AUROC, African American set: 0.837 [0.790–0.870] Borzoi; 0.820 [0.793–0.845] AlphaGenome), which the authors attribute to fine-mapping resolution, LD and annotation composition. They recommend using these scores as prioritization evidence for fine-mapped variants, not as standalone predictors of eQTL effect size.\n\nThis model predicts what a reference cell type does, on average. It is strong at ranking which variants deserve investigation and weak at telling you the size —and sometimes the direction— of the effect in a specific person. The training data are skewed toward European ancestry. Treat a prediction as a hypothesis, not as a measurement.",
+     "refs": [
+      "sasse2023",
+      "huang2023",
+      "sun2026"
+     ]
+    }
+   ],
+   "figures": [
+    {
+     "value": "megabase-scale domains",
+     "ref": "dixon2012",
+     "block": "c7.b1"
+    },
+    {
+     "value": "1 kb resolution",
+     "ref": "rao2014",
+     "block": "c7.b1"
+    },
+    {
+     "value": "4.9 billion contacts (GM12878)",
+     "ref": "rao2014",
+     "block": "c7.b1"
+    },
+    {
+     "value": "median domain 185 kb",
+     "ref": "rao2014",
+     "block": "c7.b1"
+    },
+    {
+     "value": "about 10,000 loops",
+     "ref": "rao2014",
+     "block": "c7.b1"
+    },
+    {
+     "value": ">90% convergent CTCF at loop anchors",
+     "ref": "rao2014",
+     "block": "c7.b1"
+    },
+    {
+     "value": "1.46% maximum |ALT-REF| change relative to dynamic range (max-min) of the reference map",
+     "ref": "computed:v5-delta-pct",
+     "block": "c7.b2"
+    },
+    {
+     "value": "1 Mb window",
+     "ref": "avsec2026",
+     "block": "c7.b2"
+    },
+    {
+     "value": "GRCh38 chr1:109274968 G>T (rs12740374), CELSR2-PSRC1-SORT1 locus",
+     "ref": "computed:v5-locus",
+     "block": "c7.b2"
+    },
+    {
+     "value": "28 contact tracks, all cell lines",
+     "ref": "computed:v5-contact-tracks",
+     "block": "c7.b2"
+    },
+    {
+     "value": "four deep-learning models",
+     "ref": "huang2023",
+     "block": "c7.b3"
+    },
+    {
+     "value": "839 individuals (ROSMAP)",
+     "ref": "sasse2023",
+     "block": "c7.b3"
+    },
+    {
+     "value": "Spearman <= 0.138",
+     "ref": "sun2026",
+     "block": "c7.b3"
+    },
+    {
+     "value": "PIP >= 0.9",
+     "ref": "sun2026",
+     "block": "c7.b3"
+    },
+    {
+     "value": "distance-matched AUROC, African American set: Borzoi 0.837 [0.790-0.870]",
+     "ref": "sun2026",
+     "block": "c7.b3"
+    },
+    {
+     "value": "distance-matched AUROC, African American set: AlphaGenome 0.820 [0.793-0.845]",
+     "ref": "sun2026",
+     "block": "c7.b3"
+    }
+   ],
+   "verificar": [
+    "c7.b2 (PhD, both languages): the mechanism proposed for rs12740374 (a transcription-factor binding site rather than 3D architecture) is deliberately not named. Naming it requires adding Musunuru et al. 2010 (PMID 20686566, recorded in the repo as checked against PubMed) to this chapter's verified refs first. No [VERIFICAR] marker remains in the public text.",
+    "c7.b2: 1.46 % (0.0391 max change / 2.684 REF dynamic range), the 28 contact tracks, the locus coordinates and the GRCh38 assembly are in-house calculations from the repo (NOTES.md:363-417), tagged computed:, with no literature ref. They are labeled 'cálculo propio' / 'in-house calculation' in the PhD text and must be reproduced by the build before being treated as verified. SORT1 in the locus name comes from the repo locus definition, not from a literature ref; no distance to SORT1 is stated.",
+    "c7.b3: the claim that training data are skewed toward European ancestry was removed from all registers because no verified ref supports it (Sun 2026 does not show worse performance in non-European ancestries and does not address training composition). The same clause is part of the permanent caveat dictated in the 09 prompt; the owner needs to source or reword it there.",
+    "Structure shown next to the chapter (CTCF zinc fingers 3-7, PDB 5KKQ): the PDB ID and finger numbering are not in the verified refs, so they are not stated in the text; the figure caption must source them from the PDB entry."
+   ]
+  }
+ ]
+}

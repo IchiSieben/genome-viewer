@@ -13,6 +13,7 @@
     <!-- Relative path from this shell to the app root: "./" here, "../" in /es/.
          Data and preloads are resolved against it (src/i18n/index.ts). -->
     <meta name="agp-root" content="./" />
+    <meta name="agp-app" content="" />
     <meta name="color-scheme" content="light dark" />
     <!-- The mark: four signal bars, the same shape as the one in the header.
          SVG for modern browsers, PNG for the rest and for home screens
@@ -67,6 +68,9 @@
         }
         var rootMeta = document.querySelector('meta[name="agp-root"]');
         var ROOT = (rootMeta && rootMeta.getAttribute('content')) || './';
+        // Path of the viewer under the root ('app/' since the stage took the root).
+        var appMeta = document.querySelector('meta[name="agp-app"]');
+        var APP = (appMeta && appMeta.getAttribute('content')) || '';
 
         // Remembered language. Only an explicit click on the toggle stores it,
         // and only a visit to the bare home page follows it: a deep link in the
@@ -77,7 +81,7 @@
           var bare = !String(location.hash || '').replace(/^#\/?/, '');
           if (bare && (chosen === 'es' || chosen === 'en') && chosen !== current &&
               document.querySelector('meta[name="agp-shell"]')) {
-            location.replace(chosen === 'es' ? ROOT + 'es/' : ROOT);
+            location.replace(chosen === 'es' ? ROOT + 'es/' + APP : ROOT + APP);
             return;
           }
         } catch (error) {
@@ -187,6 +191,7 @@
         <span class="topbar__unofficial" data-i18n="brand.unofficial">unofficial</span>
       </a>
       <nav class="topbar__nav" data-i18n-attr="aria-label:nav.label" aria-label="Main">
+        <a class="topbar__link" id="story-link" href="../" data-i18n="nav.story">Story</a>
         <a class="topbar__link" href="#/" data-i18n="nav.loci">Loci</a>
         <a class="topbar__link" href="#/why" data-i18n="nav.why">Why</a>
         <a class="topbar__link" href="#/about" data-i18n="nav.about">About the data</a>

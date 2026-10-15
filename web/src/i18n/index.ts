@@ -180,12 +180,6 @@ export function applyStatic(scope: ParentNode): void {
 
 const LANG_KEY = 'agp-lang';
 
-/** URL of the same view in the other language (the hash carries the view). */
-export function otherLangHref(): string {
-  const target = lang === 'es' ? `${root}` : `${root}es/`;
-  return target + window.location.hash;
-}
-
 /** Remembers an explicit choice. Only a click on the toggle writes it. */
 export function rememberLang(choice: Lang): void {
   try {

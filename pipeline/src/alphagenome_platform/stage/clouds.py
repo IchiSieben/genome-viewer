@@ -74,7 +74,7 @@ CATALOG: list[dict[str, Any]] = [
     {"id": "5KKQ", "role": "ctcf", "chapter": 7, "assembly": False},
     {"id": "5IRE", "role": "virus", "chapter": 0, "assembly": True},
 ]
-"""Catalogo elegido (docs/10-estructuras.md tiene la razon de cada uno y lo descartado)."""
+"""Catalogo elegido (docs/10-estructuras.md: citas, y los descartados con el motivo cuando se registro)."""
 
 DEFAULT_POINTS = 20_000
 DEFAULT_SEED = 20261015

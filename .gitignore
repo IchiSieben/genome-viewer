@@ -65,3 +65,8 @@ Thumbs.db
 
 # enjambre lane selector (written by a node agent, never committed)
 .enjambre-lane
+
+# Stage clouds are copied from data/stage by sync-data; posters are a committed render artifact
+/web/public/stage/*
+!/web/public/stage/posters/
+/web/qa/

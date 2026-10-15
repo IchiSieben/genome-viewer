@@ -14,8 +14,8 @@ El nombre evita la marca registrada de Google en un nombre de producto;
 ![License](https://img.shields.io/badge/license-MIT-1f5fd0)
 ![static](https://img.shields.io/badge/static-0%20API%20calls-6f7c8a)
 
-**En línea:** <https://ichisieben.dev/genome-viewer/> ·
-<https://ichisieben.dev/genome-viewer/es/> (español)
+**En línea:** <https://genome.ichisieben.dev/es/> (el relato) ·
+<https://genome.ichisieben.dev/es/app/> (el visor) · en inglés sin `es/`
 
 Es una beta. En esta primera subida lleva `noindex`: no aparece en
 buscadores todavía.
@@ -46,7 +46,7 @@ tests, y una capa de presentación que respeta una restricción de despliegue re
 | H3 | Vistas V1 y V2 | **Hecho** — ambos temas, responsive, consola limpia |
 | H4 | Datos reales de tres loci | **Hecho** — PPP1R1A/PDE1B, RASGEF1B, RPL13A |
 | H5 | V3, navegador de tracks | **Hecho** — canvas y SVG, zoom, doble resolución |
-| H6 | Despliegue | **Hecho** — [en línea](https://ichisieben.dev/genome-viewer/) |
+| H6 | Despliegue | **Hecho** — [en línea](https://genome.ichisieben.dev/) |
 | N1 | Mapa de saturación | **Hecho** — 512 posiciones × 3 alternativas |
 | N2 | Enlace cruzado entre vistas | **Hecho** |
 | N3 | Estado en la URL | **Hecho** — locus, variante, vista, pistas y zoom |
@@ -57,11 +57,32 @@ tests, y una capa de presentación que respeta una restricción de despliegue re
 | N4 | Comparador de dos variantes | **Hecho** |
 | N7 | — | Planeada |
 | H7 | Estudio poblacional | **Pendiente** — si el resultado es nulo, se publica igual |
+| E0–E7 | El escenario: relato en siete capítulos sobre estructuras reales del PDB | Ver abajo y [`docs/09-escenario.md`](docs/09-escenario.md) |
 
 Los datos son **reales**, del Atlas API y del Model API. El generador de
 fixtures sintéticas sigue existiendo para desarrollar sin gastar cuota, y lo que
 sale de él se sella `source: "synthetic"` y la web lo avisa con una franja
 ámbar. Nada sintético está publicado.
+
+## El escenario
+
+La raíz del sitio es ahora un relato en siete capítulos, del ADN al efecto de una variante,
+que se lee en dos registros (para 8 años o para un doctorado, con un interruptor que se
+recuerda). Detrás del texto, una nube de puntos en WebGL2 dibuja estructuras reales del
+Protein Data Bank (1BNA, 4UG0, 1KX5, 1CDW, 5FLM, 5XJC, 5KKQ y la cápside del Zika, 5IRE),
+leídas de sus mmCIF con gemmi; un punto vibra con la amplitud térmica de su factor B. Cada
+capítulo termina en la vista del visor que lo demuestra, ahora en `/app/`.
+
+- Las cifras se calculan o se citan, nunca se redondean de memoria: la fracción codificante
+  (1,25 %, rango 1,08–1,26 %) sale de GENCODE 50 con `tools/coding_fraction.py`; los 2,04 m de
+  ADN por célula, del paso de hélice medido en 1BNA con `tools/dna_rise.py`. 32 referencias
+  verificadas en PubMed.
+- Sin WebGL2, con movimiento reducido o si algo falla, se ve un póster del mismo render.
+- La profundidad es solo para moléculas reales: los gráficos de datos del visor siguen en 2D.
+
+Plan, presupuestos y medición: [`docs/09-escenario.md`](docs/09-escenario.md). Catálogo de
+estructuras y citas: [`docs/10-estructuras.md`](docs/10-estructuras.md). Decisiones de la
+sesión: [`docs/09-decisiones-autonomas.md`](docs/09-decisiones-autonomas.md).
 
 ## Las tres restricciones que definen la arquitectura
 

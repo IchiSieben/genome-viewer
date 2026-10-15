@@ -1,0 +1,44 @@
+{
+ "computedAt": "2026-10-15T19:29:21+00:00",
+ "source": "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_50/gencode.v50.annotation.gtf.gz",
+ "gencodeRelease": 50,
+ "gtfHeader": "description: evidence-based annotation of the human genome (GRCh38), version 50 (Ensembl 116); ",
+ "command": "python tools/coding_fraction.py",
+ "unionBases": {
+  "cds_all": 38483540,
+  "cds_basic": 37059183,
+  "cds_mane": 33381242,
+  "exons_pc": 109749135
+ },
+ "denominators": {
+  "grch38_primary": 3088286401,
+  "t2t_chm13": 3055000000
+ },
+ "percent": {
+  "cds_all": {
+   "grch38_primary": 1.246,
+   "t2t_chm13": 1.26
+  },
+  "cds_basic": {
+   "grch38_primary": 1.2,
+   "t2t_chm13": 1.213
+  },
+  "cds_mane": {
+   "grch38_primary": 1.081,
+   "t2t_chm13": 1.093
+  },
+  "exons_pc": {
+   "grch38_primary": 3.554,
+   "t2t_chm13": 3.592
+  }
+ },
+ "pointPct": 1.246,
+ "pointMethod": "union of all GENCODE 50 CDS / GRCh38 primary assembly length",
+ "rangePct": [
+  1.081,
+  1.26
+ ],
+ "rangeMethod": "min..max of the CDS union (MANE Select, basic, all) over each denominator (GRCh38 primary, T2T-CHM13)",
+ "exonsPct": 3.554,
+ "exonsMethod": "all exons of protein-coding transcripts, UTRs included, / GRCh38 primary: transcribed into mRNA, not all coding"
+}

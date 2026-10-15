@@ -18,6 +18,7 @@ import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 
 const BASE = process.env.AGP_BASE_URL || 'http://127.0.0.1:8099/genome-viewer/';
+const APP = (l) => BASE + (l === 'es' ? 'es/app/' : 'app/');
 const OUT = process.argv[2] || 'shots';
 mkdirSync(OUT, { recursive: true });
 
@@ -52,7 +53,7 @@ async function visit(name, hash, { width = 1280, height = 900, theme = 'light', 
   });
 
   // English lives at the root, Spanish one level down at es/ (build-shells.mjs).
-  await page.goto(BASE + (lang === 'es' ? 'es/' : '') + hash, { waitUntil: 'networkidle', timeout: 120000 });
+  await page.goto(APP(lang) + hash, { waitUntil: 'networkidle', timeout: 120000 });
   // El recorrido de introduccion tapa la pagina; se descarta para las capturas.
   await page.evaluate(() => {
     try { localStorage.setItem('agp-tour-seen', '1'); } catch {}
@@ -431,7 +432,7 @@ async function checkMotion(lang) {
   const errors = [];
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   await page.addInitScript(() => { try { localStorage.setItem('agp-tour-seen', '1'); } catch {} });
-  await page.goto(BASE + (lang === 'es' ? 'es/' : ''), { waitUntil: 'networkidle', timeout: 120000 });
+  await page.goto(APP(lang), { waitUntil: 'networkidle', timeout: 120000 });
   const results = [];
   const check = (ok, label) => { results.push(`${ok ? '  OK   ' : '  FALLA'} ${label}`); if (!ok) failures++; };
   check(await page.evaluate(() => document.documentElement.classList.contains('motion')), 'clase motion sin reduced-motion');
@@ -473,7 +474,7 @@ async function checkSearch(lang, query) {
   const errors = [];
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   await page.addInitScript(() => { try { localStorage.setItem('agp-tour-seen', '1'); } catch {} });
-  await page.goto(BASE + (lang === 'es' ? 'es/' : '') + '#/variant/ppp1r1a-pde1b/chr12-54578515-C-T?view=tracks', { waitUntil: 'networkidle', timeout: 120000 });
+  await page.goto(APP(lang) + '#/variant/ppp1r1a-pde1b/chr12-54578515-C-T?view=tracks', { waitUntil: 'networkidle', timeout: 120000 });
   await page.waitForSelector('.heatmap__row-label', { timeout: 60000 });
   const results = [];
   const check = (ok, label) => { results.push(`${ok ? '  OK   ' : '  FALLA'} ${label}`); if (!ok) failures++; };

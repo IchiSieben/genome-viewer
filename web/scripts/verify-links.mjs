@@ -9,6 +9,7 @@
 import { chromium } from 'playwright';
 
 const BASE = process.env.AGP_BASE_URL || 'http://127.0.0.1:8099/genome-viewer/';
+const APP = BASE + 'app/';
 const VARIANT = 'ppp1r1a-pde1b/chr12-54578515-C-T';
 
 const browser = await chromium.launch();
@@ -34,7 +35,7 @@ async function settle(ms = 900) {
 
 // --- N3: la URL lleva las modalidades y la ventana -------------------------
 console.log('\n=== N3: estado en la URL ===');
-await page.goto(`${BASE}#/variant/${VARIANT}?view=signal`, { waitUntil: 'networkidle' });
+await page.goto(`${APP}#/variant/${VARIANT}?view=signal`, { waitUntil: 'networkidle' });
 await settle();
 
 let hash = await page.evaluate(() => location.hash);
@@ -64,7 +65,7 @@ check(
 );
 
 // Una URL con estado tiene que reabrir exactamente esa pantalla.
-const shared = `${BASE}#/variant/${VARIANT}?view=signal&tracks=DNASE&win=54578000-54579000`;
+const shared = `${APP}#/variant/${VARIANT}?view=signal&tracks=DNASE&win=54578000-54579000`;
 await page.goto(shared, { waitUntil: 'networkidle' });
 await settle(1200);
 const status = await page.locator('.browser__status').innerText();
@@ -78,7 +79,7 @@ check('un enlace compartido restaura la ventana',
 console.log('\n=== N2: enlace cruzado ===');
 
 // V1 -> V3 pinchando un feature regulatorio.
-await page.goto(`${BASE}#/variant/${VARIANT}?view=card`, { waitUntil: 'networkidle' });
+await page.goto(`${APP}#/variant/${VARIANT}?view=card`, { waitUntil: 'networkidle' });
 await settle();
 const linked = await page.locator('.waterfall__row--linked').count();
 check('la cascada tiene filas enlazables', linked >= 6, `${linked} filas`);
@@ -98,7 +99,7 @@ check('el navegador se dibujo tras el salto',
   (await page.locator('.browser__canvas').count()) === 1);
 
 // V2 -> V3 pinchando una celda del mapa de calor.
-await page.goto(`${BASE}#/variant/${VARIANT}?view=tracks`, { waitUntil: 'networkidle' });
+await page.goto(`${APP}#/variant/${VARIANT}?view=tracks`, { waitUntil: 'networkidle' });
 await settle();
 await page.locator('.heatmap__cell').nth(20).evaluate((n) =>
   n.scrollIntoView({ block: 'center' }),
@@ -111,7 +112,7 @@ check('pinchar una celda abre el navegador con esa modalidad',
   hash.includes('view=signal') && hash.includes('tracks='), hash.slice(0, 90));
 
 // Mapa de saturacion -> ficha, para una variante que SI esta congelada.
-await page.goto(`${BASE}#/variant/${VARIANT}?view=saturation`, { waitUntil: 'networkidle' });
+await page.goto(`${APP}#/variant/${VARIANT}?view=saturation`, { waitUntil: 'networkidle' });
 await settle(1200);
 // Las coordenadas se CALCULAN desde la geometria de la vista, no se adivinan
 // desde el centro del contenedor: la rejilla empieza despues de la columna de
@@ -153,7 +154,7 @@ if (navigated) {
 
 // N4: la ficha enlaza al comparador; los selectores y el intercambio viven
 // en la URL, y un enlace compartido restaura la misma pareja.
-await page.goto(`${BASE}#/variant/${VARIANT}?view=card`, { waitUntil: 'networkidle' });
+await page.goto(`${APP}#/variant/${VARIANT}?view=card`, { waitUntil: 'networkidle' });
 await settle();
 await page.locator('.tabs__compare').click();
 await settle(1200);
@@ -181,6 +182,53 @@ await settle(600);
 check('un enlace compartido restaura la pareja',
   (await page.locator('select[data-side="a"]').inputValue()) === selB &&
   (await page.locator('select[data-side="b"]').inputValue()) === selA);
+
+// --- Shells: every link in the four entry pages resolves -------------------
+console.log('\n=== Enlaces de las cuatro portadas ===');
+const ORIGIN = new URL(BASE).origin;
+const SHELLS = [BASE, BASE + 'es/', BASE + 'app/', BASE + 'es/app/'];
+const seen = new Map();
+for (const shell of SHELLS) {
+  await page.goto(shell, { waitUntil: 'networkidle', timeout: 120000 });
+  const links = await page.evaluate(() =>
+    [...document.querySelectorAll('a[href]')].map((a) => ({ raw: a.getAttribute('href'), abs: a.href })),
+  );
+  const ids = await page.evaluate(() => document.querySelectorAll('[id]').length);
+  const internal = links.filter((l) => l.abs.startsWith(ORIGIN));
+  const external = links.filter((l) => /^https?:/.test(l.abs) && !l.abs.startsWith(ORIGIN));
+  let broken = 0;
+  const here = page.url().split('#')[0];
+  for (const l of internal) {
+    const [pathPart, hashPart] = l.abs.split('#');
+    if (pathPart === here) {
+      if (hashPart && !hashPart.startsWith('/')) {
+        const ok = await page.evaluate((id) => !!document.getElementById(id), hashPart);
+        if (!ok) { broken++; check(`${shell} ancla #${hashPart} existe`, false); }
+      }
+      continue;
+    }
+    if (!seen.has(pathPart)) seen.set(pathPart, (await page.request.get(pathPart)).status());
+    if (seen.get(pathPart) >= 400) { broken++; check(`${shell} -> ${l.raw}`, false, String(seen.get(pathPart))); }
+  }
+  check(`${shell.slice(ORIGIN.length)}: ${links.length} enlaces (${internal.length} internos, ${external.length} externos sin comprobar, ${ids} ids)`, broken === 0);
+}
+for (const lang of ['', 'es/']) {
+  await page.goto(BASE + lang, { waitUntil: 'networkidle', timeout: 120000 });
+  const ctas = await page.evaluate(() => [...new Set([...document.querySelectorAll('a[href*="app/#/"]')].map((a) => a.href))]);
+  check(`${lang || 'en/'} la portada enlaza al visor con rutas hash`, ctas.length >= 3, `${ctas.length}`);
+  const first = ctas.find((h) => h.includes('view=tracks')) ?? ctas[0];
+  if (first) {
+    await page.goto(first, { waitUntil: 'networkidle', timeout: 120000 });
+    await page.waitForSelector('.heatmap__cell, .waterfall__bar, .prose, .catalog__item', { timeout: 60000 }).catch(() => {});
+    check(`${lang || 'en/'} un CTA abre el visor`, (await page.locator('.heatmap__cell, .waterfall__bar, .prose, .catalog__item').count()) > 0, first.slice(-60));
+  }
+}
+for (const [from, expectHref] of [[BASE + 'app/', BASE + 'es/app/'], [BASE + 'es/app/', BASE + 'app/']]) {
+  await page.goto(from + `#/variant/${VARIANT}?view=tracks`, { waitUntil: 'networkidle', timeout: 120000 });
+  const href = (await page.locator('#lang-toggle').evaluate((a) => a.href)).split('#')[0];
+  check(`selector de idioma de ${from.slice(ORIGIN.length)} apunta a ${expectHref.slice(ORIGIN.length)}`, href === expectHref, href);
+}
+
 
 console.log(`\nerrores de consola: ${errors.length ? errors.join(' | ') : 'ninguno'}`);
 if (errors.length) failures++;

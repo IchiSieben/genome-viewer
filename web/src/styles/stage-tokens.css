@@ -1,0 +1,43 @@
+/*
+ * Stage tokens (cover + narrative). Two layers, one identity (docs/03-visual-system.md, "El
+ * escenario"): the stage uses these; the viewer under /app/ keeps its own measured palette.
+ * Shared with the viewer: type family, radii, spacing scale and the language toggle.
+ * Reference: a third-party style extraction (black void, one saturated violet action, amber
+ * emphasis, light body weight). Nothing of its copy, logo or imagery is used.
+ */
+@font-face {
+  font-family: 'Inter Stage';
+  src: url('../stage/fonts/inter-var-latin.woff2') format('woff2');
+  font-weight: 200 500;
+  font-style: normal;
+  font-display: optional;
+}
+
+:root {
+  --st-bg: #000000;
+  --st-ink: #ffffff;
+  --st-ink-2: #bdbdbd;
+  --st-ink-3: #9a9a9a;
+  --st-action: #8052ff;      /* the one action per screen */
+  --st-action-ink: #ffffff;
+  --st-accent: #ffb829;      /* emphasis, links */
+  --st-dna1: #8052ff;
+  --st-dna2: #15846e;
+  --st-protein: #ffb829;
+  --st-rna: #e8e4dc;
+  --st-font: 'Inter Stage', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --st-h1: clamp(2.6rem, 7.4vw, 7.05rem);   /* 78-113 px at desktop widths */
+  --st-h2: clamp(2rem, 4.6vw, 4.2rem);
+  --st-body: 1.125rem;                        /* 18 px */
+  --st-w-body: 200;
+  --st-w-head: 400;
+  --st-track-head: -0.035em;
+  --st-gutter: clamp(1rem, 4vw, 3rem);
+  --st-measure: 38rem;
+  --st-space-1: 0.5rem;
+  --st-space-2: 1rem;
+  --st-space-3: 2rem;
+  --st-space-4: 4rem;
+  --st-space-5: 8rem;
+  --st-radius: 999px;
+}

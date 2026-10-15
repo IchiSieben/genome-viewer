@@ -1,6 +1,6 @@
 ---
 kind: tests
-push: false
+push: true
 ---
 # TASK — stage-clouds (recompute the stage point clouds from scratch and compare)
 
