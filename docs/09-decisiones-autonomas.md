@@ -210,6 +210,15 @@ confundirlas. Las marcadas **[REVISAR]** son las primeras que conviene mirar.
 - **Resultados (1280×800, dpr 1):** GTX 1050 Ti por D3D11: mediana 0,3–0,5 ms, p95 ≤ 2,2 ms
   (`docs/evidence/stage-perf-windows.json`); SwiftShader, render por CPU, el peor caso:
   mediana 2,9–4,9 ms, p95 ≤ 9,2 ms (`stage-perf-swiftshader.json`). Presupuesto: 16,7 ms.
+  Apple M2 Pro por Metal (carril `perf2` de la Mac, `mac/stage-perf2`, commit `00b6371`):
+  mediana 0,7–0,8 ms, p95 ≤ 1,1 ms; con la CPU estrangulada 4×, mediana 2,4 ms, p95 ≤ 3,9 ms
+  (`stage-perf-mac.json`). Las tres máquinas quedan a ≥ 3× del presupuesto.
+- **Carril `media`:** `media2` falló (salida 23) por las comillas de `force_style` dentro del
+  filtro `subtitles` de ffmpeg, y el ES solo tenía 2 subtítulos: el scroll suave del sitio
+  reiniciaba la animación en cada paso. Corregido: comas escapadas (y pista de subtítulos
+  blanda si ffmpeg no trae libass), `scrollTo` con `behavior: 'instant'`; en Windows, 8 de 8
+  capítulos. Probado y descartado: los flags sin limitador de `measure-stage` cuelgan la
+  grabación de vídeo de Playwright.
 - **Límites de la medida:** las nubes tienen 20 000 puntos, así que `?points=40000` dibuja
   20 000; el estrangulamiento de CPU de CDP no frena el proceso de GPU. El número en un
   teléfono real sigue sin medir: lo cubre la adaptación de puntos (E-06).

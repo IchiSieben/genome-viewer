@@ -22,6 +22,8 @@ const gpu = args.includes('--gpu');
 mkdirSync(outDir, { recursive: true });
 
 const browser = await chromium.launch({
+  // No unthrottling flags here (unlike measure-stage.mjs): with --disable-frame-rate-limit the
+  // video recorder never finished (tested on Windows, 2026-10-15).
   args: gpu ? ['--use-angle=metal', '--enable-gpu', '--ignore-gpu-blocklist'] : ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
 });
 const ctx = await browser.newContext({
@@ -46,7 +48,8 @@ const cues = await page.evaluate(async (ms) => {
   await new Promise((done) => {
     function step(t) {
       const p = Math.min(1, (t - start) / ms);
-      scrollTo(0, total * (0.5 - 0.5 * Math.cos(Math.PI * p)));
+      // `instant`: the page has scroll-behavior: smooth, which would restart an animation each step.
+      scrollTo({ top: total * (0.5 - 0.5 * Math.cos(Math.PI * p)), behavior: 'instant' });
       for (const h of heads) {
         const r = h.getBoundingClientRect();
         if (!seen.has(h) && r.top < innerHeight * 0.5) seen.set(h, t - start);
