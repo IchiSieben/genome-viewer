@@ -292,3 +292,15 @@ confundirlas. Las marcadas **[REVISAR]** son las primeras que conviene mirar.
   `ffmpeg -i stage-es.mp4 -vf "subtitles=stage-es.srt" -c:v libx264 -crf 20 -an stage-es-burnt.mp4`.
 - **Revertir el cierre público:** reconstruir sin `AGP_NOINDEX` (vale `1` por defecto) y volver a
   desplegar; en el landing, `git revert -m 1 c3469ab` y `git revert 29eece8 5fd2dd7`.
+
+## E-26 · Revisión visual en la Mac (Metal): verde con un navegador por idioma
+
+- **visual4** (`4f696bb`): EN entero en verde sobre Metal. En ES, con el mismo navegador, la
+  isla no arrancó y cayó a póster sin errores de consola; la degradación prevista funcionó.
+- **visual5** (`c7ffbfb`): con cada idioma en su propio proceso de Chromium (`AGP_STAGE_LANGS`,
+  `tools/mac/visual.sh`), **EN y ES TODO OK** en WebGL sobre Metal, incluida la prueba por
+  capítulo de E-24. Conclusión: era un límite del Chromium sin pantalla, que se quedaba sin
+  contextos WebGL en el segundo idioma de una misma sesión, no un fallo del sitio. Rama
+  `mac/stage-visual5`.
+- **Pendiente sin cerrar:** la captura de página completa sigue sin funcionar en Metal; ahora es
+  solo un aviso (`info`), no una prueba.

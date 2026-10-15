@@ -4,7 +4,7 @@
 
 - En vivo **sin noindex** en https://genome.ichisieben.dev/ (relato) y `/app/` (visor), ES en `/es/`.
   Ficha en el landing: https://ichisieben.dev/projects/genome-viewer/ (Landing `main` `5fd2dd7`).
-- Hitos E0–E7 del prompt `docs/09-PROMPT-escenario-educativo.md` cerrados; decisiones E-01…E-25
+- Hitos E0–E7 del prompt `docs/09-PROMPT-escenario-educativo.md` cerrados; decisiones E-01…E-26
   en `docs/09-decisiones-autonomas.md`. Pendiente del dueño: `NEEDS-OWNER.md`. Resumen:
   `MORNING-REPORT.md`.
 - Vídeos de demostración en Drive (`drive.manifest`), no en git.

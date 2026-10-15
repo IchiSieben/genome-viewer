@@ -1,7 +1,7 @@
 # MORNING-REPORT — sesión del escenario, 2026-10-15
 
-> Sesión autónoma, 13:14–23:30 Lima, con `docs/09-PROMPT-escenario-educativo.md`. Los hitos
-> E0–E7 están cerrados. Las decisiones están en `docs/09-decisiones-autonomas.md` (E-01…E-25;
+> Sesión autónoma del 2026-10-15, de 13:14 a ~18:05 Lima (plan terminado antes de las 23:30), con `docs/09-PROMPT-escenario-educativo.md`. Los hitos
+> E0–E7 están cerrados. Las decisiones están en `docs/09-decisiones-autonomas.md` (E-01…E-26;
 > empieza por las **[REVISAR]**: E-03, E-07, E-11, E-17 y E-19). Lo que necesita tu mano está en `NEEDS-OWNER.md`.
 
 ## Qué está en vivo
@@ -45,10 +45,9 @@
 - **Teléfono real:** el coste por frame no se ha medido en un móvil (NEEDS-OWNER #4).
 - **SEO sin noindex:** sin volver a medir.
 - **A/B del visor en una máquina tranquila:** E-19, [REVISAR], NEEDS-OWNER #3.
-- **Revisión visual en la Mac (Metal):** en EN pasa entera. En ES, el mismo navegador cayó a
-  póster en el segundo idioma, sin errores de consola: la degradación prevista funcionó, pero no
-  se sabe por qué no levantó WebGL. Se separaron los idiomas en procesos distintos (`visual5`).
-  Resultado: VISUAL5_RESULT.
+- **Captura de página completa en Metal:** Chromium se niega a hacerla, así que queda como aviso.
+  La revisión visual sí pasa entera en la Mac: con un navegador por idioma, EN y ES salen en verde
+  en WebGL (`visual5`, E-26).
 
 ## Lo que quedó en la Mac sin adoptar
 
@@ -61,7 +60,8 @@
 | `mac/stage-lh2` | Lighthouse de 4 páginas × 5 corridas | resúmenes adoptados; los 40 informes siguen en la rama |
 | `mac/stage-media3` | vídeo grabado con el bug E-24 | descartado |
 | `mac/stage-media4` | vídeo bueno | adoptado: Drive + `.srt` en `docs/media/` |
-| `mac/stage-visual`, `visual3`, `visual4` | verify:stage en Metal | fallos explicados arriba y en E-17/E-24 |
+| `mac/stage-visual5` | verify:stage en Metal, un navegador por idioma | EN y ES TODO OK (E-26) |
+| `mac/stage-visual`, `visual3`, `visual4` | intentos anteriores | superados por `visual5` (E-17, E-24, E-26) |
 | `mac/stage-blender` | — | falta Molecular Nodes |
 | `stage-lh-base`, `stage-doctor2` | línea base y diagnóstico | no se empujaron (`pushed=False`) |
 
