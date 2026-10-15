@@ -203,6 +203,19 @@ export async function mountIsland(root: HTMLElement, base: string, firstId: stri
   };
   window.addEventListener('pagehide', () => window.clearInterval(cycle));
   // For the perf lane and the visual checks: what the island ended up doing.
-  (window as unknown as { __stage: unknown }).__stage = { stats: () => renderer.stats(), mode: () => island.mode };
+  // bench(n): n frames drawn back to back, each waited for with a 1-pixel readPixels, so the time
+  // includes the GPU finishing the frame (rAF intervals only show CPU submission when unthrottled).
+  const bench = (n: number): number[] => {
+    const px = new Uint8Array(4);
+    const out: number[] = [];
+    for (let i = 0; i < n; i++) {
+      const s0 = performance.now();
+      renderer.draw(i / 60);
+      gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+      out.push(performance.now() - s0);
+    }
+    return out;
+  };
+  (window as unknown as { __stage: unknown }).__stage = { stats: () => renderer.stats(), mode: () => island.mode, bench };
   return island;
 }

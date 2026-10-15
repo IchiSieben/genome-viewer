@@ -1,25 +1,34 @@
-# HANDOFF — Visor del genoma / Genome Viewer, publicación (actualizado: 2026-09-26)
+# HANDOFF — Visor del genoma / Genome Viewer (actualizado: 2026-10-15, sesión del escenario)
 
-> Sesión autónoma del 2026-09-26. Todas las decisiones que se habrían
-> consultado están en `docs/07-decisiones-autonomas.md`; las marcadas
-> **[REVISAR]** son las primeras que conviene mirar.
->
-> Llave de la API: **no** está en el historial (tres barridos, D-41). No hay
-> STOP.
+> Sesión autónoma del 2026-10-15 (13:14–23:30 Lima) con el prompt maestro
+> `docs/09-PROMPT-escenario-educativo.md`. Decisiones: `docs/09-decisiones-autonomas.md`
+> (E-01…; las **[REVISAR]** primero). Resumen para el dueño: `MORNING-REPORT.md`.
+> Pendiente del dueño: `NEEDS-OWNER.md`. Llave de la API: no está en git.
 
 ## Dónde está
 
-- **Repo público**: https://github.com/IchiSieben/genome-viewer (`main`).
-- **EN VIVO desde el 2026-10-15 13:20 (Lima)**: https://genome.ichisieben.dev/ (EN) ·
-  https://genome.ichisieben.dev/es/ (ES). Subdominio propio, docroot `public_html/genome-app`,
-  subido por TUS con `tools/deploy_tus.py`. `noindex` puesto. Sesión del escenario en curso:
-  ver `docs/09-decisiones-autonomas.md` y `MORNING-REPORT.md`.
-  - La copia de `Landing/public/genome-viewer/` es el layout viejo y **no** se publica.
-  - Build para el subdominio desde PowerShell (Git Bash convierte `AGP_BASE=/` en una ruta de
-    Windows, E-02): `$env:AGP_SITE='https://genome.ichisieben.dev'; $env:AGP_BASE='/'; npm run build`
-    o en Git Bash `MSYS_NO_PATHCONV=1 AGP_SITE=... AGP_BASE=/ npm run build`.
+- **Repo público**: https://github.com/IchiSieben/genome-viewer (`main`; aquí `master` sigue a
+  `origin/main` y se empuja con `git push origin master:main`).
+- **En vivo** en el subdominio propio (docroot `public_html/genome-app`, subido por TUS con
+  `tools/deploy_tus.py`):
+  - https://genome.ichisieben.dev/ y `/es/`: **el escenario**, el relato en siete capítulos.
+  - https://genome.ichisieben.dev/app/ y `/es/app/`: **el visor**. Los enlaces viejos `/#/…`
+    redirigen a `app/#/…`.
+- Build para el subdominio desde PowerShell (E-02):
+  `$env:AGP_SITE='https://genome.ichisieben.dev'; $env:AGP_BASE='/'; npm run build`.
+- Despliegue: `NOTES.md` → «Despliegue». Nunca `deploy-static-site-archive`.
+- La copia `Landing/public/genome-viewer/` es el layout viejo, sin versionar y sin publicar.
 
-## Commits de cada fase (hashes después del saneado del historial)
+## Commits del escenario
+
+| Hito | Commit |
+|---|---|
+| E0 — visor en vivo en el subdominio, carriles de la Mac | `95d8709` |
+| E1 — nubes de puntos desde mmCIF reales (AGSC) | `cf2acf5` |
+| E3+E4+E5 — escenario en `/`, visor en `/app/`, narrativa, escala, pósters | `79699ab`, `d5631ce` |
+| carril `lh` con las cuatro páginas | `616fa78` |
+
+## Commits de la publicación anterior (hashes después del saneado del historial)
 
 | Fase | Commit |
 |---|---|
@@ -29,33 +38,13 @@
 | 4 (prep) — vista narrativa en chunk propio, verify-live bilingüe, A/B | `ccc3bf3` |
 | 5 — README, QA, HANDOFF | `6b3a9b9` |
 
-## Para ponerlo en vivo (lo hace quien trabaje el landing)
-
-1. En `Landing/`: `git add public/genome-viewer && git commit -m "genome-viewer: primera subida (noindex)" && git push`.
-   No toca nada más del landing: es una carpeta nueva en `public/`.
-2. Cuando Hostinger termine: `cd AlphaGenome/web && node scripts/verify-live.mjs https://ichisieben.dev/genome-viewer/`
-   → `TODO OK` y `X-Robots-Tag noindex en N/N`.
-3. **Tarjeta** (solo con tu OK): `Landing/public/genome-viewer/CARD.json` trae
-   nombre, eslogan, descripción corta y larga, tags, URLs, repo, imagen OG y
-   estado `beta` en los dos idiomas. Pasarlo a
-   `Landing/src/content/projects/{en,es}/genome-viewer.md` con el formato de
-   `botanica.md`. Los slugs de `skills` existen hoy en `src/content/skills`.
-   El `title` tiene que coincidir con el `brand.name` de cada idioma.
-4. **Quitar el noindex** (con tu OK): `cd AlphaGenome/web && AGP_NOINDEX=0 npm run build`,
-   volver a copiar `dist/` sobre `Landing/public/genome-viewer/` y añadir
-   `Sitemap: https://ichisieben.dev/genome-viewer/sitemap.xml` al
-   `robots.txt` del landing.
-
-Para actualizar el visor más adelante: `npm run build` en `web/` y copiar
-`web/dist/` sobre `Landing/public/genome-viewer/` (el `CARD.json` está en
-`web/deploy/`).
-
-## Decisiones autónomas para revisar (detalle en docs/07)
+## Decisiones de la publicación anterior (detalle en docs/07)
 
 - **D-10** Enrutado: dos páginas reales (EN raíz, ES `/es/`) + hash. No se
   generó un HTML por ruta; la receta para hacerlo está en `docs/08-i18n.md`.
-- **D-31 [VERIFICAR]** La frase de la "interfaz permanente" **no está en
-  alphagenome-docs** y no se publicó. El párrafo 7 de "Por qué" usa en su
+- **D-31 — cerrada el 2026-10-15**: la frase permanente está en
+  `alphagenome-docs/04-frase-permanente.md` y en `why.p7`. Lo que sigue es la nota original:
+  la frase **no estaba en alphagenome-docs** y no se publicó. El párrafo 7 de "Por qué" usa en su
   lugar las restricciones R1/R2/R3. Para cerrarlo: pegar la frase limpia en
   `alphagenome-docs/` y sustituir `why.p7` en `web/src/i18n/narrative.{es,en}.json`.
 - **D-30** Referencias: "Radivojac 2026" es Hoffing R, …, Radivojac P;
@@ -86,7 +75,6 @@ Para actualizar el visor más adelante: `npm run build` en `web/` y copiar
 
 - **H7** (estudio poblacional): pendiente, como estaba; así se muestra en la
   hoja de ruta. Un resultado nulo se publicará igual.
-- **En vivo**: depende del push del landing (arriba).
 - **N7** (vista de gen): planeada; necesita puntuar genes enteros (D-52).
 - De la auditoría visual (`docs/05-visual-audit.md`), sin tocar: colapsar el
   mapa de calor por sistema de órganos, plegar la ayuda del navegador en
@@ -114,7 +102,7 @@ Evidencia: `docs/evidence/performance-ab*.json`, `docs/06-qa-publicacion.md`.
 - Tests: `PYTHONUTF8=1 PYTHONPATH=pipeline/src python -m pytest pipeline/tests -q`
 - Build y comprobaciones: `cd web && npm run build && npm run verify && npm run verify:links`
 - A/B: `node scripts/measure-ab.mjs <dist-de-referencia> 3` (`AGP_AB_LANG=es` para el cascarón español)
-- En vivo: `node scripts/verify-live.mjs https://ichisieben.dev/genome-viewer/`
+- En vivo: `node scripts/verify-live.mjs https://genome.ichisieben.dev/`
 
 ## Extras
 

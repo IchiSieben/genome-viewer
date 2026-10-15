@@ -175,3 +175,41 @@ confundirlas. Las marcadas **[REVISAR]** son las primeras que conviene mirar.
   borró). El Landing quedó en esa rama; se devolvió a `main` con `git symbolic-ref HEAD
   refs/heads/main` (no toca el índice) y los dos `.md` se apartaron a la carpeta temporal de la
   sesión: el índice real de `main` ya coincidía con `main`.
+
+## E-19 · A/B del visor: chunk igual, tiempos peores en EN **[REVISAR]**
+
+- `measure-ab.mjs` (3 rondas, ref = build de `95d8709` en `/`, nuevo = HEAD en `/app/`; se le
+  añadieron `AGP_AB_PATH_REF`/`AGP_AB_PATH_NEW`): `docs/evidence/performance-ab-stage-{en,es}.json`.
+- **Bytes:** chunk principal 86 113 → 86 057 B (gzip −9: 28 192 → 28 166 B). Transferencia
+  idéntica salvo `homeFast` EN (41,3 → 50,1 KiB, una oleada más), que en ES no se repite.
+- **Tiempos:** en EN todas las vistas suben 40–180 ms (rápidas) y 150–260 ms (3G lento); en ES
+  dos vistas mejoran y el resto empata. Revisado el visor en vivo en `/app/`: 4 peticiones
+  (HTML, chunk, `card.json`, el diccionario completo en reposo, que ya se pedía en E0); ningún
+  recurso nuevo en la ruta crítica.
+- **Por qué no se da por resuelto ni por regresión:** la máquina estaba cargada (otra sesión;
+  `verify:stage` tardó 10 min en vez de 3) y ES no reproduce el patrón. Primer paso del dueño:
+  repetir el A/B en una máquina tranquila (la Mac) con
+  `AGP_AB_PATH_NEW=app/ node scripts/measure-ab.mjs <dist-de-95d8709> 5`.
+
+## E-20 · 1BNA se dibuja con puntos más grandes
+
+- 1BNA tiene 486 átomos: los otros 19 514 puntos de la nube son repeticiones casi
+  transparentes, y la portada se veía como polvo (captura en `docs/evidence/stage/captures/`).
+  Ahora el tamaño de sprite de los átomos **reales** se multiplica por √(puntos/átomos reales),
+  con tope 3,5 (1 en las estructuras densas). Ningún dato cambia: son los mismos átomos.
+- **Revertir:** `uSparse` a 1 en `src/stage/renderer.ts`.
+
+## E-21 · E2 decidido con números: shader escrito a mano, sin plan B
+
+- **Primer intento fallido, documentado:** el carril `perf` de la Mac (M2 Pro, Metal) dio
+  frames de 66–133 ms y 10 000 puntos *más lentos* que 40 000. Chromium sin pantalla limita
+  `requestAnimationFrame`; se medía el limitador, no la GPU (`mac/stage-perf`, se conserva).
+- **Medidor corregido:** `measure-stage.mjs` lanza Chromium sin limitadores de frame y añade
+  `window.__stage.bench(n)` (isla): n frames seguidos, cada uno esperado con un `readPixels`
+  de 1 px, así que el tiempo incluye a la GPU terminando el frame.
+- **Resultados (1280×800, dpr 1):** GTX 1050 Ti por D3D11: mediana 0,3–0,5 ms, p95 ≤ 2,2 ms
+  (`docs/evidence/stage-perf-windows.json`); SwiftShader, render por CPU, el peor caso:
+  mediana 2,9–4,9 ms, p95 ≤ 9,2 ms (`stage-perf-swiftshader.json`). Presupuesto: 16,7 ms.
+- **Límites de la medida:** las nubes tienen 20 000 puntos, así que `?points=40000` dibuja
+  20 000; el estrangulamiento de CPU de CDP no frena el proceso de GPU. El número en un
+  teléfono real sigue sin medir: lo cubre la adaptación de puntos (E-06).

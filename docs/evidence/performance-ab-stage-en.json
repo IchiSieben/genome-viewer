@@ -1,0 +1,122 @@
+{
+  "measuredAt": "2026-10-15T20:51:23.908Z",
+  "rounds": 3,
+  "lang": "en",
+  "baseline": "C:/Users/Usuario/AppData/Local/Temp/claude/C--Users-Usuario-Documents-Portfolio-AlphaGenome/c766cd73-7ef5-4eaa-8178-95f9a412c656/scratchpad/ab-ref/web/dist",
+  "paths": {
+    "antes": "",
+    "despues": "app/"
+  },
+  "table": [
+    {
+      "view": "homeFast",
+      "antesMs": 341,
+      "despuesMs": 517,
+      "antesKiB": 41.31640625,
+      "despuesKiB": 50.1298828125,
+      "antesOleadas": 3,
+      "despuesOleadas": 4,
+      "antesCls": 0,
+      "despuesCls": 0
+    },
+    {
+      "view": "homeHeroFast",
+      "antesMs": 365,
+      "despuesMs": 409,
+      "antesKiB": 51.1787109375,
+      "despuesKiB": 41.2978515625,
+      "antesOleadas": 3,
+      "despuesOleadas": 3,
+      "antesCls": 0,
+      "despuesCls": 0
+    },
+    {
+      "view": "cardFast",
+      "antesMs": 268,
+      "despuesMs": 340,
+      "antesKiB": 42.478515625,
+      "despuesKiB": 42.4599609375,
+      "antesOleadas": 3,
+      "despuesOleadas": 3,
+      "antesCls": 0,
+      "despuesCls": 0
+    },
+    {
+      "view": "browserFast",
+      "antesMs": 209,
+      "despuesMs": 400,
+      "antesKiB": 367.767578125,
+      "despuesKiB": 367.7490234375,
+      "antesOleadas": 3,
+      "despuesOleadas": 3,
+      "antesCls": 0.0102,
+      "despuesCls": 0.0102
+    },
+    {
+      "view": "homeSlow3G",
+      "antesMs": 1685,
+      "despuesMs": 1948,
+      "antesKiB": 29.857421875,
+      "despuesKiB": 29.8291015625,
+      "antesOleadas": 2,
+      "despuesOleadas": 2,
+      "antesCls": 0,
+      "despuesCls": 0
+    },
+    {
+      "view": "homeHeroSlow3G",
+      "antesMs": 1767,
+      "despuesMs": 1926,
+      "antesKiB": 29.857421875,
+      "despuesKiB": 29.8291015625,
+      "antesOleadas": 2,
+      "despuesOleadas": 2,
+      "antesCls": 0,
+      "despuesCls": 0
+    },
+    {
+      "view": "cardSlow3G",
+      "antesMs": 1790,
+      "despuesMs": 2020,
+      "antesKiB": 31.01953125,
+      "despuesKiB": 30.9912109375,
+      "antesOleadas": 2,
+      "despuesOleadas": 2,
+      "antesCls": 0,
+      "despuesCls": 0
+    },
+    {
+      "view": "browserSlow3G",
+      "antesMs": 1713,
+      "despuesMs": 1867,
+      "antesKiB": 29.1435546875,
+      "despuesKiB": 29.115234375,
+      "antesOleadas": 2,
+      "despuesOleadas": 2,
+      "antesCls": 0.0025,
+      "despuesCls": 0.0025
+    },
+    {
+      "view": "homeMobile",
+      "antesMs": 228,
+      "despuesMs": 384,
+      "antesKiB": 41.31640625,
+      "despuesKiB": 41.2978515625,
+      "antesOleadas": 3,
+      "despuesOleadas": 3,
+      "antesCls": 0,
+      "despuesCls": 0
+    },
+    {
+      "view": "cardMobile",
+      "antesMs": 206,
+      "despuesMs": 347,
+      "antesKiB": 42.478515625,
+      "despuesKiB": 42.4599609375,
+      "antesOleadas": 3,
+      "despuesOleadas": 3,
+      "antesCls": 0,
+      "despuesCls": 0
+    }
+  ]
+}

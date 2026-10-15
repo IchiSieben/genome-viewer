@@ -12,6 +12,9 @@
 // Output: docs/evidence/performance-ab.json and a table on stdout.
 // Env: AGP_AB_LANG=es measures the Spanish shell (<mount>/es/) instead of the
 // English root; AGP_AB_OUT names the output file (default performance-ab.json).
+// AGP_AB_PATH_REF / AGP_AB_PATH_NEW give each side its own viewer path under the
+// language dir (default '' on both = today's behaviour). Use AGP_AB_PATH_NEW=app/
+// when the viewer moved from the site root to /app/ (ref '/' vs new '/app/').
 import { spawn } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -22,6 +25,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const baseline = process.argv[2];
 const rounds = Number(process.argv[3] || 3);
 const LANG_DIR = process.env.AGP_AB_LANG === 'es' ? 'es/' : '';
+const PATHS = { antes: process.env.AGP_AB_PATH_REF || '', despues: process.env.AGP_AB_PATH_NEW || '' };
 if (!baseline) {
   console.error('usage: node scripts/measure-ab.mjs <baseline-dist-dir> [rounds]');
   process.exit(1);
@@ -61,7 +65,7 @@ try {
     for (const b of r % 2 ? [...builds].reverse() : builds) {
       const out = resolve(scratch, `${b.name}-${r}.json`);
       await run(process.execPath, [resolve(here, 'measure.mjs')], {
-        AGP_BASE_URL: `http://127.0.0.1:${b.port}/genome-viewer/${LANG_DIR}`,
+        AGP_BASE_URL: `http://127.0.0.1:${b.port}/genome-viewer/${LANG_DIR}${PATHS[b.name]}`,
         AGP_MEASURE_OUT: out,
       });
       results[b.name].push(JSON.parse(readFileSync(out, 'utf8')));
@@ -96,7 +100,7 @@ const table = views.map((v) => {
 const out = resolve(here, '../../docs/evidence', process.env.AGP_AB_OUT || 'performance-ab.json');
 writeFileSync(
   out,
-  JSON.stringify({ measuredAt: new Date().toISOString(), rounds, lang: LANG_DIR ? 'es' : 'en', baseline, table }, null, 2) + '\n',
+  JSON.stringify({ measuredAt: new Date().toISOString(), rounds, lang: LANG_DIR ? 'es' : 'en', baseline, paths: PATHS, table }, null, 2) + '\n',
 );
 
 console.log('\nvista              antes ms  despues ms   antes KiB  despues KiB  oleadas  CLS (max)');

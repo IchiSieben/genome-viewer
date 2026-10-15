@@ -489,12 +489,31 @@ catalogo. Y un test comprueba que la lista de prohibidos de verdad atrapa.
 - **El texto del hallazgo es prosa libre.** El test protege la aritmetica y el
   vocabulario, no la interpretacion biologica.
 
+## El escenario (sesión del 2026-10-15)
+
+- **Qué es:** `/` y `/es/` son un relato en siete capítulos y dos registros (8 años por
+  defecto, doctorado) sobre nubes de puntos de 8 estructuras reales del PDB; el visor se mudó a
+  `/app/` y `/es/app/`. Plan y presupuestos: `docs/09-escenario.md`; catálogo:
+  `docs/10-estructuras.md`; decisiones E-01…: `docs/09-decisiones-autonomas.md`.
+- **Cifras calculadas, no citadas:** `tools/coding_fraction.py` (GENCODE 50 → 1,25 %, rango
+  1,08–1,26 % solo CDS) y `tools/dna_rise.py` (1BNA → 3,347 Å/pb → 2,04 m).
+- **Nubes:** `PYTHONPATH=pipeline/src python -m alphagenome_platform.stage.clouds` →
+  `data/stage/`. La Mac las recalculó desde cero: 8/8 idénticas (E-16).
+- **Pósters y OG:** `node web/scripts/build-posters.mjs` después de un build con
+  `AGP_BASE=/`, y otro build después (los pósters viven en `web/public/`).
+- **Trampas:** Git Bash convierte `AGP_BASE=/` en una ruta de Windows (E-02); la hora de Lima en
+  Git Bash es `TZ=UTC+5`, no `TZ=America/Lima` (imprime UTC sin avisar).
+- **La Mac** solo corre `bash tools/verify.sh`, que despacha por `.enjambre-lane` a
+  `tools/mac/<carril>.sh` (E-03). Los ids de trabajo son de un solo uso: para repetir un
+  contrato se copia el TASK con otro nombre. Empujar antes de lanzar: el nodo parte de
+  `origin/main`.
+
 ## Pendiente
 
 - **H7, el estudio poblacional.** Necesita el VCF de ancestria local de gnomAD.
   Las compuertas G1 a G6 del documento 03 siguen sin correr.
-- **N4 comparador, N6 buscador de tracks, N7 vista de gen.**
-- Enlazar el visor desde el landing del portafolio.
+- **N7 vista de gen** (necesita consultas nuevas a la API, D-52).
+- Lo pendiente del escenario está en `MORNING-REPORT.md`.
 
 ## Comandos
 
@@ -507,20 +526,23 @@ PYTHONPATH=pipeline/src python -m pytest pipeline/tests -q
 # recalcular lo derivado del indice (la variante de portada) sin gastar cuota
 PYTHONPATH=pipeline/src python -m alphagenome_platform.cli reindex
 
-# paleta y sonda
-python pipeline/tools/validate_palette.py --triples
-python pipeline/tools/h0_probe.py
+# escenario
+python tools/coding_fraction.py && python tools/dna_rise.py
 
-# web
-cd web && npm run build && npm run verify && npm run verify:links && npm run measure
+# web (desde PowerShell para el subdominio)
+cd web; $env:AGP_SITE='https://genome.ichisieben.dev'; $env:AGP_BASE='/'; npm run build
+npm run verify; npm run verify:links; npm run verify:stage
 ```
 
-## Despliegue
+## Despliegue (subdominio genome.ichisieben.dev, docroot public_html/genome-app)
 
-```bash
-cd web && npm run build && cd dist
-python -c "import shutil; shutil.make_archive(r'<ruta>/alphagenome-site','zip',root_dir='.')"
-# subir por TUS con la URL de hosting_generateUploadURLV1, luego
-# hosting_deployStaticSiteArchiveV1 con archive_path=alphagenome-site.zip
-cd web && node scripts/verify-live.mjs https://darkgray-alpaca-401605.hostingersite.com/
-```
+1. URL de subida fresca con la operación de la API de Hostinger
+   `hosting_files_generate-upload-url` (username `u901782070`, **domain `ichisieben.dev`**, el
+   padre: la URL termina en `/public_html`). Los tokens duran unas 6 h: nunca a disco ni a docs.
+2. `HUP_URL=... HUP_AK=... HUP_RK=... python tools/deploy_tus.py` sube `web/dist/` archivo por
+   archivo bajo `genome-app/`, el HTML al final (`--dry-run` para ver la lista).
+3. `cd web && node scripts/verify-live.mjs https://genome.ichisieben.dev/`
+   (`AGP_EXPECT_NOINDEX=0` cuando el build sea sin noindex).
+
+**Nunca** `deploy-static-site-archive`: reemplaza el sitio padre, que es el Landing. Nunca se
+borra nada en Hostinger desde aquí.

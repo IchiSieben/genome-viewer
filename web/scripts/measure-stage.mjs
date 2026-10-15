@@ -1,6 +1,6 @@
 // Frame cost of the stage island at fixed point counts, with and without CPU throttling.
 //
-//   node scripts/measure-stage.mjs <site-url> [--out <file.json>] [--gpu] [--seconds 6]
+//   node scripts/measure-stage.mjs <site-url> [--out <file.json>] [--gpu | --angle d3d11|metal|swiftshader] [--seconds 6]
 //
 // For each point count (10k, 20k, 40k, via `?points=N`, which also turns adaptation off) and each
 // CPU profile (1x, 4x through CDP Emulation.setCPUThrottlingRate) it loads the stage, waits for
@@ -22,9 +22,14 @@ const gpu = args.includes('--gpu');
 const COUNTS = [10000, 20000, 40000];
 const CPU = [1, 4];
 
-const launchArgs = gpu
-  ? ['--use-angle=metal', '--enable-gpu', '--ignore-gpu-blocklist']
-  : ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'];
+// --angle picks the backend explicitly (metal on the Mac, d3d11 on a Windows GPU); --gpu = metal.
+const angle = opt('--angle', gpu ? 'metal' : 'swiftshader');
+// Without these, headless Chromium paces requestAnimationFrame to its own limiter (first Mac run:
+// 66 ms frames at 20k points, 133 ms at 10k on an M2 Pro), so it measured the limiter, not the GPU.
+const UNTHROTTLE = ['--disable-gpu-vsync', '--disable-frame-rate-limit', '--disable-renderer-backgrounding',
+  '--disable-background-timer-throttling', '--disable-backgrounding-occluded-windows'];
+const launchArgs = [`--use-angle=${angle}`, '--ignore-gpu-blocklist', ...UNTHROTTLE,
+  ...(angle === 'swiftshader' ? ['--enable-unsafe-swiftshader'] : ['--enable-gpu'])];
 const browser = await chromium.launch({ args: launchArgs });
 const results = [];
 try {
@@ -56,25 +61,29 @@ try {
         }
         requestAnimationFrame(f);
       }), seconds * 1000);
+      // Synchronous GPU cost: draw + readPixels per frame (window.__stage.bench, island.ts).
+      const gpuFrames = await page.evaluate(() => window.__stage?.bench ? window.__stage.bench(120) : []);
+      const g = [...gpuFrames].sort((a, b) => a - b);
+      const gq = (p) => g.length ? Number(g[Math.min(g.length - 1, Math.floor(p * g.length))].toFixed(2)) : null;
       const s = [...frames].sort((a, b) => a - b);
       const q = (p) => s.length ? Number(s[Math.min(s.length - 1, Math.floor(p * s.length))].toFixed(2)) : null;
       const r = {
         points: n, cpuThrottle: cpu, mode, renderer, frames: s.length,
-        medianMs: q(0.5), p95Ms: q(0.95),
+        medianMs: q(0.5), p95Ms: q(0.95), gpuMedianMs: gq(0.5), gpuP95Ms: gq(0.95),
         over16: s.length ? Number((s.filter((x) => x > 16.7).length / s.length).toFixed(3)) : null,
         over33: s.length ? Number((s.filter((x) => x > 33.3).length / s.length).toFixed(3)) : null,
         drawn: await page.evaluate(() => window.__stage?.stats?.().points ?? null),
         errors,
       };
       results.push(r);
-      console.log(`measure-stage: cpu ${cpu}x points ${n} mode ${mode} median ${r.medianMs} ms p95 ${r.p95Ms} ms >16.7 ${r.over16} >33.3 ${r.over33} (${renderer})`);
+      console.log(`measure-stage: cpu ${cpu}x points ${n} mode ${mode} rAF median ${r.medianMs} ms p95 ${r.p95Ms} ms | draw+sync median ${r.gpuMedianMs} ms p95 ${r.gpuP95Ms} ms >16.7 ${r.over16} >33.3 ${r.over33} (${renderer})`);
       await ctx.close();
     }
   }
 } finally {
   await browser.close();
 }
-const report = { site, measuredAt: new Date().toISOString(), seconds, gpu, platform: process.platform, results };
+const report = { site, measuredAt: new Date().toISOString(), seconds, angle, launchArgs, platform: process.platform, results };
 if (out) { mkdirSync(dirname(out), { recursive: true }); writeFileSync(out, JSON.stringify(report, null, 1) + '\n'); }
 const bad = results.filter((r) => r.errors.length || r.mode !== 'webgl');
 process.exit(bad.length ? 1 : 0);

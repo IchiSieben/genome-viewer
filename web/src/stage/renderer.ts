@@ -27,6 +27,7 @@ uniform mat3 uRot;
 uniform float uAspect;
 uniform float uPointPx;
 uniform float uDim;        // global opacity (fade in / out)
+uniform vec2 uSparse;      // sprite size factor of the real atoms of cloud A and B (>= 1)
 out vec3 vColor;
 out float vAlpha;
 
@@ -57,9 +58,11 @@ void main() {
   float w = camera - p.z;
   float f = 2.6;
   gl_Position = vec4(p.x * f / w / uAspect, p.y * f / w, 0.0, 1.0);
-  gl_PointSize = max(1.0, uPointPx * (camera / w));
   float depth = clamp((p.z + 1.2) / 2.4, 0.0, 1.0);
   bool pad = (uT < 0.5 ? aClsA : aClsB) >= 127.5;
+  // A structure with few atoms (1BNA: 486) is padded with repeats; its real atoms get bigger
+  // sprites so the molecule reads as a body, not as dust.
+  gl_PointSize = max(1.0, uPointPx * (camera / w) * (pad ? 1.0 : mix(uSparse.x, uSparse.y, uT)));
   vColor = mix(classColor(aClsA), classColor(aClsB), smoothstep(0.25, 0.75, uT));
   vAlpha = uDim * (0.22 + 0.78 * depth) * (pad ? 0.12 : 1.0);
 }`;
@@ -112,7 +115,7 @@ export function createRenderer(canvas: HTMLCanvasElement, gl: WebGL2RenderingCon
   const u = (n: string) => gl.getUniformLocation(prog, n);
   const loc = {
     t: u('uT'), time: u('uTime'), amp: u('uAmpScale'), scale: u('uScale'), rot: u('uRot'),
-    aspect: u('uAspect'), px: u('uPointPx'), dim: u('uDim'),
+    aspect: u('uAspect'), px: u('uPointPx'), dim: u('uDim'), sparse: u('uSparse'),
   };
   const vao = gl.createVertexArray()!;
   const bufA = gl.createBuffer()!;
@@ -135,6 +138,14 @@ export function createRenderer(canvas: HTMLCanvasElement, gl: WebGL2RenderingCon
   let count = 0;
   let drawN = 0;
   let ampA = 0, ampB = 0;
+  let spA = 1, spB = 1;
+  // sqrt(points / real atoms), capped: 1 for a dense structure, 3.5 for 1BNA.
+  const sparse = (c: Cloud): number => {
+    const v = new Uint8Array(c.records);
+    let real = 0;
+    for (let i = 7; i < v.length; i += 8) if (v[i]! < c.header.padFlag) real++;
+    return Math.min(3.5, Math.max(1, Math.sqrt(c.header.points / Math.max(real, 1))));
+  };
   let t = 0, sA = 1, sB = 1, dim = 1;
   let yaw = 0, pitch = 0.35;
   let lastFrame = 0, frameMs = 0;
@@ -168,6 +179,8 @@ export function createRenderer(canvas: HTMLCanvasElement, gl: WebGL2RenderingCon
       drawN = drawN ? Math.min(drawN, count) : count;
       ampA = a.header.ampStepA / a.header.radiusA;
       ampB = b.header.ampStepA / b.header.radiusA;
+      spA = sparse(a);
+      spB = a === b ? spA : sparse(b);
     },
     setState(nt, a = 1, b = 1) { t = nt; sA = a; sB = b; },
     setRotation(y, p) { yaw = y; pitch = p; },
@@ -196,6 +209,7 @@ export function createRenderer(canvas: HTMLCanvasElement, gl: WebGL2RenderingCon
       gl.uniform1f(loc.aspect, canvas.width / canvas.height);
       gl.uniform1f(loc.px, px);
       gl.uniform1f(loc.dim, dim);
+      gl.uniform2f(loc.sparse, spA, spB);
       gl.bindVertexArray(vao);
       gl.drawArrays(gl.POINTS, 0, drawN);
       gl.bindVertexArray(null);
