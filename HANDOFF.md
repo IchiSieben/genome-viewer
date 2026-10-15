@@ -40,7 +40,8 @@
 | pósters y OG renderizados en la Mac (E-22) | `da3d58e` |
 | Lighthouse en vivo de las cuatro páginas (E-23) | `ebb0204` |
 | cada capítulo con su estructura, velos de cabecera y pie (E-24) | `6db6ea1` |
-| E7 — sin noindex, ficha del landing, vídeos en Drive (E-25) y cierre | ver `git log` |
+| E7 — sin noindex, ficha del landing, vídeos en Drive (E-25) | `8c0a66f` |
+| revisión visual en Metal, un navegador por idioma (E-26); cierre de la sesión | `664e669` |
 
 ## Commits de la publicación anterior (hashes después del saneado del historial)
 
