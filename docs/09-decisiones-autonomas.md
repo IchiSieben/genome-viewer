@@ -264,3 +264,31 @@ confundirlas. Las marcadas **[REVISAR]** son las primeras que conviene mirar.
   marca o con el pie. Solo cambia CSS del escenario; el visor no se toca.
 - **Consecuencia:** el vídeo de `media3` se grabó con el bug; se vuelve a grabar (`media4`)
   contra el sitio arreglado.
+
+## E-25 · E7: cierre público hecho (sin noindex, ficha en el landing) y vídeos en Drive
+
+- **Condición:** E3 (E-23, Lighthouse en vivo), E4, E5 y E6 en verde. E6 se dio por cerrado con
+  el vídeo de `media4`, que ya se grabó con el arreglo E-24: el capítulo 2 muestra el ribosoma
+  4UG0 con su pie (comprobado en un fotograma).
+- **Hecho:** build con `AGP_NOINDEX=0`, `verify`, `verify:links` y `verify:stage` en verde, subida
+  por TUS a `genome-app/` y `AGP_EXPECT_NOINDEX=0 verify-live`: TODO OK, `noindex` en 0/23
+  documentos. Solo `404.html` conserva su `meta robots noindex`, a propósito. `robots.txt` permite
+  todo y anuncia `sitemap.xml` (200).
+- **Landing (A7):** se hizo el merge `--no-ff` de `genome/ficha` y se añadió el sitemap en
+  `public/robots.txt`. La ficha se actualizó con los números de E-21/E-23 y con el noindex ya
+  quitado. Se hizo push a `main` (`5fd2dd7`) desde un worktree aparte, para no tocar la copia de
+  trabajo de otra sesión ni su `index.lock`. El diff contra `origin/main` (`4c718cb`, sin
+  cambios desde la preparación) eran solo las 2 fichas y `robots.txt`. Está en vivo en
+  https://ichisieben.dev/projects/genome-viewer/.
+- **Copia vieja:** `Landing/public/genome-viewer/` (156 archivos, 11 MB, sin versionar) se movió a
+  `Portfolio/_papelera_claude/genome-viewer-landing-legacy-2026-10-15/`. No se borró nada.
+- **Vídeos:** los 4 mp4 (EN/ES, H.264 y AV1, ~109 MB) no entran en git (`.gitignore`). Van a
+  `Gdrive:01-Trabajo/Portfolio/AlphaGenome/media/2026-10-15/` con `rclone copy`, listados en
+  `drive.manifest`; los `.srt` sí están en git. Se descartó meterlos en el repo: es público y cada
+  clon cargaría 109 MB para siempre.
+- **Subtítulos blandos:** el ffmpeg de la Mac no trae libass (`libass=0` en
+  `docs/evidence/stage/media-run.txt`), así que los títulos de capítulo van como pista `mov_text`,
+  no quemados en la imagen. En Windows sí hay libass; para quemarlos:
+  `ffmpeg -i stage-es.mp4 -vf "subtitles=stage-es.srt" -c:v libx264 -crf 20 -an stage-es-burnt.mp4`.
+- **Revertir el cierre público:** reconstruir sin `AGP_NOINDEX` (vale `1` por defecto) y volver a
+  desplegar; en el landing, `git revert -m 1 c3469ab` y `git revert 29eece8 5fd2dd7`.

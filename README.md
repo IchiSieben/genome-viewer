@@ -17,8 +17,9 @@ El nombre evita la marca registrada de Google en un nombre de producto;
 **En línea:** <https://genome.ichisieben.dev/es/> (el relato) ·
 <https://genome.ichisieben.dev/es/app/> (el visor) · en inglés sin `es/`
 
-Es una beta. En esta primera subida lleva `noindex`: no aparece en
-buscadores todavía.
+Publicado sin `noindex` desde el 2026-10-15, con `sitemap.xml` anunciado en `robots.txt`.
+Hay un vídeo de demostración del relato (EN y ES) en el contenedor de Drive del proyecto
+(`drive.manifest`); sus subtítulos están en `docs/media/`.
 
 ---
 
@@ -176,7 +177,7 @@ PYTHONUTF8=1 PYTHONPATH=pipeline/src python -m pytest pipeline/tests -q   # 110 
 cd web
 npm run build           # también escribe cascarones por idioma, 404, sitemap,
                          # .htaccess, iconos e imágenes OG — necesita Chromium (Playwright)
-AGP_NOINDEX=0 npm run build   # el mismo build, sin el noindex de la beta
+AGP_NOINDEX=0 npm run build   # el build publicado: sin noindex (por defecto vale 1)
 
 npm run verify         # 16 escenarios en Chromium, dos temas, ancho de movil
 npm run verify:links   # enlace cruzado y estado en la URL

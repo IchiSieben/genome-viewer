@@ -42,3 +42,45 @@ AGP_AB_LANG=es AGP_AB_PATH_REF=es/ AGP_AB_PATH_NEW=es/app/ node scripts/measure-
 ## 5. Motivos de descarte de 5MQF, 6ICZ y 1I6H
 
 - `docs/10-estructuras.md` → «Descartadas»: la consulta de esa sesión no dejó sus datos.
+
+## 6. E5b (opcional): Blender está en la Mac, el add-on Molecular Nodes no
+
+- **Qué:** el carril `blender` (rama `mac/stage-blender`) salió con 31: «Molecular Nodes add-on
+  MISSING». Instalar software en la Mac es decisión tuya. No bloquea nada: el escenario usa sus
+  propios pósters (E-22).
+- **Comando**, en la Mac: instalar Molecular Nodes desde Blender → Preferencias → Get Extensions
+  (o `blender --command extension install molecularnodes` si tu versión lo trae). Después, desde
+  Windows, relanzar con un id nuevo:
+  ```bash
+  cp tasks/TASK-stage-blender.md tasks/TASK-stage-blender2.md && git add tasks && git commit -m "task: blender2" && git push origin master:main
+  cd ../enjambre && python enjambre.py run --node mac --repo AlphaGenome --task ../AlphaGenome/tasks/TASK-stage-blender2.md --detach --budget 2 --model sonnet
+  ```
+
+## 7. Ramas `mac/*` pesadas en el remoto público
+
+- **Qué:** `mac/stage-media3` y `mac/stage-media4` llevan unos 100 MB de mp4 cada una, y
+  `mac/stage-lh2` lleva 40 informes de Lighthouse. Lo útil ya se adoptó: los vídeos de `media4`
+  están en Drive y los resúmenes de Lighthouse en `docs/evidence/`. `media3` se grabó con el
+  bug E-24. Borrar ramas remotas es irreversible, así que no se hizo.
+- **Comando**, si quieres aligerar el remoto:
+  ```bash
+  git push origin --delete mac/stage-media3 mac/stage-media4 mac/stage-perf mac/stage-visual mac/stage-visual3
+  ```
+
+## 8. Subtítulos quemados en el vídeo (opcional)
+
+- Los mp4 llevan los títulos de capítulo como pista aparte, porque el ffmpeg de la Mac no trae
+  libass (E-25). Para quemarlos en Windows: `ffmpeg -i stage-es.mp4 -vf "subtitles=stage-es.srt"
+  -c:v libx264 -crf 20 -an stage-es-burnt.mp4` y subir el resultado con `rclone copy` como
+  versión nueva.
+
+## 9. rclone: el client_id compartido de Google Drive se retira en 2026
+
+- `rclone` avisa de que el client_id compartido dejará de funcionar este año. Crea uno propio
+  (https://rclone.org/drive/#making-your-own-client-id) y ejecuta `rclone config reconnect Gdrive:`.
+
+## 10. La nota D-41 del HANDOFF apunta a un archivo que ya no existe
+
+- `Portfolio/_papelera_claude/` no existía al llegar a E7: el bundle
+  `genome-viewer-backup/pre-sanitize-2026-09-26.bundle` ya no está. Esta sesión volvió a crear la
+  carpeta solo para la copia vieja del landing. Si el bundle lo borraste tú, no hay nada que hacer.

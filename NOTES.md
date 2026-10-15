@@ -1,5 +1,16 @@
 # NOTES — Plataforma AlphaGenome
 
+## Estado (2026-10-15, cierre de la sesión del escenario): público en genome.ichisieben.dev
+
+- En vivo **sin noindex** en https://genome.ichisieben.dev/ (relato) y `/app/` (visor), ES en `/es/`.
+  Ficha en el landing: https://ichisieben.dev/projects/genome-viewer/ (Landing `main` `5fd2dd7`).
+- Hitos E0–E7 del prompt `docs/09-PROMPT-escenario-educativo.md` cerrados; decisiones E-01…E-25
+  en `docs/09-decisiones-autonomas.md`. Pendiente del dueño: `NEEDS-OWNER.md`. Resumen:
+  `MORNING-REPORT.md`.
+- Vídeos de demostración en Drive (`drive.manifest`), no en git.
+- Lo de abajo («Estado 2026-09-26») es histórico: la URL `ichisieben.dev/genome-viewer/` ya no
+  existe; aquella copia está en `Portfolio/_papelera_claude/genome-viewer-landing-legacy-2026-10-15/`.
+
 ## Estado (2026-09-26): publicado en GitHub; en vivo con el próximo push del landing
 
 - Nombre: **Visor del genoma** / **Genome Viewer** (no oficial).
@@ -507,6 +518,14 @@ catalogo. Y un test comprueba que la lista de prohibidos de verdad atrapa.
   `tools/mac/<carril>.sh` (E-03). Los ids de trabajo son de un solo uso: para repetir un
   contrato se copia el TASK con otro nombre. Empujar antes de lanzar: el nodo parte de
   `origin/main`.
+- **Vídeo de demostración:** carril `media` de la Mac (`tools/mac/media.sh`, graba el sitio en
+  vivo con `web/scripts/record-stage.mjs`). Los mp4 van a Drive con `rclone copy` y a
+  `drive.manifest`; los `.srt` quedan en `docs/media/`. Sin libass en la Mac, los subtítulos van
+  como pista aparte (E-25). `record-stage` no admite los flags sin limitador de
+  `measure-stage`: con ellos la grabación no termina (E-21).
+- **Medidas en vivo:** Lighthouse de las cuatro páginas (E-23), coste por frame en tres máquinas
+  (E-21). El arreglo de E-24 (cada capítulo con su estructura) lo cubre una prueba de
+  `verify-stage`.
 
 ## Pendiente
 
@@ -530,7 +549,7 @@ PYTHONPATH=pipeline/src python -m alphagenome_platform.cli reindex
 python tools/coding_fraction.py && python tools/dna_rise.py
 
 # web (desde PowerShell para el subdominio)
-cd web; $env:AGP_SITE='https://genome.ichisieben.dev'; $env:AGP_BASE='/'; npm run build
+cd web; $env:AGP_SITE='https://genome.ichisieben.dev'; $env:AGP_BASE='/'; $env:AGP_NOINDEX='0'; npm run build
 npm run verify; npm run verify:links; npm run verify:stage
 ```
 
@@ -541,8 +560,9 @@ npm run verify; npm run verify:links; npm run verify:stage
    padre: la URL termina en `/public_html`). Los tokens duran unas 6 h: nunca a disco ni a docs.
 2. `HUP_URL=... HUP_AK=... HUP_RK=... python tools/deploy_tus.py` sube `web/dist/` archivo por
    archivo bajo `genome-app/`, el HTML al final (`--dry-run` para ver la lista).
-3. `cd web && node scripts/verify-live.mjs https://genome.ichisieben.dev/`
-   (`AGP_EXPECT_NOINDEX=0` cuando el build sea sin noindex).
+3. `cd web && AGP_EXPECT_NOINDEX=0 node scripts/verify-live.mjs https://genome.ichisieben.dev/`.
+   El sitio es público desde el 2026-10-15: el build se hace con `$env:AGP_NOINDEX='0'`
+   (sin ella, vuelve el noindex por defecto).
 
 **Nunca** `deploy-static-site-archive`: reemplaza el sitio padre, que es el Landing. Nunca se
 borra nada en Hostinger desde aquí.

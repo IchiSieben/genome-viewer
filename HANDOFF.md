@@ -9,15 +9,23 @@
 
 - **Repo público**: https://github.com/IchiSieben/genome-viewer (`main`; aquí `master` sigue a
   `origin/main` y se empuja con `git push origin master:main`).
-- **En vivo** en el subdominio propio (docroot `public_html/genome-app`, subido por TUS con
-  `tools/deploy_tus.py`):
+- **En vivo y público (sin noindex desde el 2026-10-15, E-25)** en el subdominio propio
+  (docroot `public_html/genome-app`, subido por TUS con `tools/deploy_tus.py`). Lo desplegado es
+  el build de `6db6ea1` con `AGP_NOINDEX=0`; verify-live TODO OK, noindex en 0/23 documentos:
   - https://genome.ichisieben.dev/ y `/es/`: **el escenario**, el relato en siete capítulos.
   - https://genome.ichisieben.dev/app/ y `/es/app/`: **el visor**. Los enlaces viejos `/#/…`
     redirigen a `app/#/…`.
 - Build para el subdominio desde PowerShell (E-02):
-  `$env:AGP_SITE='https://genome.ichisieben.dev'; $env:AGP_BASE='/'; npm run build`.
+  `$env:AGP_SITE='https://genome.ichisieben.dev'; $env:AGP_BASE='/'; $env:AGP_NOINDEX='0'; npm run build`.
+  Sin `AGP_NOINDEX='0'` vuelve el noindex (es el valor por defecto).
 - Despliegue: `NOTES.md` → «Despliegue». Nunca `deploy-static-site-archive`.
-- La copia `Landing/public/genome-viewer/` es el layout viejo, sin versionar y sin publicar.
+- **Ficha del landing** en vivo: https://ichisieben.dev/projects/genome-viewer/ (Landing `main`
+  `5fd2dd7`: merge `c3469ab` de `genome/ficha`, sitemap en `robots.txt` `29eece8`, números `5fd2dd7`).
+- **Movido a la papelera (E7):** la copia sin versionar `Landing/public/genome-viewer/` (156
+  archivos, 11 MB, el layout viejo) está en
+  `Portfolio/_papelera_claude/genome-viewer-landing-legacy-2026-10-15/`. Se puede borrar.
+- **Drive:** `Gdrive:01-Trabajo/Portfolio/AlphaGenome/` (vídeos de demostración en
+  `media/2026-10-15/`, `README-DRIVE.md`), listado en `drive.manifest`.
 
 ## Commits del escenario
 
@@ -27,6 +35,12 @@
 | E1 — nubes de puntos desde mmCIF reales (AGSC) | `cf2acf5` |
 | E3+E4+E5 — escenario en `/`, visor en `/app/`, narrativa, escala, pósters | `79699ab`, `d5631ce` |
 | carril `lh` con las cuatro páginas | `616fa78` |
+| sprites de 1BNA, banco de frames síncrono con la GPU, A/B | `00b6371` |
+| carril `media` arreglado, coste por frame del M2 Pro (E-21) | `5d4b781` |
+| pósters y OG renderizados en la Mac (E-22) | `da3d58e` |
+| Lighthouse en vivo de las cuatro páginas (E-23) | `ebb0204` |
+| cada capítulo con su estructura, velos de cabecera y pie (E-24) | `6db6ea1` |
+| E7 — sin noindex, ficha del landing, vídeos en Drive (E-25) y cierre | ver `git log` |
 
 ## Commits de la publicación anterior (hashes después del saneado del historial)
 

@@ -1,0 +1,67 @@
+== media started 2026-10-15 17:26:44 on Darwin arm64 commit f2a735f
+media: av1 encoder=libsvtav1 burnt titles (libass)=0
+
+added 14 packages in 895ms
+record-stage: en 8 cues, 70.6 s -> /tmp/agp-media
+Svt[info]: -------------------------------------------
+Svt[info]: SVT [version]:	SVT-AV1 Encoder Lib v4.2.0
+Svt[info]: SVT [build]  :	Apple LLVM 21.0.0 (clang-2100.3.34.2)	 64 bit
+Svt[info]: LIB Build date: Jul 13 2026 18:06:33
+Svt[info]: -------------------------------------------
+Svt[info]: Level of Parallelism: 4
+Svt[info]: Number of PPCS 107
+Svt[info]: [asm level on system : up to neon_i8mm]
+Svt[info]: [asm level selected : up to neon_i8mm]
+Svt[info]: -------------------------------------------
+Svt[info]: SVT [config]: main profile	tier (auto)	level (auto)
+Svt[info]: SVT [config]: width / height / fps numerator / fps denominator 		: 1280 / 720 / 60 / 1
+Svt[info]: SVT [config]: bit-depth / color format 					: 8 / YUV420
+Svt[info]: SVT [config]: preset / tune / pred struct 					: 6 / PSNR / random access
+Svt[info]: SVT [config]: gop size / mini-gop size / key-frame type 			: 321 / 32 / key frame
+Svt[info]: SVT [config]: BRC mode / rate factor 					: CRF / 34.00 
+Svt[info]: SVT [config]: AQ mode / Variance Boost 					: 2 / 0
+Svt[info]: SVT [config]: sharpness / luminance-based QP bias 				: 0 / 0
+Svt[info]: SVT [config]: QP scale compress strength 					: 0
+Svt[info]: -------------------------------------------
+stream|codec_name=h264|width=1280|height=720|avg_frame_rate=60/1
+format|duration=71.516667|size=24211094
+stream|codec_name=av1|width=1280|height=720|avg_frame_rate=60/1
+format|duration=71.516667|size=22421510
+raw: stream|nb_read_frames=1788
+raw: format|duration=71.520000
+record-stage: es 8 cues, 70.8 s -> /tmp/agp-media
+Svt[info]: -------------------------------------------
+Svt[info]: SVT [version]:	SVT-AV1 Encoder Lib v4.2.0
+Svt[info]: SVT [build]  :	Apple LLVM 21.0.0 (clang-2100.3.34.2)	 64 bit
+Svt[info]: LIB Build date: Jul 13 2026 18:06:33
+Svt[info]: -------------------------------------------
+Svt[info]: Level of Parallelism: 4
+Svt[info]: Number of PPCS 107
+Svt[info]: [asm level on system : up to neon_i8mm]
+Svt[info]: [asm level selected : up to neon_i8mm]
+Svt[info]: -------------------------------------------
+Svt[info]: SVT [config]: main profile	tier (auto)	level (auto)
+Svt[info]: SVT [config]: width / height / fps numerator / fps denominator 		: 1280 / 720 / 60 / 1
+Svt[info]: SVT [config]: bit-depth / color format 					: 8 / YUV420
+Svt[info]: SVT [config]: preset / tune / pred struct 					: 6 / PSNR / random access
+Svt[info]: SVT [config]: gop size / mini-gop size / key-frame type 			: 321 / 32 / key frame
+Svt[info]: SVT [config]: BRC mode / rate factor 					: CRF / 34.00 
+Svt[info]: SVT [config]: AQ mode / Variance Boost 					: 2 / 0
+Svt[info]: SVT [config]: sharpness / luminance-based QP bias 				: 0 / 0
+Svt[info]: SVT [config]: QP scale compress strength 					: 0
+Svt[info]: -------------------------------------------
+stream|codec_name=h264|width=1280|height=720|avg_frame_rate=60/1
+format|duration=71.600000|size=30130290
+stream|codec_name=av1|width=1280|height=720|avg_frame_rate=60/1
+format|duration=71.600000|size=32001881
+raw: stream|nb_read_frames=1790
+raw: format|duration=71.600000
+total 217136
+drwxr-xr-x   8 yoichipalacios  staff       256 Oct 15 17:37 .
+drwxr-xr-x  20 yoichipalacios  staff       640 Oct 15 17:26 ..
+-rw-r--r--   1 yoichipalacios  staff  22421510 Oct 15 17:36 stage-en.av1.mp4
+-rw-r--r--   1 yoichipalacios  staff  24211094 Oct 15 17:36 stage-en.mp4
+-rw-r--r--   1 yoichipalacios  staff       507 Oct 15 17:35 stage-en.srt
+-rw-r--r--   1 yoichipalacios  staff  32001881 Oct 15 17:38 stage-es.av1.mp4
+-rw-r--r--   1 yoichipalacios  staff  30130290 Oct 15 17:37 stage-es.mp4
+-rw-r--r--   1 yoichipalacios  staff       517 Oct 15 17:37 stage-es.srt

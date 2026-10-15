@@ -17,8 +17,9 @@ AlphaGenome is still named as the data source.
 **Live:** <https://genome.ichisieben.dev/> (the story) ·
 <https://genome.ichisieben.dev/app/> (the viewer) · Spanish under `es/`
 
-This is a beta. In this first upload it ships with `noindex`: it does not
-show up in search engines yet.
+Public without `noindex` since 2026-10-15, with `sitemap.xml` announced in `robots.txt`.
+A demo video of the story (EN and ES) lives in the project's Drive container
+(`drive.manifest`); its subtitles are in `docs/media/`.
 
 ---
 
@@ -178,7 +179,7 @@ PYTHONUTF8=1 PYTHONPATH=pipeline/src python -m pytest pipeline/tests -q   # 110 
 cd web
 npm run build           # also writes per-language shells, 404, sitemap,
                          # .htaccess, icons and OG images — needs Playwright's Chromium
-AGP_NOINDEX=0 npm run build   # same build, without the beta's noindex
+AGP_NOINDEX=0 npm run build   # the published build: no noindex (the default is 1)
 
 npm run verify         # 16 scenarios in Chromium, both themes, mobile width
 npm run verify:links   # cross-linking and URL state

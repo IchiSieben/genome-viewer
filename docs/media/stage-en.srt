@@ -1,0 +1,31 @@
+1
+00:00:11,978 --> 00:00:17,978
+Three billion letters, two meters per nucleated cell
+
+2
+00:00:19,411 --> 00:00:24,311
+The little that is translated, and all the rest
+
+3
+00:00:24,311 --> 00:00:28,377
+How DNA is packed
+
+4
+00:00:28,377 --> 00:00:32,010
+The switches
+
+5
+00:00:32,010 --> 00:00:35,744
+One letter changes
+
+6
+00:00:35,744 --> 00:00:39,327
+Cut and paste
+
+7
+00:00:39,327 --> 00:00:43,543
+The genome in 3D and the limits of the model
+
+8
+00:00:43,543 --> 00:00:48,543
+From two nanometers to two meters

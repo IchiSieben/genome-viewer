@@ -1,0 +1,7 @@
+# drive.manifest — files of this repo that live in Drive, not in git (rules/cierre.md)
+# container: Gdrive:01-Trabajo/Portfolio/AlphaGenome/
+# path	size	sha256	date
+media/2026-10-15/stage-en.av1.mp4	22421510	18aec98138fc6ecf075c4f5c67623315be6f45868b136c50073acb83adb3d0d1	2026-10-15
+media/2026-10-15/stage-en.mp4	24211094	409d2179bd30e57f7ce9eca63614452887d68738afaa15bc0510e8a2ea4df227	2026-10-15
+media/2026-10-15/stage-es.av1.mp4	32001881	d729e3b403ee42d4aee3639d9e4ca1949d23f63e8b6b6a28284164e8e4e7b7ab	2026-10-15
+media/2026-10-15/stage-es.mp4	30130290	be46cc38d735ac397e9876045c0da32bd5d307f826ad28f7a7460538d8bf5e6d	2026-10-15

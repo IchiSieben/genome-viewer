@@ -70,3 +70,7 @@ Thumbs.db
 /web/public/stage/*
 !/web/public/stage/posters/
 /web/qa/
+
+# Demo videos of the stage (renders, ~20 MB each): they live in Drive, listed in drive.manifest.
+# The subtitles (.srt) and media.json stay in git.
+docs/media/*.mp4

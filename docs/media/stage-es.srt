@@ -1,0 +1,31 @@
+1
+00:00:11,900 --> 00:00:17,900
+Tres mil millones de letras, dos metros por célula con núcleo
+
+2
+00:00:19,583 --> 00:00:24,633
+Lo poco que se traduce y todo lo demás
+
+3
+00:00:24,633 --> 00:00:28,816
+Cómo se empaqueta el ADN
+
+4
+00:00:28,816 --> 00:00:32,583
+Los interruptores
+
+5
+00:00:32,583 --> 00:00:36,199
+Cambia una letra
+
+6
+00:00:36,199 --> 00:00:39,799
+Cortar y pegar
+
+7
+00:00:39,799 --> 00:00:44,099
+El genoma en 3D y los límites del modelo
+
+8
+00:00:44,099 --> 00:00:49,099
+De dos nanómetros a dos metros
