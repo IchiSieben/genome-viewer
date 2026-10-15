@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Lane `lh`: Lighthouse mobile, median of 5, on the LIVE subdomain, EN and ES. Detached.
-#   LH_PAGES  space-separated paths under the site (default "/ /es/")
+#   LH_PAGES  space-separated paths under the site (default "/ /es/ /app/ /es/app/")
 #   LH_SITE   default https://genome.ichisieben.dev
 # Report: docs/evidence/stage/lighthouse-<label>.json (+ per-run JSON under lighthouse/).
 [ "${1:-}" = run ] || exec bash "$(dirname "$0")/detach.sh" lh "$0"
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 SITE="${LH_SITE:-https://genome.ichisieben.dev}"
-PAGES="${LH_PAGES:-/ /es/}"
+PAGES="${LH_PAGES:-/ /es/ /app/ /es/app/}"
 RUNS="${LH_RUNS:-5}"
 OUT=docs/evidence/stage/lighthouse
 mkdir -p "$OUT"
