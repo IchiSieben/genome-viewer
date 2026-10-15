@@ -1,0 +1,16 @@
+{
+  "url": "https://genome.ichisieben.dev/app/",
+  "label": "app",
+  "runs": 5,
+  "finalUrl": "https://genome.ichisieben.dev/app/?lh=1",
+  "lighthouse": "12.8.2",
+  "formFactor": "mobile",
+  "performance": 100,
+  "accessibility": 96,
+  "bestPractices": 100,
+  "seo": 66,
+  "lcpMs": 1450,
+  "cls": 0,
+  "tbtMs": 0,
+  "fcpMs": 1060
+}

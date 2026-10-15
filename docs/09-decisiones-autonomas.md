@@ -235,3 +235,15 @@ confundirlas. Las marcadas **[REVISAR]** son las primeras que conviene mirar.
 - **Descartado:** volver a capturarlos en Windows con SwiftShader. Daba el mismo resultado y costaba
   tiempo de CPU de la máquina que coordina.
 - **Revertir:** `git checkout 5d4b781 -- web/public/stage/posters web/public/og-stage-*.png`.
+
+## E-23 · E3 cerrado con Lighthouse del sitio en vivo (Mac, carril `lh2`)
+
+- **Medida:** Lighthouse 12.8.2, móvil, mediana de 5 corridas por página, contra
+  https://genome.ichisieben.dev en el commit `00b6371` (rama `mac/stage-lh2`; resúmenes en
+  `docs/evidence/stage/lighthouse-live/`; los 40 informes completos se quedan en la rama).
+- **Escenario:** EN rendimiento 99 · accesibilidad 100 · buenas prácticas 100 · LCP 1 323 ms ·
+  CLS 0. ES 100 · 100 · 100 · LCP 1 110 ms. **Visor en `/app/`:** 100 · 96 · 100 en los dos
+  idiomas, como antes del escenario (E-15). SEO 66 en todas: es el `noindex`.
+- **Honestidad:** una de las 5 corridas de `/es/` falló con `NO_FCP` (Chrome sin pantalla); esa
+  mediana sale de 4 corridas. El criterio de E3 era «Lighthouse local ≥ 95»; se midió en vivo,
+  que es más exigente (red y servidor reales).

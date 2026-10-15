@@ -1,0 +1,9 @@
+== lh started 2026-10-15 16:50:56 on Darwin arm64 commit 00b6371
+
+added 14 packages in 731ms
+lh: site=https://genome.ichisieben.dev pages=/ /es/ /app/ /es/app/ runs=5 chrome=/Users/yoichipalacios/Library/Caches/ms-playwright/chromium-1243/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing
+**median** en (5 runs, live https://genome.ichisieben.dev/): perf 99 · a11y 100 · bp 100 · seo 66 · LCP 1323 ms · CLS 0 · TBT 13 ms
+lh: es run 4 failed: Runtime error encountered: The page did not paint any content. Please ensure you keep the browser window in the foreground during the load and try again. (NO_FCP)
+**median** es (4 runs, live https://genome.ichisieben.dev/es/): perf 100 · a11y 100 · bp 100 · seo 66 · LCP 1110 ms · CLS 0 · TBT 1 ms
+**median** app (5 runs, live https://genome.ichisieben.dev/app/): perf 100 · a11y 96 · bp 100 · seo 66 · LCP 1450 ms · CLS 0 · TBT 0 ms
+**median** es-app (5 runs, live https://genome.ichisieben.dev/es/app/): perf 100 · a11y 96 · bp 100 · seo 66 · LCP 1493 ms · CLS 0 · TBT 0 ms

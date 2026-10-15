@@ -1,0 +1,16 @@
+{
+  "url": "https://genome.ichisieben.dev/es/",
+  "label": "es",
+  "runs": 4,
+  "finalUrl": "https://genome.ichisieben.dev/es/?lh=1",
+  "lighthouse": "12.8.2",
+  "formFactor": "mobile",
+  "performance": 100,
+  "accessibility": 100,
+  "bestPractices": 100,
+  "seo": 66,
+  "lcpMs": 1110,
+  "cls": 0,
+  "tbtMs": 1,
+  "fcpMs": 1095
+}
