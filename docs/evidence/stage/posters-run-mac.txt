@@ -1,0 +1,33 @@
+== posters started 2026-10-15 16:50:59 on Darwin arm64 commit 00b6371
+
+added 14 packages in 810ms
+build-posters: 1BNA -> /Users/yoichipalacios/Documents/Portfolio/wt/AlphaGenome-stage-posters2/docs/evidence/stage/posters-node/stage/posters/1bna.webp (17.0 KiB)
+build-posters: 4UG0 -> /Users/yoichipalacios/Documents/Portfolio/wt/AlphaGenome-stage-posters2/docs/evidence/stage/posters-node/stage/posters/4ug0.webp (85.5 KiB)
+build-posters: 1KX5 -> /Users/yoichipalacios/Documents/Portfolio/wt/AlphaGenome-stage-posters2/docs/evidence/stage/posters-node/stage/posters/1kx5.webp (46.5 KiB)
+build-posters: 1CDW -> /Users/yoichipalacios/Documents/Portfolio/wt/AlphaGenome-stage-posters2/docs/evidence/stage/posters-node/stage/posters/1cdw.webp (46.4 KiB)
+build-posters: 5FLM -> /Users/yoichipalacios/Documents/Portfolio/wt/AlphaGenome-stage-posters2/docs/evidence/stage/posters-node/stage/posters/5flm.webp (67.1 KiB)
+build-posters: 5XJC -> /Users/yoichipalacios/Documents/Portfolio/wt/AlphaGenome-stage-posters2/docs/evidence/stage/posters-node/stage/posters/5xjc.webp (56.4 KiB)
+build-posters: 5KKQ -> /Users/yoichipalacios/Documents/Portfolio/wt/AlphaGenome-stage-posters2/docs/evidence/stage/posters-node/stage/posters/5kkq.webp (47.8 KiB)
+build-posters: 5IRE -> /Users/yoichipalacios/Documents/Portfolio/wt/AlphaGenome-stage-posters2/docs/evidence/stage/posters-node/stage/posters/5ire.webp (117.8 KiB)
+build-posters: og en -> /Users/yoichipalacios/Documents/Portfolio/wt/AlphaGenome-stage-posters2/docs/evidence/stage/posters-node/og-stage-en.png (176.7 KiB)
+build-posters: og es -> /Users/yoichipalacios/Documents/Portfolio/wt/AlphaGenome-stage-posters2/docs/evidence/stage/posters-node/og-stage-es.png (171.1 KiB)
+../docs/evidence/stage/posters-node:
+total 704
+drwxr-xr-x  5 yoichipalacios  staff     160 Oct 15 16:59 .
+drwxr-xr-x  5 yoichipalacios  staff     160 Oct 15 16:58 ..
+-rw-r--r--  1 yoichipalacios  staff  180942 Oct 15 16:59 og-stage-en.png
+-rw-r--r--  1 yoichipalacios  staff  175233 Oct 15 16:59 og-stage-es.png
+drwxr-xr-x  3 yoichipalacios  staff      96 Oct 15 16:58 stage
+
+../docs/evidence/stage/posters-node/stage/posters:
+total 1000
+drwxr-xr-x  10 yoichipalacios  staff     320 Oct 15 16:59 .
+drwxr-xr-x   3 yoichipalacios  staff      96 Oct 15 16:58 ..
+-rw-r--r--   1 yoichipalacios  staff   17400 Oct 15 16:58 1bna.webp
+-rw-r--r--   1 yoichipalacios  staff   47560 Oct 15 16:59 1cdw.webp
+-rw-r--r--   1 yoichipalacios  staff   47648 Oct 15 16:59 1kx5.webp
+-rw-r--r--   1 yoichipalacios  staff   87518 Oct 15 16:59 4ug0.webp
+-rw-r--r--   1 yoichipalacios  staff   68660 Oct 15 16:59 5flm.webp
+-rw-r--r--   1 yoichipalacios  staff  120670 Oct 15 16:59 5ire.webp
+-rw-r--r--   1 yoichipalacios  staff   48956 Oct 15 16:59 5kkq.webp
+-rw-r--r--   1 yoichipalacios  staff   57796 Oct 15 16:59 5xjc.webp

@@ -222,3 +222,16 @@ confundirlas. Las marcadas **[REVISAR]** son las primeras que conviene mirar.
 - **Límites de la medida:** las nubes tienen 20 000 puntos, así que `?points=40000` dibuja
   20 000; el estrangulamiento de CPU de CDP no frena el proceso de GPU. El número en un
   teléfono real sigue sin medir: lo cubre la adaptación de puntos (E-06).
+
+## E-22 · Pósters del escenario: se adoptan los renderizados en la Mac
+
+- **Qué:** los 8 pósters (`web/public/stage/posters/*.webp`) y las dos imágenes OG salen ahora
+  del carril `posters2` de la Mac (Metal, commit `00b6371`, rama `mac/stage-posters2`; registro en
+  `docs/evidence/stage/posters-run-mac.txt`).
+- **Por qué:** en vivo, solo 1BNA se había vuelto a capturar tras E-20. Los pósters de 1CDW, 1KX5
+  y 5KKQ eran de antes del cambio de tamaño de los puntos de las nubes dispersas, y se veían casi
+  negros frente a la isla viva. Los de la Mac son el render actual; 5IRE es igual en ambas
+  máquinas (comparado a ojo, mismo encuadre).
+- **Descartado:** volver a capturarlos en Windows con SwiftShader. Daba el mismo resultado y costaba
+  tiempo de CPU de la máquina que coordina.
+- **Revertir:** `git checkout 5d4b781 -- web/public/stage/posters web/public/og-stage-*.png`.
