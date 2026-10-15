@@ -54,7 +54,9 @@ function setCaption(id: string): void {
 
 // ---- scroll → structure --------------------------------------------------------------------
 const root = document.querySelector<HTMLElement>('.stage');
-const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-structure]'));
+// Only the text sections: the poster <img>s inside the fixed .stage carry data-structure too, and
+// the first of them always covers mid-screen (it pinned every chapter to 1BNA).
+const sections = Array.from(document.querySelectorAll<HTMLElement>('main [data-structure]'));
 const firstId = sections[0]?.dataset.structure || '1BNA';
 let island: Island | null = null;
 // `?still=<PDB id>` holds one structure, frozen (scripts/build-posters.mjs renders the posters).

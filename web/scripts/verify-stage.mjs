@@ -144,6 +144,19 @@ for (const lang of ['en', 'es']) {
       if (now !== last) { changes++; last = now; }
     }
     check(`${lang}: el pie de estructura cambia al bajar (>=3)`, changes >= 3, `${changes} cambios`);
+    // j: each chapter, centred on screen, names its own structure (not only the scale journey).
+    const perChapter = [];
+    for (const id of await page.evaluate(() => [...document.querySelectorAll('main .st-chapter[data-structure]')].map((s) => s.id))) {
+      await page.evaluate((cid) => {
+        const el = document.getElementById(cid);
+        window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.3, behavior: 'instant' });
+      }, id);
+      await page.waitForTimeout(250);
+      const want = await page.evaluate((cid) => document.getElementById(cid).dataset.structure, id);
+      const got = await read();
+      if (!got.includes(want)) perChapter.push(`${id}: quiere ${want}, pie «${got.slice(0, 60)}»`);
+    }
+    check(`${lang}: cada capitulo centrado muestra su estructura en el pie`, perChapter.length === 0, perChapter.join(' | '));
     const errs1 = rec.errors.filter(notPoster);
     check(`${lang}: sin errores tras el recorrido`, errs1.length === 0, errs1.join(' | ').slice(0, 300));
     check(`${lang}: en modo WebGL no se descarga ningun poster`, rec.posters.length === 0, rec.posters.join(' '));

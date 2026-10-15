@@ -247,3 +247,20 @@ confundirlas. Las marcadas **[REVISAR]** son las primeras que conviene mirar.
 - **Honestidad:** una de las 5 corridas de `/es/` falló con `NO_FCP` (Chrome sin pantalla); esa
   mediana sale de 4 corridas. El criterio de E3 era «Lighthouse local ≥ 95»; se midió en vivo,
   que es más exigente (red y servidor reales).
+
+## E-24 · Bug: los capítulos no cambiaban de estructura (arreglado) + velos de cabecera y pie
+
+- **Hallazgo:** un fotograma del vídeo de `media3` mostró el pie fijo «PDB 1BNA» encima del
+  título del capítulo 6. Causa: `main.ts` buscaba las secciones con `[data-structure]`, y eso
+  también encontraba los 8 `<img>` de póster dentro del `.stage` fijo; el primero (1BNA) cubre
+  siempre el centro de la pantalla, así que `pick()` elegía 1BNA en todos los capítulos. La
+  molécula y el pie solo cambiaban en el viaje de escalas, y por eso pasaba la prueba «el pie
+  cambia ≥ 3 veces al bajar».
+- **Arreglo:** el selector es `main [data-structure]`. Prueba nueva en `verify-stage`: cada
+  capítulo, centrado, debe nombrar su estructura en el pie. **Falló con el build anterior**
+  (c2–c7 decían 1BNA, en EN y ES) y pasa con el arreglo.
+- **Velos:** la cabecera fija pasa a un degradado opaco al 94 % hasta el 60 % de su alto, y el pie
+  fijo lleva un velo inferior de 5,5 rem. El texto que sube se desvanece en vez de chocar con la
+  marca o con el pie. Solo cambia CSS del escenario; el visor no se toca.
+- **Consecuencia:** el vídeo de `media3` se grabó con el bug; se vuelve a grabar (`media4`)
+  contra el sitio arreglado.

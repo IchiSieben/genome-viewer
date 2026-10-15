@@ -38,8 +38,9 @@ a:hover { color: var(--st-accent); }
 .st-top {
   position: fixed; top: 0; left: 0; right: 0; z-index: 5;
   display: flex; align-items: center; gap: var(--st-space-3);
-  padding: var(--st-space-2) var(--st-gutter);
-  background: linear-gradient(180deg, rgba(0,0,0,.85), rgba(0,0,0,0));
+  padding: var(--st-space-2) var(--st-gutter) var(--st-space-3);
+  /* Opaque behind the links, fading below them: scrolled text must not show through the brand. */
+  background: linear-gradient(180deg, rgba(0,0,0,.94) 60%, rgba(0,0,0,0));
   font-size: 0.95rem; font-weight: 300;
 }
 .st-brand { font-weight: var(--st-w-head); letter-spacing: -0.01em; text-decoration: none; margin-right: auto; }
@@ -68,6 +69,10 @@ main { position: relative; z-index: 1; }
 .st-caption {
   position: fixed; left: var(--st-gutter); bottom: var(--st-space-2); z-index: 2;
   font-size: 0.8rem; color: var(--st-ink-3); font-weight: 300; max-width: calc(100vw - 2 * var(--st-gutter));
+}
+.st-caption::before { /* veil under the fixed caption, so it never sits on top of scrolling text */
+  content: ''; position: fixed; left: 0; right: 0; bottom: 0; height: 5.5rem; z-index: -1;
+  background: linear-gradient(0deg, rgba(0,0,0,.94) 45%, rgba(0,0,0,0)); pointer-events: none;
 }
 .st-caption a { color: var(--st-ink-3); }
 .st-caption b { color: var(--st-ink-2); font-weight: 400; }
