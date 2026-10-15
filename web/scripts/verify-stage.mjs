@@ -198,7 +198,10 @@ for (const lang of ['en', 'es']) {
     await page.waitForFunction(() => !!window.__stage, null, { timeout: 15000 }).catch(() => {});
     await page.waitForTimeout(800);
     await page.screenshot({ path: `${OUT}/stage-${lang}-${tag}.png` });
-    await page.screenshot({ path: `${OUT}/stage-${lang}-${tag}-full.png`, fullPage: true });
+    // The full-page capture is evidence, not a check: on Metal (Mac lane, visual3) Chromium refused
+    // it ("Unable to capture screenshot", the page is many viewports tall) and took the run down.
+    await page.screenshot({ path: `${OUT}/stage-${lang}-${tag}-full.png`, fullPage: true })
+      .catch((e) => console.log(`  info  ${lang} ${tag}: sin captura de pagina completa (${String(e.message).split('\n')[0]})`));
     await context.close();
   }
   console.log(`  info  capturas en ${OUT}/`);
