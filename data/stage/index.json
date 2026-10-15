@@ -1,0 +1,493 @@
+{
+ "format": "AGSC",
+ "formatVersion": 1,
+ "configHash": "cf394469242c4739",
+ "builtAt": "2026-10-15T18:35:41Z",
+ "points": 20000,
+ "seed": 20261015,
+ "ordering": "morton10+shared-permutation",
+ "classes": [
+  "dna1",
+  "dna2",
+  "protein",
+  "rna",
+  "other"
+ ],
+ "structures": [
+  {
+   "id": "1BNA",
+   "role": "helix",
+   "chapter": 1,
+   "file": "1bna.41e0924850.agsc",
+   "bytes": 160192,
+   "bytesGz": 40766,
+   "points": 20000,
+   "paddedPoints": 19514,
+   "classCounts": {
+    "dna1": 243,
+    "dna2": 243,
+    "protein": 0,
+    "rna": 0,
+    "other": 0
+   },
+   "radiusA": 22.863,
+   "extentA": [
+    22.48,
+    26.16,
+    42.48
+   ],
+   "maxExtentA": 42.48,
+   "thermal": {
+    "uMeanA": 0.675,
+    "uP95A": 0.888,
+    "bIsoMean": 37.26,
+    "bIsoStd": 13.92
+   },
+   "heavyAtoms": 486,
+   "assembly": null,
+   "provenance": {
+    "source": "rcsb-pdb",
+    "pdbId": "1BNA",
+    "url": "https://www.rcsb.org/structure/1BNA",
+    "entryRevisionDate": "2024-02-07",
+    "experimentalMethod": "X-RAY DIFFRACTION",
+    "resolutionA": 1.9,
+    "title": "STRUCTURE OF A B-DNA DODECAMER. CONFORMATION AND DYNAMICS",
+    "citation": {
+     "title": "Structure of a B-DNA dodecamer: conformation and dynamics.",
+     "journal": "Proc.Natl.Acad.Sci.USA",
+     "year": "1981",
+     "doi": "10.1073/pnas.78.4.2179",
+     "pmid": "6941276",
+     "firstAuthor": "Drew, H.R."
+    },
+    "configHash": "cf394469242c4739",
+    "builtAt": "2026-10-15T18:35:41Z",
+    "reader": "gemmi 0.7.5",
+    "license": "CC0 1.0 (RCSB PDB data)"
+   }
+  },
+  {
+   "id": "4UG0",
+   "role": "ribosome",
+   "chapter": 2,
+   "file": "4ug0.92dd4c5844.agsc",
+   "bytes": 160192,
+   "bytesGz": 152578,
+   "points": 20000,
+   "paddedPoints": 0,
+   "classCounts": {
+    "dna1": 0,
+    "dna2": 0,
+    "protein": 8633,
+    "rna": 11347,
+    "other": 20
+   },
+   "radiusA": 164.936,
+   "extentA": [
+    278.09,
+    295.88,
+    279.92
+   ],
+   "maxExtentA": 295.88,
+   "thermal": {
+    "uMeanA": 0.892,
+    "uP95A": 1.677,
+    "bIsoMean": 76.66,
+    "bIsoStd": 69.73
+   },
+   "heavyAtoms": 218776,
+   "assembly": null,
+   "provenance": {
+    "source": "rcsb-pdb",
+    "pdbId": "4UG0",
+    "url": "https://www.rcsb.org/structure/4UG0",
+    "entryRevisionDate": "2024-11-06",
+    "experimentalMethod": "ELECTRON MICROSCOPY",
+    "resolutionA": 3.6,
+    "title": "STRUCTURE OF THE HUMAN 80S RIBOSOME",
+    "citation": {
+     "title": "Structure of the human 80S ribosome",
+     "journal": "NATURE",
+     "year": "2015",
+     "doi": "10.1038/nature14427",
+     "pmid": "25901680",
+     "firstAuthor": "Khatter, K."
+    },
+    "configHash": "cf394469242c4739",
+    "builtAt": "2026-10-15T18:35:41Z",
+    "reader": "gemmi 0.7.5",
+    "license": "CC0 1.0 (RCSB PDB data)"
+   }
+  },
+  {
+   "id": "1KX5",
+   "role": "nucleosome",
+   "chapter": 3,
+   "file": "1kx5.5f239941d9.agsc",
+   "bytes": 160192,
+   "bytesGz": 141486,
+   "points": 20000,
+   "paddedPoints": 6375,
+   "classCounts": {
+    "dna1": 3011,
+    "dna2": 3010,
+    "protein": 7586,
+    "rna": 0,
+    "other": 18
+   },
+   "radiusA": 107.105,
+   "extentA": [
+    122.24,
+    155.46,
+    72.25
+   ],
+   "maxExtentA": 155.46,
+   "thermal": {
+    "uMeanA": 0.785,
+    "uP95A": 1.084,
+    "bIsoMean": 51.55,
+    "bIsoStd": 23.93
+   },
+   "heavyAtoms": 13625,
+   "assembly": null,
+   "provenance": {
+    "source": "rcsb-pdb",
+    "pdbId": "1KX5",
+    "url": "https://www.rcsb.org/structure/1KX5",
+    "entryRevisionDate": "2023-08-16",
+    "experimentalMethod": "X-RAY DIFFRACTION",
+    "resolutionA": 1.94,
+    "title": "X-Ray Structure of the Nucleosome Core Particle, NCP147, at 1.9 A Resolution",
+    "citation": {
+     "title": "Solvent Mediated Interactions in the Structure of the Nucleosome Core Particle at 1.9 A Resolution",
+     "journal": "J.Mol.Biol.",
+     "year": "2002",
+     "doi": "10.1016/S0022-2836(02)00386-8",
+     "pmid": "12079350",
+     "firstAuthor": "Davey, C.A."
+    },
+    "configHash": "cf394469242c4739",
+    "builtAt": "2026-10-15T18:35:41Z",
+    "reader": "gemmi 0.7.5",
+    "license": "CC0 1.0 (RCSB PDB data)"
+   }
+  },
+  {
+   "id": "1CDW",
+   "role": "tbp",
+   "chapter": 4,
+   "file": "1cdw.3290d34961.agsc",
+   "bytes": 160192,
+   "bytesGz": 68243,
+   "points": 20000,
+   "paddedPoints": 17929,
+   "classCounts": {
+    "dna1": 327,
+    "dna2": 323,
+    "protein": 1421,
+    "rna": 0,
+    "other": 0
+   },
+   "radiusA": 31.824,
+   "extentA": [
+    53.14,
+    43.67,
+    53.29
+   ],
+   "maxExtentA": 53.29,
+   "thermal": {
+    "uMeanA": 0.633,
+    "uP95A": 0.872,
+    "bIsoMean": 32.58,
+    "bIsoStd": 11.99
+   },
+   "heavyAtoms": 2071,
+   "assembly": null,
+   "provenance": {
+    "source": "rcsb-pdb",
+    "pdbId": "1CDW",
+    "url": "https://www.rcsb.org/structure/1CDW",
+    "entryRevisionDate": "2024-04-03",
+    "experimentalMethod": "X-RAY DIFFRACTION",
+    "resolutionA": 1.9,
+    "title": "HUMAN TBP CORE DOMAIN COMPLEXED WITH DNA",
+    "citation": {
+     "title": "Crystal structure of a human TATA box-binding protein/TATA element complex.",
+     "journal": "Proc.Natl.Acad.Sci.USA",
+     "year": "1996",
+     "doi": "10.1073/pnas.93.10.4862",
+     "pmid": "8643494",
+     "firstAuthor": "Nikolov, D.B."
+    },
+    "configHash": "cf394469242c4739",
+    "builtAt": "2026-10-15T18:35:41Z",
+    "reader": "gemmi 0.7.5",
+    "license": "CC0 1.0 (RCSB PDB data)"
+   }
+  },
+  {
+   "id": "5FLM",
+   "role": "polymerase",
+   "chapter": 5,
+   "file": "5flm.00f844280f.agsc",
+   "bytes": 160192,
+   "bytesGz": 150285,
+   "points": 20000,
+   "paddedPoints": 0,
+   "classCounts": {
+    "dna1": 324,
+    "dna2": 488,
+    "protein": 18988,
+    "rna": 198,
+    "other": 2
+   },
+   "radiusA": 101.913,
+   "extentA": [
+    143.5,
+    155.71,
+    156.71
+   ],
+   "maxExtentA": 156.71,
+   "thermal": {
+    "uMeanA": 1.362,
+    "uP95A": 2.097,
+    "bIsoMean": 152.53,
+    "bIsoStd": 72.13
+   },
+   "heavyAtoms": 32712,
+   "assembly": null,
+   "provenance": {
+    "source": "rcsb-pdb",
+    "pdbId": "5FLM",
+    "url": "https://www.rcsb.org/structure/5FLM",
+    "entryRevisionDate": "2024-05-08",
+    "experimentalMethod": "ELECTRON MICROSCOPY",
+    "resolutionA": 3.4,
+    "title": "Structure of transcribing mammalian RNA polymerase II",
+    "citation": {
+     "title": "Structure of Transcribing Mammalian RNA Polymerase II",
+     "journal": "Nature",
+     "year": "2016",
+     "doi": "10.1038/NATURE16482",
+     "pmid": "26789250",
+     "firstAuthor": "Bernecky, C."
+    },
+    "configHash": "cf394469242c4739",
+    "builtAt": "2026-10-15T18:35:41Z",
+    "reader": "gemmi 0.7.5",
+    "license": "CC0 1.0 (RCSB PDB data)"
+   }
+  },
+  {
+   "id": "5XJC",
+   "role": "spliceosome",
+   "chapter": 6,
+   "file": "5xjc.5f916e1cbb.agsc",
+   "bytes": 160192,
+   "bytesGz": 151281,
+   "points": 20000,
+   "paddedPoints": 0,
+   "classCounts": {
+    "dna1": 0,
+    "dna2": 0,
+    "protein": 18555,
+    "rna": 1407,
+    "other": 38
+   },
+   "radiusA": 202.693,
+   "extentA": [
+    228.21,
+    312.25,
+    327.72
+   ],
+   "maxExtentA": 327.72,
+   "thermal": {
+    "uMeanA": 1.163,
+    "uP95A": 1.889,
+    "bIsoMean": 120.79,
+    "bIsoStd": 79.93
+   },
+   "heavyAtoms": 116398,
+   "assembly": null,
+   "provenance": {
+    "source": "rcsb-pdb",
+    "pdbId": "5XJC",
+    "url": "https://www.rcsb.org/structure/5XJC",
+    "entryRevisionDate": "2024-11-20",
+    "experimentalMethod": "ELECTRON MICROSCOPY",
+    "resolutionA": 3.6,
+    "title": "Cryo-EM structure of the human spliceosome just prior to exon ligation at 3.6 angstrom",
+    "citation": {
+     "title": "An Atomic Structure of the Human Spliceosome",
+     "journal": "Cell",
+     "year": "2017",
+     "doi": "10.1016/j.cell.2017.04.033",
+     "pmid": "28502770",
+     "firstAuthor": "Zhang, X."
+    },
+    "configHash": "cf394469242c4739",
+    "builtAt": "2026-10-15T18:35:41Z",
+    "reader": "gemmi 0.7.5",
+    "license": "CC0 1.0 (RCSB PDB data)"
+   }
+  },
+  {
+   "id": "5KKQ",
+   "role": "ctcf",
+   "chapter": 7,
+   "file": "5kkq.2da0591083.agsc",
+   "bytes": 160192,
+   "bytesGz": 93219,
+   "points": 20000,
+   "paddedPoints": 16224,
+   "classCounts": {
+    "dna1": 680,
+    "dna2": 702,
+    "protein": 2384,
+    "rna": 0,
+    "other": 10
+   },
+   "radiusA": 51.464,
+   "extentA": [
+    56.56,
+    81.41,
+    94.46
+   ],
+   "maxExtentA": 94.46,
+   "thermal": {
+    "uMeanA": 0.704,
+    "uP95A": 0.907,
+    "bIsoMean": 40.12,
+    "bIsoStd": 13.12
+   },
+   "heavyAtoms": 3776,
+   "assembly": null,
+   "provenance": {
+    "source": "rcsb-pdb",
+    "pdbId": "5KKQ",
+    "url": "https://www.rcsb.org/structure/5KKQ",
+    "entryRevisionDate": "2024-03-06",
+    "experimentalMethod": "X-RAY DIFFRACTION",
+    "resolutionA": 1.744,
+    "title": "Homo sapiens CCCTC-binding factor (CTCF) ZnF3-7 and DNA complex structure",
+    "citation": {
+     "title": "Structural Basis for the Versatile and Methylation-Dependent Binding of CTCF to DNA.",
+     "journal": "Mol. Cell",
+     "year": "2017",
+     "doi": "10.1016/j.molcel.2017.05.004",
+     "pmid": "28529057",
+     "firstAuthor": "Hashimoto, H."
+    },
+    "configHash": "cf394469242c4739",
+    "builtAt": "2026-10-15T18:35:41Z",
+    "reader": "gemmi 0.7.5",
+    "license": "CC0 1.0 (RCSB PDB data)"
+   }
+  },
+  {
+   "id": "5IRE",
+   "role": "virus",
+   "chapter": 0,
+   "file": "5ire.75a6dfc2d5.agsc",
+   "bytes": 160192,
+   "bytesGz": 151577,
+   "points": 20000,
+   "paddedPoints": 0,
+   "classCounts": {
+    "dna1": 0,
+    "dna2": 0,
+    "protein": 19859,
+    "rna": 0,
+    "other": 141
+   },
+   "radiusA": 240.076,
+   "extentA": [
+    468.88,
+    461.61,
+    464.68
+   ],
+   "maxExtentA": 468.88,
+   "thermal": {
+    "uMeanA": 1.346,
+    "uP95A": 1.579,
+    "bIsoMean": 144.76,
+    "bIsoStd": 30.31
+   },
+   "heavyAtoms": 661440,
+   "assembly": "assembly 1",
+   "provenance": {
+    "source": "rcsb-pdb",
+    "pdbId": "5IRE",
+    "url": "https://www.rcsb.org/structure/5IRE",
+    "entryRevisionDate": "2024-11-13",
+    "experimentalMethod": "ELECTRON MICROSCOPY",
+    "resolutionA": 3.8,
+    "title": "The cryo-EM structure of Zika Virus",
+    "citation": {
+     "title": "The 3.8 angstrom resolution cryo-EM structure of Zika virus.",
+     "journal": "Science",
+     "year": "2016",
+     "doi": "10.1126/science.aaf5316",
+     "pmid": "27033547",
+     "firstAuthor": "Sirohi, D."
+    },
+    "configHash": "cf394469242c4739",
+    "builtAt": "2026-10-15T18:35:41Z",
+    "reader": "gemmi 0.7.5",
+    "license": "CC0 1.0 (RCSB PDB data)"
+   }
+  }
+ ],
+ "pairing": {
+  "1BNA>4UG0": {
+   "meanPairDist": 0.5336,
+   "meanRandomDist": 0.7666,
+   "ratio": 0.6961,
+   "midRadiusP95": 0.7372
+  },
+  "4UG0>1KX5": {
+   "meanPairDist": 0.4915,
+   "meanRandomDist": 0.6547,
+   "ratio": 0.7507,
+   "midRadiusP95": 0.5783
+  },
+  "1KX5>1CDW": {
+   "meanPairDist": 0.4782,
+   "meanRandomDist": 0.675,
+   "ratio": 0.7084,
+   "midRadiusP95": 0.6217
+  },
+  "1CDW>5FLM": {
+   "meanPairDist": 0.5503,
+   "meanRandomDist": 0.7404,
+   "ratio": 0.7432,
+   "midRadiusP95": 0.6558
+  },
+  "5FLM>5XJC": {
+   "meanPairDist": 0.4173,
+   "meanRandomDist": 0.6627,
+   "ratio": 0.6297,
+   "midRadiusP95": 0.6873
+  },
+  "5XJC>5KKQ": {
+   "meanPairDist": 0.4995,
+   "meanRandomDist": 0.7176,
+   "ratio": 0.696,
+   "midRadiusP95": 0.695
+  },
+  "5KKQ>5IRE": {
+   "meanPairDist": 0.6892,
+   "meanRandomDist": 0.9948,
+   "ratio": 0.6927,
+   "midRadiusP95": 0.8061
+  },
+  "5IRE>1BNA": {
+   "meanPairDist": 0.6226,
+   "meanRandomDist": 0.9959,
+   "ratio": 0.6252,
+   "midRadiusP95": 0.8552
+  }
+ },
+ "totalBytesGz": 949435
+}
