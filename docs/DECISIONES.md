@@ -202,4 +202,7 @@
   - Se quitan las banderas `--disable-frame-rate-limit` y compañía: ya no hacen falta.
 - **Descartado:** medir la mediana de la cola (esconde un salto de un fotograma); subir otra vez
   la cota (ya se relajó en F-12 y no era la causa).
+- **Corrección (visual9, misma noche):** el tamaño no va en ese reloj. El cambio de estructura
+  avanza en tiempo real (`morphStart`), así que medido por segundo de reloj daba 2,9/s en la vuelta
+  del viaje de escalas. El tamaño se mide otra vez en tiempo real; el giro, en el reloj.
 - **Revertir:** `rates(xs, key, 't')` en todas las llamadas de `web/scripts/verify-motion.mjs`.

@@ -125,7 +125,7 @@ for (const lang of LANGS) {
   await page.waitForTimeout(3500);
   const chapRec = await stopRec(page);
   const cy = rates(chapRec, 'yaw');
-  const cs = rates(chapRec, 'scale');
+  const cs = rates(chapRec, 'scale', 't'); // sizes: the morph runs on real time (morphStart), so real time bounds them
   const targets = [...new Set(chapRec.map((m) => m.target))];
   check(`${lang} capitulos: cambia de estructura dos veces`, targets.length >= 3, targets.join(' → '));
   check(`${lang} capitulos: el angulo sigue igual, sin saltos ni giro por el scroll`, cy.every((x) => x.r > 0 && Math.abs(x.r - IDLE_RATE) < IDLE_RATE * 0.6),
@@ -142,7 +142,7 @@ for (const lang of LANGS) {
   await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), c7);
   await page.waitForTimeout(4000);
   const back = await stopRec(page);
-  const bs = rates(back, 'scale');
+  const bs = rates(back, 'scale', 't');
   check(`${lang} escala: al volver del viaje de escalas el tamaño crece sin salto`, maxAbs(bs) <= MAX_SCALE_RATE,
     `max ${fmt(maxAbs(bs))}/s; ${fmt(back[0].scale)} → ${fmt(back.at(-1).scale)}`);
   check(`${lang} escala: termina a tamaño de capitulo`, Math.abs(back.at(-1).scale - 1) < 0.05, fmt(back.at(-1).scale));
