@@ -29,7 +29,7 @@
 
 ## Ramas `mac/*` borradas (2026-10-16, E-27)
 
-- El remoto tiene solo `main`. Las 13 ramas `mac/stage-*` remotas y las 15 locales (2 nunca
+- El remoto tiene solo `main` (commit del registro: `bf65704`). Las 13 ramas `mac/stage-*` remotas y las 15 locales (2 nunca
   subidas) se borraron por orden del dueño, después de comprobar los vídeos en Drive por hash.
 - **Copia íntegra:** `Portfolio/_papelera_claude/alphagenome-mac-branches-2026-10-16.bundle`
   (309 142 106 bytes, sha256 `2ef53896ac34c33179e4daae54ca4af6229c166e10a00e8f0875e306f4c88dd1`).
