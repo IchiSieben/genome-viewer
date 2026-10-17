@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Lane `visual`: build the site on this node and run verify:stage (EN/ES, desktop + mobile, WebGL,
+# plus the phase A checks: motion, layout, register switch, tour;
 # ?nowebgl and reduced-motion posters, zero external requests, zero console errors) with the
 # node's GPU. Screenshots land in web/qa/stage/; a copy goes to docs/evidence/stage/visual/. Detached.
 [ "${1:-}" = run ] || exec bash "$(dirname "$0")/detach.sh" visual "$0"
@@ -15,8 +16,10 @@ for L in en es; do
   echo "== visual: $L"
   AGP_STAGE_LANGS=$L npm run verify:stage 2>&1 | tail -40; r=${PIPESTATUS[0]}
   [ "$r" != 0 ] && rc=$r
-  AGP_STAGE_LANGS=$L npm run verify:motion 2>&1 | tail -20; r=${PIPESTATUS[0]}
-  [ "$r" != 0 ] && rc=$r
+  for chk in motion layout register tour; do
+    AGP_STAGE_LANGS=$L npm run verify:$chk 2>&1 | grep -E 'FALLA|TODO OK|FALLAS'; r=${PIPESTATUS[0]}
+    [ "$r" != 0 ] && rc=$r
+  done
 done
 mkdir -p ../docs/evidence/stage/visual && cp -R qa/stage/. ../docs/evidence/stage/visual/ 2>/dev/null || true
 exit "$rc"
