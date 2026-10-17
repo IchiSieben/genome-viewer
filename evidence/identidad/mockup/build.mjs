@@ -30,7 +30,7 @@ const fill = (t, lang, d) => t.replaceAll('{coding_pct}', num(lang, coding.point
 // Own calculations shown as figures (each one also stated in the chapter's own text).
 const BP = 3.055e9;                        // Nurk 2022, haploid T2T-CHM13
 const YEARS = BP / (365.25 * 86400);       // one letter per second
-const METRES = 6.11e9 * 0.3347e-9;         // the chapter's own product: 6.11e9 bp (2n, rounded) x rise measured on 1BNA
+const METRES = read('docs/evidence/dna-rise.json').diploidLengthM; // tools/dna_rise.py, the figure the chapter states
 
 const COPY = {
   es: {
