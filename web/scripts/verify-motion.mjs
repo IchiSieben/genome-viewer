@@ -83,8 +83,8 @@ for (const lang of LANGS) {
   await page.mouse.down();
   const marks = await page.evaluate(() => performance.now());
   for (let i = 1; i <= 12; i++) { await page.mouse.move(x0 - 18 * i, y0, { steps: 3 }); await page.waitForTimeout(90); }
-  await page.mouse.move(x0 - 18 * 13, y0, { steps: 3 }); // let go while moving, as a hand does
-  await page.mouse.up();
+  // Let go while moving, as a hand does: the last move and the release in the same breath.
+  await Promise.all([page.mouse.move(x0 - 18 * 13, y0), page.mouse.up()]);
   const upAt = await page.evaluate(() => performance.now());
   await page.waitForTimeout(5000);
   const rec = await stopRec(page);

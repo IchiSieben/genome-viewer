@@ -188,6 +188,13 @@ export async function mountIsland(root: HTMLElement, base: string, firstId: stri
       return;
     }
     if (ev.pointerId !== dragging.id) return;
+    follow(ev);
+  });
+  // The angle follows the pointer. Also called with the pointerup itself: Chromium delivers moves
+  // once per frame, so the last stretch of a fling can arrive only on the up event (A1 measured the
+  // up 18 px ahead of the last move); ignoring it read a moving hand as a still one.
+  function follow(ev: PointerEvent): void {
+    if (!dragging) return;
     const dx = ev.clientX - dragging.x;
     // Touch: horizontal only (vertical is the page's scroll; the page has touch-action: pan-y).
     const dy = ev.pointerType === 'mouse' ? ev.clientY - dragging.y : 0;
@@ -196,13 +203,14 @@ export async function mountIsland(root: HTMLElement, base: string, firstId: stri
     trail.push({ t: ev.timeStamp, yaw, pitch });
     while (trail.length > 2 && ev.timeStamp - trail[1]!.t > 100) trail.shift();
     dragging = { id: dragging.id, x: ev.clientX, y: ev.clientY, t: ev.timeStamp };
-  });
+  }
   const release = (ev: PointerEvent): void => {
     if (!dragging || ev.pointerId !== dragging.id) return;
+    if (ev.type === 'pointerup' && (ev.clientX !== dragging.x || ev.clientY !== dragging.y)) follow(ev);
     // A pointer that stood still before letting go has no fling left.
     const a = trail[0]!;
     const span = ev.timeStamp - a.t;
-    if (ev.timeStamp - dragging.t > 120 || span < 8) { vYaw = 0; vPitch = 0; }
+    if (ev.timeStamp - dragging.t > 180 || span < 8) { vYaw = 0; vPitch = 0; }
     else { vYaw = (yaw - a.yaw) / span; vPitch = (pitch - a.pitch) / span; }
     const cap = 0.004; // rad/ms: a hard flick still reads as a turn, not a blur
     vYaw = Math.max(-cap, Math.min(cap, vYaw));
