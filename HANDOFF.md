@@ -1,4 +1,4 @@
-# HANDOFF — Visor del genoma / Genome Viewer (actualizado: 2026-10-15, sesión del escenario)
+# HANDOFF — Visor del genoma / Genome Viewer (actualizado: 2026-10-16, ramas `mac/*` borradas)
 
 > Sesión autónoma del 2026-10-15 (13:14–23:30 Lima) con el prompt maestro
 > `docs/09-PROMPT-escenario-educativo.md`. Decisiones: `docs/09-decisiones-autonomas.md`
@@ -26,6 +26,22 @@
   `Portfolio/_papelera_claude/genome-viewer-landing-legacy-2026-10-15/`. Se puede borrar.
 - **Drive:** `Gdrive:01-Trabajo/Portfolio/AlphaGenome/` (vídeos de demostración en
   `media/2026-10-15/`, `README-DRIVE.md`), listado en `drive.manifest`.
+
+## Ramas `mac/*` borradas (2026-10-16, E-27)
+
+- El remoto tiene solo `main`. Las 13 ramas `mac/stage-*` remotas y las 15 locales (2 nunca
+  subidas) se borraron por orden del dueño, después de comprobar los vídeos en Drive por hash.
+- **Copia íntegra:** `Portfolio/_papelera_claude/alphagenome-mac-branches-2026-10-16.bundle`
+  (309 142 106 bytes, sha256 `2ef53896ac34c33179e4daae54ca4af6229c166e10a00e8f0875e306f4c88dd1`).
+  La sesión de disco la moverá a F: (§18); compara el sha256 después de moverla.
+- **Solo en el bundle:** los vídeos de `media3` (con el bug E-24), los 40 informes de Lighthouse
+  de `lh2`, las capturas de página completa de `visual4`, `stage-doctor2` y `stage-lh-base`.
+- **Recuperar una rama** (probado en un repositorio limpio):
+  `git bundle verify <bundle>` y luego
+  `git fetch <bundle> refs/heads/mac/stage-lh2:refs/heads/mac/stage-lh2`. Para traerlas todas:
+  `git fetch <bundle> 'refs/heads/mac/*:refs/heads/mac/*'`.
+- **Pendiente:** cancelar los 4 trabajos viejos de la cola de enjambre (NEEDS-OWNER #11). Si no se
+  cancelan, `stage-media` volvería a subir vídeo cuando la Mac reaparezca.
 
 ## Commits del escenario
 

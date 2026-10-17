@@ -1,5 +1,11 @@
 # NOTES — Plataforma AlphaGenome
 
+## 2026-10-16 — ramas `mac/*` borradas (E-27)
+
+- El remoto público tiene solo `main`. Las 15 ramas `mac/*` están en
+  `Portfolio/_papelera_claude/alphagenome-mac-branches-2026-10-16.bundle`; la receta para
+  recuperarlas está en HANDOFF y E-27. Falta cancelar la cola vieja de enjambre (NEEDS-OWNER #11).
+
 ## Estado (2026-10-15, cierre de la sesión del escenario): público en genome.ichisieben.dev
 
 - En vivo **sin noindex** en https://genome.ichisieben.dev/ (relato) y `/app/` (visor), ES en `/es/`.

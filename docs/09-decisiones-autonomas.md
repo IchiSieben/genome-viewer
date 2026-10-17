@@ -304,3 +304,44 @@ confundirlas. Las marcadas **[REVISAR]** son las primeras que conviene mirar.
   `mac/stage-visual5`.
 - **Pendiente sin cerrar:** la captura de página completa sigue sin funcionar en Metal; ahora es
   solo un aviso (`info`), no una prueba.
+
+## E-27 · 2026-10-16 · Ramas `mac/*` borradas del remoto público (orden del dueño)
+
+- **Qué:** se borraron las 13 ramas `mac/stage-*` de `origin` (una a una, `git push origin
+  --delete`) y las 15 locales (`git branch -D`), incluidas `mac/stage-doctor2` y
+  `mac/stage-lh-base`, que nunca se subieron. `main`/`master` no se tocaron (`76a68bc`).
+  `git ls-remote --heads origin` muestra solo `refs/heads/main`.
+- **Antes de borrar:**
+  - Los 4 vídeos tienen el mismo sha256 en Drive (`rclone hashsum sha256`), en `drive.manifest`
+    y en los blobs de `mac/stage-media4`: 4/4.
+  - Bundle de las 15 ramas con historia completa, sin prerrequisitos:
+    `Portfolio/_papelera_claude/alphagenome-mac-branches-2026-10-16.bundle`, 309 142 106 bytes,
+    sha256 `2ef53896ac34c33179e4daae54ca4af6229c166e10a00e8f0875e306f4c88dd1`.
+    `git bundle verify` dio OK y `list-heads` lista 15.
+  - Recuperación probada en un repositorio vacío: las 15 ramas vuelven con el mismo SHA, los
+    hashes de los vídeos coinciden y `git fsck` no da errores.
+- **Solo en el bundle, no en Drive:** los vídeos de `mac/stage-media3` (grabados con el bug
+  E-24), los 40 informes de Lighthouse de `mac/stage-lh2`, las capturas de página completa de
+  `mac/stage-visual4` y las dos ramas que nunca se subieron. Drive solo cubre los 4 mp4 de
+  `media4`.
+- **Cómo recuperar una rama** (la ruta del bundle cambia cuando la sesión de disco mueva
+  `_papelera_claude` a F:, §18; ese movimiento debe volver a comprobar el sha256 de arriba):
+  ```bash
+  B=<ruta>/alphagenome-mac-branches-2026-10-16.bundle
+  git bundle verify "$B"
+  git fetch "$B" refs/heads/mac/stage-lh2:refs/heads/mac/stage-lh2   # una rama
+  git fetch "$B" 'refs/heads/mac/*:refs/heads/mac/*'                 # todas
+  git bundle list-heads "$B"                                          # qué hay dentro
+  ```
+  Subirla de nuevo al remoto es solo `git push origin mac/stage-lh2`; no hace falta salvo que se
+  quiera compartir.
+- **El peso no baja al momento:** GitHub limpia los objetos inalcanzables cuando le toca, así
+  que el tamaño del repo puede tardar en bajar. En local, los 307 MB de objetos sueltos siguen
+  ahí hasta que caduque el reflog y corra `git gc`.
+- **Riesgo que puede deshacerlo:** en la cola de enjambre siguen esperando a la Mac (caída desde
+  el 2026-10-15 20:18 UTC) `stage-visual2`, `stage-lh`, `stage-media` y `stage-posters` de
+  AlphaGenome. Si la Mac vuelve con `enjambre watch` corriendo, `stage-media` subiría una rama
+  `mac/stage-media` con vídeos. No se cancelaron porque el encargo no lo pedía. El comando está en
+  NEEDS-OWNER #11.
+- **Revertir:** `git fetch <bundle> 'refs/heads/mac/*:refs/heads/mac/*'` y
+  `git push origin 'refs/heads/mac/*:refs/heads/mac/*'`.

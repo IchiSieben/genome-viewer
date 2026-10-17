@@ -65,6 +65,10 @@
 | `mac/stage-blender` | — | falta Molecular Nodes |
 | `stage-lh-base`, `stage-doctor2` | línea base y diagnóstico | no se empujaron (`pushed=False`) |
 
+> **2026-10-16:** todas estas ramas (y `stage-lh-base`/`stage-doctor2`) se borraron del remoto
+> y de local. Están íntegras en `_papelera_claude/alphagenome-mac-branches-2026-10-16.bundle`
+> (E-27).
+
 En la cola de enjambre hay entradas viejas en espera (`stage-visual2`, `stage-lh`, `stage-media`,
 `stage-posters`) que nunca se lanzaron. Ya están superadas: se pueden cancelar.
 
@@ -77,4 +81,5 @@ En la cola de enjambre hay entradas viejas en espera (`stage-visual2`, `stage-lh
    (NEEDS-OWNER #1). Después, `git pull --ff-only` en `Landing/` para traer `5fd2dd7`.
 3. **Decidir sobre la papelera y las ramas pesadas:**
    `Portfolio/_papelera_claude/genome-viewer-landing-legacy-2026-10-15/` (11 MB, borrable) y las
-   ramas `mac/*` con vídeo en el remoto público (NEEDS-OWNER #7).
+   ramas `mac/*` con vídeo en el remoto público (NEEDS-OWNER #7). *Las ramas ya están borradas, E-27;
+   falta cancelar la cola, NEEDS-OWNER #11.*

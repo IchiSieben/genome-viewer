@@ -56,16 +56,12 @@ AGP_AB_LANG=es AGP_AB_PATH_REF=es/ AGP_AB_PATH_NEW=es/app/ node scripts/measure-
   cd ../enjambre && python enjambre.py run --node mac --repo AlphaGenome --task ../AlphaGenome/tasks/TASK-stage-blender2.md --detach --budget 2 --model sonnet
   ```
 
-## 7. Ramas `mac/*` pesadas en el remoto público
+## 7. ~~Ramas `mac/*` pesadas en el remoto público~~ — HECHO el 2026-10-16 (E-27)
 
-- **Qué:** `mac/stage-media3` y `mac/stage-media4` llevan unos 100 MB de mp4 cada una, y
-  `mac/stage-lh2` lleva 40 informes de Lighthouse. Lo útil ya se adoptó: los vídeos de `media4`
-  están en Drive y los resúmenes de Lighthouse en `docs/evidence/`. `media3` se grabó con el
-  bug E-24. Borrar ramas remotas es irreversible, así que no se hizo.
-- **Comando**, si quieres aligerar el remoto:
-  ```bash
-  git push origin --delete mac/stage-media3 mac/stage-media4 mac/stage-perf mac/stage-visual mac/stage-visual3
-  ```
+- Se borraron por orden tuya: 13 remotas y 15 locales. Antes se comprobó en Drive, por hash, que
+  estaban los vídeos de `media4`. Todo queda en
+  `Portfolio/_papelera_claude/alphagenome-mac-branches-2026-10-16.bundle` (sha256 `2ef53896…c88dd1`).
+  La receta para recuperarlas está en E-27 y en el HANDOFF.
 
 ## 8. Subtítulos quemados en el vídeo (opcional)
 
@@ -84,3 +80,15 @@ AGP_AB_LANG=es AGP_AB_PATH_REF=es/ AGP_AB_PATH_NEW=es/app/ node scripts/measure-
 - `Portfolio/_papelera_claude/` no existía al llegar a E7: el bundle
   `genome-viewer-backup/pre-sanitize-2026-09-26.bundle` ya no está. Esta sesión volvió a crear la
   carpeta solo para la copia vieja del landing. Si el bundle lo borraste tú, no hay nada que hacer.
+
+## 11. Cancelar los trabajos viejos de AlphaGenome en la cola de enjambre
+
+- **Qué:** `stage-visual2`, `stage-lh`, `stage-media` y `stage-posters` llevan desde el 2026-10-15
+  esperando a la Mac, y ya están superados por `visual5`, `lh2`, `media4` y `posters2`. Si la Mac
+  vuelve, `stage-media` subiría otra rama `mac/stage-media` con unos 100 MB de vídeo y desharía E-27.
+- **Comando** (no está probado si `kill` saca de la cola un trabajo que aún no ha arrancado;
+  después comprueba con `status` que ya no aparecen):
+  ```bash
+  cd ../enjambre && for j in stage-visual2 stage-lh stage-media stage-posters; do python enjambre.py kill $j; done
+  python enjambre.py status | grep -A6 '^queue'
+  ```
