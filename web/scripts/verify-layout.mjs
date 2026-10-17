@@ -4,14 +4,17 @@
 //   - the fixed header ("Genome Viewer") and the fixed caption hide whatever scrolls under them:
 //     their background is opaque, and at every point where text passes beneath, the topmost
 //     element is the bar, not the text;
-//   - one legend per structure: with a chapter centred, its PDB entry is named once on screen.
+//   - one legend per structure: with a chapter centred, its PDB entry is named once on screen;
+//   - a late download never wins: with one structure's file slowed down, scrolling past its
+//     chapter leaves the molecule and the legend on the chapter being read, not the late one.
 //
 // Uso: node scripts/serve-subfolder.mjs --run "node scripts/verify-layout.mjs"
 import { chromium } from 'playwright';
 
 const BASE = process.env.AGP_BASE_URL || 'http://127.0.0.1:8099/genome-viewer/';
 const LANGS = (process.env.AGP_STAGE_LANGS || 'en,es').split(',');
-const WIDTHS = [[390, 844], [768, 1024], [1440, 900], [1920, 1080], [2560, 1440]];
+const WIDTHS = [[390, 844], [768, 1024], [1440, 900], [1920, 1080], [2560, 1440]]
+  .filter(([w]) => !process.env.AGP_WIDTHS || process.env.AGP_WIDTHS.split(',').includes(String(w)));
 
 const browser = await chromium.launch({
   args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-webgl'],
@@ -27,6 +30,9 @@ for (const lang of LANGS) {
     console.log(`\n=== maquetacion (${lang}, ${w}px) ===`);
     const context = await browser.newContext({ viewport: { width: w, height: h } });
     const page = await context.newPage();
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') errors.push(`${m.type()}: ${m.text()}`); });
     await page.goto(BASE + (lang === 'es' ? 'es/' : ''), { waitUntil: 'load' });
     await page.waitForTimeout(800);
 
@@ -76,6 +82,12 @@ for (const lang of LANGS) {
         const el = document.getElementById(cid);
         window.scrollTo({ top: el.getBoundingClientRect().bottom + window.scrollY - window.innerHeight * 0.75, behavior: 'instant' });
       }, id);
+      // The caption names what is on screen, so it changes when the morph lands: wait for that
+      // (a loaded machine morphs slower), then count.
+      await page.waitForFunction((cid) => {
+        const pdb = `PDB ${document.getElementById(cid).dataset.structure}`;
+        return document.getElementById('st-caption')?.textContent.includes(pdb);
+      }, id, { timeout: 15000 }).catch(() => {});
       await page.waitForTimeout(250);
       const n = await page.evaluate((cid) => {
         const pdb = `PDB ${document.getElementById(cid).dataset.structure}`;
@@ -86,11 +98,43 @@ for (const lang of LANGS) {
           return q.width > 0 && q.bottom > 0 && q.top < innerHeight && getComputedStyle(e).visibility !== 'hidden';
         }).length;
       }, id);
-      if (n !== 1) dupes.push(`${id}: ${n}`);
+      if (n !== 1) {
+        const why = await page.evaluate(() => ({
+          caption: document.querySelector('.st-caption')?.textContent.trim().slice(0, 60),
+          motion: window.__stage?.motion?.() ?? null,
+        }));
+        dupes.push(`${id}: ${n} ${JSON.stringify(why)}`);
+      }
     }
     check(`${lang} ${w}: una sola leyenda por estructura en cada capitulo`, dupes.length === 0, dupes.join(' | '));
+    check(`${lang} ${w}: sin errores de pagina`, errors.length === 0, errors.join(' | ').slice(0, 300));
     await context.close();
   }
+}
+
+// A late download must not take the stage back: slow 5FLM (chapter 5) down, scroll c5 -> c6 -> c7
+// quickly, and when it finally arrives the reader is still looking at c7's structure.
+for (const lang of LANGS) {
+  console.log(`\n=== descarga tardia (${lang}) ===`);
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await context.route(/5flm\.[0-9a-f]+\.agsc$/, async (route) => { await new Promise((r) => setTimeout(r, 4000)); await route.continue(); });
+  const page = await context.newPage();
+  await page.goto(BASE + (lang === 'es' ? 'es/' : ''), { waitUntil: 'load' });
+  await page.waitForFunction(() => window.__stage?.mode?.() === 'webgl', null, { timeout: 20000 }).catch(() => {});
+  for (const id of ['c5', 'c6', 'c7']) {
+    await page.evaluate((cid) => window.scrollTo({ top: document.getElementById(cid).offsetTop, behavior: 'instant' }), id);
+    await page.waitForTimeout(400);
+  }
+  await page.waitForTimeout(7000);
+  const end = await page.evaluate(() => ({
+    want: document.getElementById('c7').dataset.structure,
+    motion: window.__stage?.motion?.() ?? null,
+    caption: document.getElementById('st-caption')?.textContent ?? '',
+  }));
+  check(`${lang}: tras una descarga tardia la molecula es la del capitulo que se lee`,
+    end.motion?.target === end.want && end.motion?.current === end.want, `quiere ${end.want}, ${JSON.stringify(end.motion)}`);
+  check(`${lang}: y la leyenda tambien`, end.caption.includes(`PDB ${end.want}`), end.caption.trim().slice(0, 70));
+  await context.close();
 }
 
 await browser.close();

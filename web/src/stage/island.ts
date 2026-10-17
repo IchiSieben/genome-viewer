@@ -112,6 +112,9 @@ export async function mountIsland(root: HTMLElement, base: string, firstId: stri
   // structure enters at the size the old one had and grows or shrinks to its own (A1).
   let scaleA = 1, scaleB = 1, wantA = 1, wantB = 1;
   let cycling = false;
+  // The last structure the page asked for. A cloud that arrives late is shown only if it is still
+  // the one wanted: otherwise a slow download took the stage back to a chapter already left.
+  let wanted = firstId;
   let lost = false;
   let island: Island;
 
@@ -303,11 +306,12 @@ export async function mountIsland(root: HTMLElement, base: string, firstId: stri
     mode: 'webgl',
     show(id, opts) {
       cycling = false;
+      wanted = id;
       // No poster here: a WebGL visitor never downloads them (context loss sets the right one).
       if (!clouds.has(id)) {
         // Not streamed yet: fetch it now, then morph.
         const s = index.structures.find((x) => x.id === id);
-        if (s) void loadCloud(base, s.file).then((c) => { clouds.set(id, c); island.show(id, opts); }).catch(() => {});
+        if (s) void loadCloud(base, s.file).then((c) => { clouds.set(id, c); if (wanted === id) island.show(id, opts); }).catch(() => {});
         return;
       }
       request(id, opts?.scaleTo ?? 1);
