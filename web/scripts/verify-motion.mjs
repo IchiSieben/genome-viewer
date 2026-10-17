@@ -1,8 +1,10 @@
 // A1: the molecule's motion, measured. A recorder inside the page samples the island's rotation
-// and on-screen size every 100 ms. Each sample carries the time of the FRAME that drew it
-// (motion().t), and samples of the same frame are dropped: at a low frame rate, wall-clock
-// sampling read "no change" between frames as a freeze and two frames' motion as one jump (the
-// Mac lane, 2026-10-17). The checks assert what the reader sees, not a symptom:
+// and on-screen size every 100 ms, one sample per drawn frame. Rates are per second of the
+// island's own clock (motion().clock: the capped steps the motion is integrated on), not of the
+// wall clock: on the Mac lane (2026-10-17) the test machine's frame pacing turned "no change
+// between frames" into a freeze, two frames into a jump, and one long frame into a slowdown. A
+// jump or a scroll-driven spin still changes the angle without the clock, so it still fails.
+// The hand's speed (drag) is real time. The checks assert what the reader sees, not a symptom:
 //   rest     10 s untouched: the angle always advances (no two equal samples in a row), one way,
 //            and never faster than MAX_RATE;
 //   drag     a mouse drag over empty space turns it the way the mouse went; on release it keeps
@@ -21,6 +23,7 @@ const BASE = process.env.AGP_BASE_URL || 'http://127.0.0.1:8099/genome-viewer/';
 const LANGS = (process.env.AGP_STAGE_LANGS || 'en,es').split(',');
 const ANGLE = process.env.AGP_ANGLE || 'swiftshader';
 const MAX_RATE = 1.2; // rad/s outside a drag: idle is 0.09; the old scroll term reached 8.6
+const IDLE_RATE = 0.09; // rad/s: island.ts IDLE_YAW (0.00009 rad/ms); real time can never turn faster at rest
 const MAX_SCALE_RATE = 2.5; // on-screen size per second (1 = fills the stage); the old snap was ~10
 
 const browser = await chromium.launch({
@@ -45,11 +48,12 @@ const startRec = (page) => page.evaluate(() => {
 const stopRec = (page) => page.evaluate(() => { clearInterval(window.__recId); return window.__rec; });
 const fps = (xs) => xs.length > 1 ? (xs.length - 1) / ((xs.at(-1).t - xs[0].t) / 1000) : 0;
 
-// Per-sample rates: d/dt of a key, per second.
-function rates(xs, key) {
+// Per-sample rates: d/dt of a key, per second of the island's clock (or of `time`).
+function rates(xs, key, time = 'clock') {
   const out = [];
   for (let i = 1; i < xs.length; i++) {
-    const dt = (xs[i].t - xs[i - 1].t) / 1000;
+    const dt = (xs[i][time] - xs[i - 1][time]) / 1000;
+    if (dt <= 0) continue;
     out.push({ d: xs[i][key] - xs[i - 1][key], r: (xs[i][key] - xs[i - 1][key]) / dt, dt });
   }
   return out;
@@ -99,16 +103,16 @@ for (const lang of LANGS) {
   const upAt = await page.evaluate(() => performance.now());
   await page.waitForTimeout(5000);
   const rec = await stopRec(page);
-  const during = rates(rec.filter((s) => s.t >= marks && s.t <= upAt), 'yaw');
+  const during = rates(rec.filter((s) => s.t >= marks && s.t <= upAt), 'yaw', 't'); // the hand: real time
   const afterS = rec.filter((s) => s.t > upAt);
-  const after = rates(afterS, 'yaw');
+  const after = rates(afterS, 'yaw', 't');
   const turned = (rec.filter((s) => s.t <= upAt).at(-1)?.yaw ?? 0) - (rec.filter((s) => s.t < marks).at(-1)?.yaw ?? 0);
   const handRate = maxAbs(during);
   check(`${lang} arrastre: arrastrar a la izquierda la gira a la izquierda`, turned < -0.3, `Δ ${fmt(turned)} rad (punto ${hit})`);
   check(`${lang} arrastre: al soltar sigue en el sentido del arrastre (inercia)`, (after[0]?.r ?? 0) < 0, `primera velocidad ${fmt(after[0]?.r ?? 0)} rad/s`);
   check(`${lang} arrastre: al soltar nunca va mas rapido que la mano`, maxAbs(after) <= Math.max(handRate * 1.2, MAX_RATE), `max ${fmt(maxAbs(after))} rad/s, mano ${fmt(handRate)}`);
-  const tail = after.slice(-10);
-  check(`${lang} arrastre: retoma el giro de reposo`, tail.every((x) => x.r > 0 && Math.abs(x.r - idle) < idle * 0.6), tail.map((x) => fmt(x.r)).join(','));
+  const tailC = rates(afterS, 'yaw').slice(-10);
+  check(`${lang} arrastre: retoma el giro de reposo`, tailC.every((x) => x.r > 0 && Math.abs(x.r - idle) < idle * 0.6), tailC.map((x) => fmt(x.r)).join(','));
   check(`${lang} arrastre: no selecciona texto`, await page.evaluate(() => String(getSelection()).trim() === ''));
 
   // ---- two chapter changes by scroll ----
@@ -124,11 +128,8 @@ for (const lang of LANGS) {
   const cs = rates(chapRec, 'scale');
   const targets = [...new Set(chapRec.map((m) => m.target))];
   check(`${lang} capitulos: cambia de estructura dos veces`, targets.length >= 3, targets.join(' → '));
-  // Same direction and never faster than 1.6x the idle turn: a jump or a scroll-driven spin (the old
-  // scrollY term reached 8.6 rad/s, both ways) fails; a frame that ran long while the next cloud
-  // loaded advances less (dt is capped) and reads as a brief slowdown, not a jump (Mac, visual7).
-  check(`${lang} capitulos: el angulo sigue igual, sin saltos ni giro por el scroll`, cy.every((x) => x.r > 0 && x.r < idle * 1.6),
-    `min ${fmt(Math.min(...cy.map((x) => x.r)))}, max ${fmt(Math.max(...cy.map((x) => x.r)))} rad/s`);
+  check(`${lang} capitulos: el angulo sigue igual, sin saltos ni giro por el scroll`, cy.every((x) => x.r > 0 && Math.abs(x.r - IDLE_RATE) < IDLE_RATE * 0.6),
+    `min ${fmt(Math.min(...cy.map((x) => x.r)))}, max ${fmt(Math.max(...cy.map((x) => x.r)))} rad/s (reposo medido ${fmt(idle)})`);
   check(`${lang} capitulos: sin saltos de tamaño`, maxAbs(cs) <= MAX_SCALE_RATE, `max ${fmt(maxAbs(cs))}/s`);
 
   // ---- back out of the scale journey ----

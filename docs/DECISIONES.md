@@ -186,3 +186,20 @@
   - Subir el tope de dt: vuelven los saltos tras una pestaña oculta.
   - Perseguir el fotograma largo: es la carga de la nube y no se ve.
 - **Revertir:** devolver la cota `Math.abs(x.r - idle) < idle * 0.6` en `verify-motion.mjs`.
+
+## F-13 · 2026-10-17 · La prueba de movimiento mide sobre el reloj de la molécula
+
+- **Encontrado:** visual8, en la Mac. Al cambiar de capítulo en EN, un tramo a 0,034 rad/s. El
+  reposo medido bajó porque Chromium sin pantalla espacia los fotogramas a su ritmo. Con las
+  banderas que lo evitan, falló otro tramo: un solo fotograma largo al final del arrastre (0,023).
+- **Causa:** la prueba dividía el ángulo por el tiempo de pared. La isla integra el giro sobre su
+  propio reloj (la suma de pasos acotados a 50 ms). Un fotograma largo avanza menos en pared, pero
+  no en ese reloj. La prueba medía el ritmo de la máquina, no la molécula.
+- **Elegido:** `__stage.motion()` expone `clock`. Reposo, retorno tras soltar, capítulos y tamaño
+  se miden por segundo de ese reloj. Capítulos vuelve a ±60 % de 0,09 rad/s (la constante del
+  producto). La velocidad de la mano y la inercia siguen en tiempo real.
+  - Un salto o un giro por el scroll cambian el ángulo sin que avance el reloj: siguen fallando.
+  - Se quitan las banderas `--disable-frame-rate-limit` y compañía: ya no hacen falta.
+- **Descartado:** medir la mediana de la cola (esconde un salto de un fotograma); subir otra vez
+  la cota (ya se relajó en F-12 y no era la causa).
+- **Revertir:** `rates(xs, key, 't')` en todas las llamadas de `web/scripts/verify-motion.mjs`.

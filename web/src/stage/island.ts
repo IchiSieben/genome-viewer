@@ -231,8 +231,10 @@ export async function mountIsland(root: HTMLElement, base: string, firstId: stri
   let clock = 0; // ms of visible time: the thermal wobble's clock, it does not run while hidden
   let paused = false;
   document.addEventListener('visibilitychange', () => { paused = document.hidden; lastT = 0; });
-  // t: the time of the frame these values were drawn in (the motion test samples per frame).
-  let probe = { t: 0, yaw: 0, pitch: PITCH0, scale: 1, target: firstId, current: firstId };
+  // t: the time of the frame these values were drawn in; clock: the island's own time (the sum of
+  // capped steps), what the motion is integrated on. The motion test judges rates on `clock`, so the
+  // test machine's frame pacing cannot fake a jump or hide one.
+  let probe = { t: 0, clock: 0, yaw: 0, pitch: PITCH0, scale: 1, target: firstId, current: firstId };
   function frame(now: number): void {
     if (lost) return;
     requestAnimationFrame(frame);
@@ -293,7 +295,7 @@ export async function mountIsland(root: HTMLElement, base: string, firstId: stri
     }
     renderer.setRotation(yaw, pitch);
     renderer.draw((still ? 4000 : clock) / 1000);
-    probe = { t: now, yaw, pitch, scale: morphing ? scaleA + (scaleB - scaleA) * e : scaleA, target, current };
+    probe = { t: now, clock, yaw, pitch, scale: morphing ? scaleA + (scaleB - scaleA) * e : scaleA, target, current };
   }
   requestAnimationFrame(frame);
 
