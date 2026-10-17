@@ -40,17 +40,27 @@ a:hover { color: var(--st-accent); }
 @media (max-width: 760px) { .stage::after { background: rgba(0,0,0,.55); } }
 
 /* ---- header -------------------------------------------------------------------------------- */
+/* An opaque bar: text that scrolls under the brand is hidden, not seen through it (A3). The short
+   fade lives below the bar, outside it, so the text dissolves before it reaches the bar's edge. */
 .st-top {
   position: fixed; top: 0; left: 0; right: 0; z-index: 5;
   display: flex; align-items: center; gap: var(--st-space-3);
-  padding: var(--st-space-2) var(--st-gutter) var(--st-space-3);
-  /* Opaque behind the links, fading below them: scrolled text must not show through the brand. */
-  background: linear-gradient(180deg, rgba(0,0,0,.94) 60%, rgba(0,0,0,0));
+  padding: var(--st-space-2) var(--st-gutter);
+  background: var(--st-bg);
   font-size: 0.95rem; font-weight: 300;
+}
+.st-top::after {
+  content: ''; position: absolute; left: 0; right: 0; top: 100%; height: 1.5rem; pointer-events: none;
+  background: linear-gradient(180deg, var(--st-bg), rgba(0,0,0,0));
 }
 .st-brand { font-weight: var(--st-w-head); letter-spacing: -0.01em; text-decoration: none; margin-right: auto; }
 .st-top a { text-decoration: none; color: var(--st-ink-2); }
 .st-top a:hover { color: var(--st-ink); }
+/* Anchors (#c1, #refs, #ref-N) land below the bar, not under it. */
+main [id], .st-refs [id] { scroll-margin-top: 5rem; }
+/* Belt and braces: nothing may ever scroll the page sideways (clip is not a scroll container,
+   so the sticky scale journey keeps working). */
+html { overflow-x: clip; }
 
 main { position: relative; z-index: 1; }
 
@@ -71,13 +81,16 @@ main { position: relative; z-index: 1; }
   padding: 0.9rem 1.8rem; border-radius: var(--st-radius);
 }
 .st-action:hover { color: var(--st-action-ink); filter: brightness(1.12); }
+/* The one legend of what is on screen: an opaque bar along the bottom edge (A3). */
 .st-caption {
-  position: fixed; left: var(--st-gutter); bottom: var(--st-space-2); z-index: 2;
-  font-size: 0.8rem; color: var(--st-ink-3); font-weight: 300; max-width: calc(100vw - 2 * var(--st-gutter));
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 2; margin: 0;
+  padding: 0.55rem var(--st-gutter) 0.7rem;
+  background: var(--st-bg);
+  font-size: 0.8rem; color: var(--st-ink-3); font-weight: 300;
 }
-.st-caption::before { /* veil under the fixed caption, so it never sits on top of scrolling text */
-  content: ''; position: fixed; left: 0; right: 0; bottom: 0; height: 5.5rem; z-index: -1;
-  background: linear-gradient(0deg, rgba(0,0,0,.94) 45%, rgba(0,0,0,0)); pointer-events: none;
+.st-caption::before {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 2rem; pointer-events: none;
+  background: linear-gradient(0deg, var(--st-bg), rgba(0,0,0,0));
 }
 .st-caption a { color: var(--st-ink-3); }
 .st-caption b { color: var(--st-ink-2); font-weight: 400; }
@@ -103,8 +116,6 @@ html:not([data-register]) [data-reg='phd'] { display: none; }
 .st-ref { color: var(--st-accent); text-decoration: none; font-size: 0.78em; font-weight: 400; vertical-align: super; line-height: 0; padding: 0 0.1em; }
 .st-cta { display: inline-block; margin-top: var(--st-space-2); color: var(--st-accent); font-weight: 400; text-decoration: none; }
 .st-cta::after { content: ' →'; }
-.st-struct { font-size: 0.82rem; color: var(--st-ink-3); margin: var(--st-space-3) 0 0; }
-.st-struct a { color: var(--st-ink-3); }
 .st-closing { font-size: 1.35rem; font-weight: 300; color: var(--st-ink); border-left: 2px solid var(--st-accent); padding-left: 1.2rem; }
 
 /* ---- scale journey ------------------------------------------------------------------------- */

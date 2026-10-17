@@ -14,6 +14,7 @@
     "verify:links": "node scripts/serve-subfolder.mjs --run \"node scripts/verify-links.mjs\"",
     "verify:stage": "node scripts/serve-subfolder.mjs --run \"node scripts/verify-stage.mjs\"",
     "verify:tour": "node scripts/serve-subfolder.mjs --run \"node scripts/verify-tour.mjs\"",
+    "verify:layout": "node scripts/serve-subfolder.mjs --run \"node scripts/verify-layout.mjs\"",
     "verify:motion": "node scripts/serve-subfolder.mjs --run \"node scripts/verify-motion.mjs\"",
     "measure": "node scripts/serve-subfolder.mjs --run \"node scripts/measure.mjs\""
   },

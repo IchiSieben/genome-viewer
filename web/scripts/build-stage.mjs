@@ -127,7 +127,6 @@ function chapterHtml(ch, L) {
 <p class="st-kicker">${esc(fill(ch.kicker, L.lang))}</p>
 ${blocks.join('\n')}
 <a class="st-cta" href="app/${meta.link}">${esc(ch.cta)}</a>
-<p class="st-struct">${esc(d['chapter.structure'])}: ${caption(meta.structure, L)}</p>
 </section>`;
 }
 
