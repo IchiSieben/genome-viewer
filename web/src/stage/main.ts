@@ -8,38 +8,55 @@ import type { Island } from './island';
 
 type Register = 'kid' | 'phd';
 const REG_KEY = 'agp-register';
+const HINT_KEY = 'agp-register-hint';
 const html = document.documentElement;
 
+function stored(key: string): string | null {
+  try { return localStorage.getItem(key); } catch { return null; } // storage blocked
+}
+function store(key: string, v: string): void {
+  try { localStorage.setItem(key, v); } catch { /* private window: this visit only */ }
+}
+
 function readRegister(): Register {
-  try {
-    const v = localStorage.getItem(REG_KEY);
-    if (v === 'kid' || v === 'phd') return v;
-  } catch {
-    // storage blocked: default below
-  }
+  const v = stored(REG_KEY);
+  if (v === 'kid' || v === 'phd') return v;
   return (html.dataset.registerDefault as Register) || 'kid';
 }
 
 function applyRegister(r: Register, persist: boolean): void {
   html.dataset.register = r;
-  document.querySelectorAll<HTMLButtonElement>('.st-reg button').forEach((b) => {
+  document.querySelectorAll<HTMLButtonElement>('.st-switch button[data-set]').forEach((b) => {
     b.setAttribute('aria-pressed', String(b.dataset.set === r));
   });
-  if (persist) {
-    try { localStorage.setItem(REG_KEY, r); } catch { /* private window: this visit only */ }
-  }
+  if (persist) store(REG_KEY, r);
 }
+
+// One switch for the whole page, in the fixed header (A4). The first time, one sentence says
+// what it is; choosing a level, or "Got it", puts it away for good.
+const hint = document.querySelector<HTMLElement>('.st-switch-hint');
+function dismissHint(): void {
+  if (hint) hint.hidden = true;
+  store(HINT_KEY, '1');
+}
+if (hint && !stored(HINT_KEY) && !stored(REG_KEY)) hint.hidden = false;
 
 applyRegister(readRegister(), false);
 document.addEventListener('click', (ev) => {
-  const b = (ev.target as HTMLElement).closest<HTMLButtonElement>('.st-reg button');
+  const t = ev.target as HTMLElement;
+  if (t.closest('.st-switch-ok')) { dismissHint(); return; }
+  const b = t.closest<HTMLButtonElement>('.st-switch button[data-set]');
   if (!b) return;
-  const block = b.closest('.st-block');
-  const before = block?.getBoundingClientRect().top ?? 0;
-  applyRegister(b.dataset.set as Register, true);
-  // Keep the block the reader clicked in the same place: other blocks change height.
+  // Keep the block being read in the same place: every block above it changes height.
   // `instant`: the page has scroll-behavior: smooth, which would animate the correction.
-  if (block) window.scrollBy({ top: block.getBoundingClientRect().top - before, behavior: 'instant' });
+  const mid = window.innerHeight / 2;
+  const blocks = Array.from(document.querySelectorAll<HTMLElement>('main .st-block, main h2'));
+  const anchor = blocks.find((x) => { const r = x.getBoundingClientRect(); return r.top <= mid && r.bottom >= mid; })
+    ?? blocks.find((x) => x.getBoundingClientRect().top > 0);
+  const before = anchor?.getBoundingClientRect().top ?? 0;
+  applyRegister(b.dataset.set as Register, true);
+  dismissHint();
+  if (anchor) window.scrollBy({ top: anchor.getBoundingClientRect().top - before, behavior: 'instant' });
 });
 
 // ---- caption: which real structure is on screen ------------------------------------------

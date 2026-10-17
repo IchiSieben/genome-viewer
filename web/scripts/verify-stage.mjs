@@ -168,26 +168,19 @@ for (const lang of (process.env.AGP_STAGE_LANGS || 'en,es').split(',')) {
   await posterMode(lang, '?nowebgl', { query: '?nowebgl' });
   await posterMode(lang, 'reduced-motion', { reducedMotion: 'reduce' });
 
-  // f: register toggle
+  // f: register switch (one, in the header; the full A4 checks are in verify-register.mjs)
   {
     const { context, page } = await open(lang);
     await page.evaluate(() => window.scrollTo(0, 1800));
     await page.waitForTimeout(300);
-    const target = page.locator('.st-reg button[data-set="phd"]').nth(1);
-    const topOf = () => target.evaluate((b) => (b.closest('.st-block') ?? b).getBoundingClientRect().top);
-    await target.evaluate((b) => b.scrollIntoView({ block: 'center', behavior: 'instant' }));
-    await page.waitForTimeout(200);
-    const before = await topOf();
-    await target.click();
+    await page.locator('.st-switch button[data-set="phd"]').click();
     await page.waitForTimeout(300);
-    const after = await topOf();
     const reg = await page.evaluate(() => document.documentElement.dataset.register);
     const pressed = await page.evaluate(() => {
-      const all = [...document.querySelectorAll('.st-reg button')];
-      return all.every((b) => (b.getAttribute('aria-pressed') === 'true') === (b.dataset.set === 'phd'));
+      const all = [...document.querySelectorAll('.st-switch button[data-set]')];
+      return all.length === 2 && all.every((b) => (b.getAttribute('aria-pressed') === 'true') === (b.dataset.set === 'phd'));
     });
-    check(`${lang}: el boton phd pone html[data-register]=phd`, reg === 'phd' && pressed, `${reg}`);
-    check(`${lang}: el bloque pulsado no se mueve (<4 px)`, Math.abs(after - before) < 4, `delta ${(after - before).toFixed(1)} px`);
+    check(`${lang}: el interruptor phd pone html[data-register]=phd`, reg === 'phd' && pressed, `${reg}`);
     await page.reload({ waitUntil: 'load' });
     const regAfter = await page.evaluate(() => ({ attr: document.documentElement.dataset.register, ls: localStorage.getItem('agp-register') }));
     check(`${lang}: el registro persiste tras recargar`, regAfter.attr === 'phd' && regAfter.ls === 'phd', JSON.stringify(regAfter));

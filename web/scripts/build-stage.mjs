@@ -116,7 +116,6 @@ function chapterHtml(ch, L) {
       ? ' ' + nums.map((n) => `<a class="st-ref" href="#ref-${n}" aria-label="${esc(L.lang === 'es' ? 'Referencia' : 'Reference')} ${n}">[${n}]</a>`).join('')
       : '';
     return `<div class="st-block" id="${esc(b.id)}">
-  <div class="st-reg" role="group" aria-label="${esc(d['reg.label'])}"><button type="button" data-set="kid" aria-pressed="false">${esc(d['reg.kid'])}</button><button type="button" data-set="phd" aria-pressed="false">${esc(d['reg.phd'])}</button></div>
   <div data-reg="kid">${paragraphs(b.kid, L.lang)}</div>
   <div data-reg="phd">${paragraphs(b.phd, L.lang, 2)}${sup ? `<p>${sup}</p>` : ''}</div>
 </div>`;
@@ -179,6 +178,10 @@ function body(L) {
 <div class="stage" aria-hidden="true"><canvas width="1" height="1"></canvas>${posters}</div>
 <header class="st-top">
 <a class="st-brand" href=".">${esc(d['brand.name'])}</a>
+<div class="st-switch" role="group" aria-label="${esc(d['reg.label'])}">
+<span class="st-switch-label">${esc(d['reg.label'])}</span><button type="button" data-set="kid" aria-pressed="false">${esc(d['reg.kid'])}</button><button type="button" data-set="phd" aria-pressed="false">${esc(d['reg.phd'])}</button>
+<p class="st-switch-hint" hidden>${esc(d['reg.hint'])} <button type="button" class="st-switch-ok">${esc(d['reg.ok'])}</button></p>
+</div>
 <a href="#refs">${esc(d['nav.refs'])}</a>
 <a href="app/">${esc(d['nav.app'])}</a>
 <a id="lang-toggle" href="${L.toggle}" hreflang="${L.other}" lang="${L.other}" aria-label="${esc(d['nav.langToggleLabel'])}">${esc(d['nav.langToggle'])}</a>

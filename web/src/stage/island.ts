@@ -46,13 +46,14 @@ export function posterIsland(root: HTMLElement, reason: string, firstId?: string
   document.documentElement.dataset.stageMode = 'poster';
   document.documentElement.dataset.stageReason = reason;
   root.classList.add('is-poster');
+  let on = firstId ?? '';
   if (firstId) setPosterFor(root, firstId);
   return {
     mode: 'poster',
-    show(id) { setPosterFor(root, id); },
+    show(id) { on = id; setPosterFor(root, id); },
     setScale() {},
     idle() {},
-    shown() { return root.querySelector<HTMLImageElement>('.stage-poster.is-on')?.dataset.structure ?? ''; },
+    shown() { return on; },
   };
 }
 

@@ -26,6 +26,8 @@
  "reg.label": "Nivel de lectura",
  "reg.kid": "8 años",
  "reg.phd": "Doctorado",
+ "reg.hint": "Elige cómo quieres leer: como a los ocho años o como en un doctorado.",
+ "reg.ok": "Entendido",
  "chapter.label": "Capítulo",
  "scale.title": "De dos nanómetros a dos metros",
  "scale.lead": "Baja despacio. Las estructuras aparecen a su tamaño relativo real, sacado de sus propias coordenadas.",

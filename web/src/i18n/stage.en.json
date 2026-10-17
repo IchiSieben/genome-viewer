@@ -26,6 +26,8 @@
  "reg.label": "Reading level",
  "reg.kid": "8 years",
  "reg.phd": "PhD",
+ "reg.hint": "Choose how you want to read: as an eight-year-old or as a PhD.",
+ "reg.ok": "Got it",
  "chapter.label": "Chapter",
  "scale.title": "From two nanometers to two meters",
  "scale.lead": "Scroll slowly. The structures appear at their true relative size, taken from their own coordinates.",
