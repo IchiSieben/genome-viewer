@@ -74,3 +74,6 @@ Thumbs.db
 # Demo videos of the stage (renders, ~20 MB each): they live in Drive, listed in drive.manifest.
 # The subtitles (.srt) and media.json stay in git.
 docs/media/*.mp4
+
+# Phase B: screenshots of third-party reference sites stay local (their copyright, not ours)
+/evidence/identidad/referencias/

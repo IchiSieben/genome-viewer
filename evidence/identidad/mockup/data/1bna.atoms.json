@@ -1,0 +1,32 @@
+{
+ "pdbId": "1BNA",
+ "atoms": 486,
+ "radiusA": 22.79,
+ "recordBytes": 8,
+ "counts": {
+  "A": 40,
+  "C": 64,
+  "G": 88,
+  "T": 36,
+  "U": 0,
+  "dnaBackbone": 258,
+  "rnaBackbone": 0,
+  "protein": 0,
+  "other": 0
+ },
+ "chains": [
+  {
+   "name": "A",
+   "kinds": [
+    "dna"
+   ]
+  },
+  {
+   "name": "B",
+   "kinds": [
+    "dna"
+   ]
+  }
+ ],
+ "title": "STRUCTURE OF A B-DNA DODECAMER. CONFORMATION AND DYNAMICS"
+}

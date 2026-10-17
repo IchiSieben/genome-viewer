@@ -1,0 +1,67 @@
+/* Chapter 1 in the proposed identity. The molecule is the page's background object, large, on the
+ * right on desktop and on top on the phone; the reading column sits on an ink panel. */
+
+#mol { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; touch-action: pan-y; cursor: grab; }
+html.is-turning #mol { cursor: grabbing; }
+main { position: relative; z-index: 1; pointer-events: none; }
+main a, main button, main .prose, main .fig, main .legend { pointer-events: auto; }
+
+/* Opening: the title on the left, the molecule fills the right two thirds of the screen. */
+.open { min-height: 100svh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: end; gap: 2rem; padding: 7rem var(--gutter) 3rem; }
+.open-text { align-self: center; max-width: 40rem; }
+.open-legend { align-self: end; justify-self: end; max-width: 30rem; margin: 0; background: color-mix(in srgb, var(--bg) 78%, transparent); padding: 1rem 1.2rem; border-radius: 0.9rem; }
+.open-legend figcaption { color: var(--ink-3); font-size: 0.85rem; margin-bottom: 0.5rem; }
+.seq-line { margin: 0.2rem 0 0.5rem; font-size: 0.85rem; color: var(--ink-3); }
+.seq-line .seq { font-size: 1rem; }
+.hint { margin: 0.6rem 0 0; font-size: 0.85rem; color: var(--ink-2); }
+.hint::before { content: '↔ '; color: var(--base-g); }
+
+/* Figures and blocks: one column, on a panel so the molecule never sits under text. */
+.fig, .block, .cta, .proposal { margin-left: var(--gutter); margin-right: var(--gutter); max-width: 46rem; }
+.fig { max-width: min(64rem, calc(100% - 2 * var(--gutter))); }
+.fig { padding: 2.5rem 2rem 2rem; margin-top: 16vh; background: var(--bg); border-radius: 1.2rem; }
+.block { padding: 1.5rem 2rem; background: var(--bg); border-radius: 1.2rem; margin-top: 1rem; }
+.digits { font: 700 clamp(1rem, 2.4vw, 1.6rem) var(--mono); letter-spacing: 0.04em; color: var(--ink-2); margin: 0.6rem 0 0; }
+.fig-split { display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: end; }
+
+/* 97 squares, one per year of reading. */
+.years { display: grid; grid-template-columns: repeat(20, 1fr); gap: 4px; max-width: 30rem; margin: 2rem 0 0; }
+.years i { aspect-ratio: 1; background: var(--ink-3); border-radius: 2px; }
+.years i:nth-child(10n) { background: var(--ink-2); }
+
+.door { width: clamp(5rem, 14vw, 8rem); height: auto; overflow: visible; }
+.door text { font: 600 9px var(--mono); fill: var(--ink-2); }
+.door .t-c { fill: var(--base-c); }
+
+/* Log axis 10^12..10^16: the old spread of published counts, and the two careful ones. */
+.logaxis { position: relative; height: 5.5rem; margin: 2.2rem 0 0.5rem; }
+.logaxis::before { content: ''; position: absolute; left: 0; right: 0; top: 1.6rem; border-top: 1px solid var(--ink-3); }
+.logaxis-band { position: absolute; left: 0; right: 0; top: 1.25rem; height: 0.7rem; background: repeating-linear-gradient(90deg, var(--rule) 0 6px, transparent 6px 10px); border-radius: 2px; }
+.tick { position: absolute; top: 2.3rem; transform: translateX(-50%); font: 600 0.85rem var(--mono); color: var(--ink-2); }
+.tick:first-of-type { transform: none; } .tick:last-of-type { transform: translateX(-100%); }
+.mark { position: absolute; top: -0.4rem; transform: translateX(-50%); font: 0.8rem var(--mono); color: var(--ink-2); white-space: nowrap; padding-bottom: 1.6rem; }
+.mark::after { content: ''; position: absolute; left: 50%; top: 1.2rem; width: 2px; height: 1.4rem; background: var(--base-g); }
+.mark b { color: var(--ink); }
+.mark-2 { top: 3.9rem; padding: 0; } .mark-2::after { top: -2.3rem; height: 1.4rem; background: var(--base-c); }
+
+/* 100 letters, the coding ones lit. */
+.thousand { display: grid; grid-template-columns: repeat(50, 1fr); gap: 3px; max-width: 40rem; margin: 2rem 0 0; }
+.thousand i { aspect-ratio: 1; border-radius: 50%; background: var(--rule); }
+.thousand i.on { background: var(--base-g); }
+
+.cta { margin-top: 4rem; font-family: var(--display); font-weight: 700; font-size: clamp(1.4rem, 2.6vw, 2rem); }
+.cta a { text-decoration: none; border-bottom: 2px solid var(--base-g); }
+.proposal { margin-top: 3rem; margin-bottom: 3rem; font: 0.8rem var(--mono); color: var(--ink-3); }
+
+@media (max-width: 760px) {
+  /* Phone: the molecule owns the first 58 % of the screen; the title sits under it. */
+  .open { grid-template-columns: 1fr; padding-top: 58svh; align-items: start; gap: 1rem; }
+  .open-text { align-self: start; }
+  .open-legend { justify-self: stretch; max-width: none; background: var(--bg); padding: 0.9rem 0; }
+  .fig { padding: 1.6rem 1.25rem; margin-top: 30vh; }
+  .block { padding: 1.25rem; }
+  .fig, .block, .cta, .proposal { margin-left: 0.75rem; margin-right: 0.75rem; }
+  .fig-split { grid-template-columns: 1fr; }
+  .years { grid-template-columns: repeat(14, 1fr); }
+  .thousand { grid-template-columns: repeat(25, 1fr); gap: 2px; }
+}

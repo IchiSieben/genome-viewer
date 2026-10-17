@@ -1,0 +1,80 @@
+{
+ "pdbId": "1KX5",
+ "atoms": 13625,
+ "radiusA": 107.17,
+ "recordBytes": 8,
+ "counts": {
+  "A": 870,
+  "C": 480,
+  "G": 660,
+  "T": 783,
+  "U": 0,
+  "dnaBackbone": 3228,
+  "rnaBackbone": 0,
+  "protein": 7586,
+  "other": 18
+ },
+ "chains": [
+  {
+   "name": "I",
+   "kinds": [
+    "dna"
+   ]
+  },
+  {
+   "name": "J",
+   "kinds": [
+    "dna"
+   ]
+  },
+  {
+   "name": "A",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "B",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "C",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "D",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "E",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "F",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "G",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "H",
+   "kinds": [
+    "protein"
+   ]
+  }
+ ],
+ "title": "X-Ray Structure of the Nucleosome Core Particle, NCP147, at 1.9 A Resolution"
+}

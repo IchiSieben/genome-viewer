@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>What a variant does to the genome, predicted · Genome Viewer</title>
+<link rel="preload" href="../fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../system.css">
+<link rel="stylesheet" href="../viewer.css">
+</head>
+<body class="viewer">
+<header class="bar">
+  <a class="brand" href="./chapter-1.html"><span class="brand-mark" aria-hidden="true"><i style="background:var(--base-a)"></i><i style="background:var(--base-c)"></i><i style="background:var(--base-g)"></i><i style="background:var(--base-t)"></i></span>Genome Viewer</a>
+  
+  <nav><a href="./chapter-1.html">The story</a><a href="../es/visor.html" lang="es">Español</a></nav>
+</header>
+<main class="v-main">
+  <section class="v-hero">
+    <h1>What a variant does to the genome, predicted</h1>
+    <p class="lead">AlphaGenome is Google DeepMind's model that predicts how a variant changes the way DNA is read, and the Variant Atlas is its catalog of those predictions, precomputed. This independent, unofficial viewer reads them frozen in static files and never calls the API.</p>
+  </section>
+  <section class="v-card" aria-labelledby="v-id">
+    <p class="kicker">A real variant, already loaded</p>
+    <p class="v-id" id="v-id">chr11:116,837,649 <span class="seq"><span class="T">T</span><span class="arrow">→</span><span class="G">G</span></span></p>
+    <p class="v-tags">APOA1 · GRCh38 · no catalogued rsid · <span class="live">Atlas API</span></p>
+    <div class="v-score">
+      <p class="figure-num" style="--chars:5;--max:7.5rem">25.96<small>PHRED</small></p>
+      <p class="v-top">in the top 0.3% of the whole genome</p>
+    </div>
+    <div class="gauge" role="img" aria-label="how rare a variant with this score is: 25.96">
+      <div class="gauge-track"><div class="gauge-fill" style="width:64.9015%"></div></div>
+      <span class="gauge-tick" style="left:25%"><b>10</b>10%</span><span class="gauge-tick" style="left:50%"><b>20</b>1%</span><span class="gauge-tick" style="left:75%"><b>30</b>0.1%</span><span class="gauge-tick" style="left:100%"><b>40</b>0.01%</span>
+      <span class="gauge-mark" style="left:64.9015%"></span>
+    </div>
+    <p class="gauge-cap">how rare a variant with this score is · PHRED = -10 · log₁₀(1 - quantile)</p>
+    <figure class="fall" aria-label="Why this score: the six largest SHAP contributions, from the base value to the score.">
+      <figcaption>Why this score: the six largest SHAP contributions, from the base value to the score.</figcaption>
+      <div class="fall-row fall-base"><span class="fall-label">base value</span><span class="fall-track"><span class="fall-tick" style="left:0%"></span></span><span class="fall-num">-0.04</span></div>
+      <div class="fall-row"><span class="fall-label">phyloP Cactus 241-way</span><span class="fall-track"><span class="fall-bar up" style="left:0%;width:22.270421869700904%"></span></span><span class="fall-num">+0.29</span></div>
+      <div class="fall-row"><span class="fall-label">RNA-seq</span><span class="fall-track"><span class="fall-bar up" style="left:22.270421869700904%;width:21.083653739897194%"></span></span><span class="fall-num">+0.28</span></div>
+      <div class="fall-row"><span class="fall-label">PRO-cap</span><span class="fall-track"><span class="fall-bar up" style="left:43.3540756095981%;width:17.10959619246495%"></span></span><span class="fall-num">+0.22</span></div>
+      <div class="fall-row"><span class="fall-label">PhastCons 470-way</span><span class="fall-track"><span class="fall-bar up" style="left:60.46367180206305%;width:11.617325961124422%"></span></span><span class="fall-num">+0.15</span></div>
+      <div class="fall-row"><span class="fall-label">CAGE</span><span class="fall-track"><span class="fall-bar up" style="left:72.08099776318747%;width:11.168210588087348%"></span></span><span class="fall-num">+0.15</span></div>
+      <div class="fall-row"><span class="fall-label">ChIP-histone</span><span class="fall-track"><span class="fall-bar up" style="left:83.24920835127482%;width:7.7700846330598665%"></span></span><span class="fall-num">+0.10</span></div>
+      <div class="fall-row fall-rest"><span class="fall-label">4 more features</span><span class="fall-track"><span class="fall-bar up" style="left:91.01929298433468%;width:8.980707015665317%"></span></span><span class="fall-num">+0.12</span></div>
+      <div class="fall-row fall-total"><span class="fall-label">score</span><span class="fall-track"><span class="fall-tick" style="left:99.9999237883297%"></span></span><span class="fall-num">1.27</span></div>
+    </figure>
+    <p class="v-note">The score places this variant among all variants in the genome. It is a prediction of regulatory effect, not a diagnosis.</p>
+    <p class="cta"><a href="#">Open the full variant card →</a></p>
+  </section>
+  <p class="proposal">Identity proposal · phase B · not the published site</p>
+</main>
+</body>
+</html>

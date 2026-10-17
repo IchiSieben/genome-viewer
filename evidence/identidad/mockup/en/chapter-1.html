@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Three billion letters, two meters per nucleated cell · Genome Viewer</title>
+<link rel="preload" href="../fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../system.css">
+<link rel="stylesheet" href="../story.css">
+</head>
+<body class="story">
+<canvas id="mol" aria-hidden="true"></canvas>
+<header class="bar">
+  <a class="brand" href="./chapter-1.html"><span class="brand-mark" aria-hidden="true"><i style="background:var(--base-a)"></i><i style="background:var(--base-c)"></i><i style="background:var(--base-g)"></i><i style="background:var(--base-t)"></i></span>Genome Viewer</a>
+  <div class="level" role="group" aria-label="Reading level"><span class="level-label">Reading level</span><span class="seg"><button data-set="kid" aria-pressed="true">8 years</button><button data-set="phd" aria-pressed="false">PhD</button></span></div>
+  <nav><a href="./viewer.html">Open the viewer</a><a href="../es/capitulo-1.html" lang="es">Español</a></nav>
+</header>
+<main>
+  <section class="open" id="c1">
+    <div class="open-text">
+      <p class="kicker"><b>Chapter 1</b> / 7</p>
+      <h1>Three billion letters, two meters per nucleated cell</h1>
+      <p class="lead">A book written in four letters, coiled inside nearly every cell.</p>
+    </div>
+    <figure class="legend open-legend">
+      <figcaption>What you see: every sphere is one atom of</figcaption>
+      <ul><li><i style="background:var(--base-a)"></i><b>A</b> adenine</li><li><i style="background:var(--base-c)"></i><b>C</b> cytosine</li><li><i style="background:var(--base-g)"></i><b>G</b> guanine</li><li><i style="background:var(--base-t)"></i><b>T</b> thymine</li><li><i style="background:var(--backbone-dna)"></i>sugar-phosphate backbone</li></ul>
+      <p class="seq-line"><span class="legend-k">sequence of each strand</span> <span class="seq"><span class="C">C</span><span class="G">G</span><span class="C">C</span><span class="G">G</span><span class="A">A</span><span class="A">A</span><span class="T">T</span><span class="T">T</span><span class="C">C</span><span class="G">G</span><span class="C">C</span><span class="G">G</span></span></p>
+      <p class="src">Real structure · B-DNA double helix · <a href="https://www.rcsb.org/structure/1BNA">PDB 1BNA</a> · X-ray crystallography 1.9 Å · 486 atoms · Drew 1981</p>
+      <p class="hint" id="drag-hint">Drag it to turn it</p>
+    </figure>
+  </section>
+
+  <section class="fig" aria-labelledby="f-letters">
+    <p class="figure-num" id="f-letters" style="--chars:13">3,055,000,000</p>
+    <p class="figure-cap">letters in one copy of the human genome<cite>T2T-CHM13 · Nurk 2022</cite></p>
+    <div class="years" role="img" aria-label="97"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <p class="figure-cap">Reading one letter per second, never sleeping: <b>97 years</b> for a single copy. Each square is one year.<cite>own calculation: 3.055 × 10<sup>9</sup> s ÷ 31,557,600 s/year</cite></p>
+  </section>
+  <div class="prose block" data-block="c1.b1">
+      <p data-reg="kid">Imagine a recipe book written with only four letters: A, C, G and T. The recipe book of your body is called DNA. It has about three billion letters. Imagine reading one letter every second, never sleeping, never stopping. One single copy would take you almost one hundred years. And your body holds two versions: one from your mum and one from your dad.</p>
+      <p data-reg="phd" hidden>T2T-CHM13 assembles 3.055 × 10<sup>9</sup> bp of haploid sequence, with gapless assemblies for all chromosomes except Y, and the previous reference had left 8% of the genome unfinished (Nurk 2022). Build 35 (2004), which followed the first draft (Lander 2001), reached 2.85 × 10<sup>9</sup> nucleotides with 341 gaps and about 99% of the euchromatin (IHGSC 2004). A G1 diploid nucleus therefore holds roughly 6.11 × 10<sup>9</sup> bp (2 × 3.055 × 10<sup>9</sup>). This is our own calculation; it ignores XX/XY differences, the content of Y and individual structural variation.</p>
+      <p class="refs">nurk 2022 · ihgsc 2004 · lander 2001</p>
+    </div>
+
+  <section class="fig fig-split" aria-labelledby="f-metres">
+    <div>
+      <p class="figure-num" id="f-metres" style="--chars:5">2.05<small>m</small></p>
+      <p class="figure-cap">of DNA in every nucleated cell, stretched out<cite>own calculation: 6.11 × 10<sup>9</sup> bp × 0.3347 nm, rise measured on 1BNA</cite></p>
+    </div>
+    <svg class="door" viewBox="0 0 120 230" role="img" aria-label="one cell’s thread: 2.05 m · a door: ≈ 2 m">
+      <rect x="8" y="30" width="78" height="200" rx="2" fill="none" stroke="var(--ink-3)" stroke-width="1.5"/>
+      <circle cx="74" cy="130" r="3" fill="var(--ink-3)"/>
+      <line x1="104" y1="230" x2="104" y2="25.4983" stroke="var(--base-c)" stroke-width="4" stroke-linecap="round"/>
+      <text x="47" y="50" text-anchor="middle">a door</text><text x="47" y="62" text-anchor="middle">≈ 2 m</text>
+      <text x="112" y="17.4983" text-anchor="end" class="t-c">2.05 m</text>
+    </svg>
+  </section>
+  <div class="prose block" data-block="c1.b2">
+      <p data-reg="kid">All of that book is coiled up inside almost every cell. Cells are the tiny living bricks of your body. They are too small to see. Stretch out the DNA thread of one cell and it would be about two meters long. That is nearly as tall as a door. A grown-up has around thirty million million cells. Nobody counted them one by one. It is a careful guess.</p>
+      <p data-reg="phd" hidden>DNA length per diploid nucleus is computed, not measured: 6.11 × 10<sup>9</sup> bp × 0.3347 nm/bp ≈ 2.04 m, our own calculation assuming a 2n nucleus. We measured the axial rise (3.35 Å per base pair) on the coordinates of the structure on screen, 1BNA: base-pair centers, principal-component axis, terminal pairs excluded. Drew 1981 supports the B-helix geometry (9.8 bp per turn). Sender 2016 estimate 3.0 × 10<sup>13</sup> human cells in the 70 kg reference man; Bianconi 2013 estimate 3.72 × 10<sup>13</sup> and note that earlier values spanned 10<sup>12</sup> to 10<sup>16</sup>. Multiplying gives 6.1–7.6 × 10<sup>13</sup> m, a very loose upper bound rather than an estimate: many cells, such as mature erythrocytes, have no nucleus (the hematopoietic lineage is about 90% of cells; Sender 2016). Every nucleus is also assumed 2n, ignoring gametes (n) and S/G2 cells (up to 4n).</p>
+      <p class="refs">sender 2016 · bianconi 2013 · drew 1981</p>
+    </div>
+
+  <section class="fig" aria-labelledby="f-cells">
+    <p class="figure-num" id="f-cells" style="--chars:11">30 trillion</p>
+    <p class="digits">30,000,000,000,000</p>
+    <p class="figure-cap">cells in a 70 kg adult<cite>Sender 2016 · Bianconi 2013 gave 3.72 × 10<sup>13</sup></cite></p>
+    <div class="logaxis" role="img" aria-label="10^12 – 10^16">
+      <div class="logaxis-band"></div>
+      <span class="tick" style="left:0%">10<sup>12</sup></span><span class="tick" style="left:25%">10<sup>13</sup></span><span class="tick" style="left:50%">10<sup>14</sup></span><span class="tick" style="left:75%">10<sup>15</sup></span><span class="tick" style="left:100%">10<sup>16</sup></span>
+      <span class="mark" style="left:36.928031367991565%"><b>3.0</b> Sender</span>
+      <span class="mark mark-2" style="left:39.26357349704745%"><b>3.72</b> Bianconi</span>
+    </div>
+    <p class="figure-cap">Earlier published figures ranged from 10<sup>12</sup> to 10<sup>16</sup> (Bianconi 2013). One mark per order of magnitude.</p>
+  </section>
+
+  <section class="fig" aria-labelledby="f-coding">
+    <p class="figure-num" id="f-coding" style="--chars:6">1.2<small>/ 100</small></p>
+    <p class="figure-cap">out of every 100 letters tell the body how to build proteins<cite>own calculation from GENCODE 50 on GRCh38</cite></p>
+    <div class="thousand" role="img" aria-label="12 / 1000"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <p class="figure-cap">Each dot is one letter in a thousand: <b>12</b> lit.</p>
+  </section>
+  <div class="prose block" data-block="c1.b3">
+      <p data-reg="kid">Out of every hundred letters, only about 1.2 tell your body how to build its parts. Many of the other letters seem to work like light switches. They say when and where to use each recipe. Nobody knows yet how many switches there are. The whole book is called the genome.</p>
+      <p data-reg="phd" hidden>The protein-coding fraction is 1.25% of the genome (declared range 1.08–1.26% depending on isoform handling; computed here from GENCODE 50 CDS on the GRCh38 assembly, not taken from the literature; Frankish 2023 documents GENCODE, not this figure). Yet 88% of trait-associated SNPs in the 2009 GWAS catalog were intronic (45%) or intergenic (43%), although that share is not above expectation in introns and is depleted in intergenic regions (Hindorff 2009); associations concentrate instead in regulatory DNA marked by DNase I hypersensitive sites (Maurano 2012). How much of this non-coding DNA is functional remains contested and depends on the definition of function: ENCODE 2012 assigned biochemical function to ~80% of the genome, whereas Graur 2013 argues that the fraction under purifying selection is below 10%, and Christmas 2023 find ~10.7% (332 Mb) evolutionarily constrained across mammals; Kellis 2014 argue that biochemical, evolutionary and genetic approaches are complementary.</p>
+      <p class="refs">hindorff 2009 · maurano 2012 · frankish 2023 · encode 2012 · graur 2013 · christmas 2023 · kellis 2014</p>
+    </div>
+  <div class="prose block" data-block="c1.b4">
+      <p data-reg="kid">Change one letter in a switch and a light might stay on when it should be off. A computer has learned to guess what such a change does. The Genome Viewer shows you those guesses. They are only guesses, not proofs: someone must check them in a laboratory.</p>
+      <p data-reg="phd" hidden>A deep-learning model from Google DeepMind (Avsec 2026) takes 1 Mb of sequence and predicts thousands of functional tracks at up to single-base-pair resolution, although current models often fail to predict the direction of effect of individual variants (Sasse 2023; Huang 2023). Sun 2026, a preprint without peer review, finds weak agreement between Borzoi and the DeepMind model and nominal eQTL effect sizes (Spearman ≤ 0.138), with better discrimination for variants at PIP ≥ 0.9; the authors recommend using such scores to prioritise, not as standalone predictors. The Genome Viewer shows those predictions, not measurements, for 9 loci.</p>
+      <p class="refs">avsec 2026 · sasse 2023 · huang 2023 · sun 2026</p>
+    </div>
+  <p class="cta"><a href="./viewer.html">Open the viewer: 9 places in the genome →</a></p>
+  <p class="proposal">Identity proposal · phase B · not the published site</p>
+</main>
+<script type="module" src="../story.js"></script>
+</body>
+</html>

@@ -1,0 +1,506 @@
+{
+ "pdbId": "4UG0",
+ "atoms": 218776,
+ "radiusA": 165.58,
+ "recordBytes": 8,
+ "counts": {
+  "A": 12200,
+  "C": 12704,
+  "G": 20911,
+  "T": 0,
+  "U": 8648,
+  "dnaBackbone": 0,
+  "rnaBackbone": 70097,
+  "protein": 93971,
+  "other": 245
+ },
+ "chains": [
+  {
+   "name": "L5",
+   "kinds": [
+    "rna"
+   ]
+  },
+  {
+   "name": "L7",
+   "kinds": [
+    "rna"
+   ]
+  },
+  {
+   "name": "L8",
+   "kinds": [
+    "rna"
+   ]
+  },
+  {
+   "name": "LA",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LB",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LC",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LD",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LE",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LF",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LG",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LH",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LI",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LJ",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LL",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LM",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LN",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LO",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LP",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LQ",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LR",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LS",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LT",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LU",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LV",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LW",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LX",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LY",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "LZ",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "La",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Lb",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Lc",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Ld",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Le",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Lf",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Lg",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Lh",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Li",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Lj",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Lk",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Ll",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Lm",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Ln",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Lo",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Lp",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Lr",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Lz",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "S2",
+   "kinds": [
+    "rna"
+   ]
+  },
+  {
+   "name": "S6",
+   "kinds": [
+    "rna"
+   ]
+  },
+  {
+   "name": "SA",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SB",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SD",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SE",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SF",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SH",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SI",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SK",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SL",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SP",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SQ",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SR",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SS",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "ST",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SU",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SV",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SX",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Sa",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Sc",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Sd",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Sf",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Sg",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SC",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SG",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SJ",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SM",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SN",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SO",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SW",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SY",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "SZ",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Sb",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "Se",
+   "kinds": [
+    "protein"
+   ]
+  }
+ ],
+ "title": "STRUCTURE OF THE HUMAN 80S RIBOSOME"
+}

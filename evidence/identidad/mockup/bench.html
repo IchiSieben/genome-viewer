@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Atom bench</title>
+<style>
+  :root { --bg: #0b0d12; }
+  html, body { margin: 0; height: 100%; background: var(--bg); }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script type="module">
+  // ?id=1kx5&frames=120&zoom=0.8 → window.__bench = { id, atoms, medianMs, p90Ms, renderer }. Drawn as the
+  // chapter draws it (upright, same zoom), so the fill cost is the page's, not a thumbnail's.
+  import { mountMolecule } from './mol.js';
+  const q = new URLSearchParams(location.search);
+  const id = q.get('id') || '1bna';
+  const m = await mountMolecule(document.getElementById('c'), `./data/${id}.atoms`, { reduced: true, upZ: id === '1bna', zoom: Number(q.get('zoom') || 0.8) });
+  const gl = document.getElementById('c').getContext('webgl2');
+  const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+  const renderer = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+  await new Promise((r) => setTimeout(r, 500));
+  m.bench(10);
+  const xs = m.bench(Number(q.get('frames') || 90)).sort((a, b) => a - b);
+  window.__bench = { id, atoms: m.head.atoms, medianMs: xs[Math.floor(xs.length / 2)], p90Ms: xs[Math.floor(xs.length * 0.9)], renderer, w: innerWidth, h: innerHeight, dpr: devicePixelRatio };
+</script>
+</body>
+</html>

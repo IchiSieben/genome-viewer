@@ -1,0 +1,105 @@
+/* Phase B identity proposal: one system for the story and the viewer.
+ * Ink background (not pure black), three OFL faces self-hosted, colour only where it means something:
+ * the four DNA bases (Okabe-Ito, safe for the common colour-vision deficiencies) and protein chains. */
+
+@font-face { font-family: 'Bricolage Grotesque'; src: url('./fonts/bricolage-grotesque.woff2') format('woff2'); font-weight: 200 800; font-display: swap; }
+@font-face { font-family: 'Atkinson Hyperlegible Next'; src: url('./fonts/atkinson-hyperlegible-next.woff2') format('woff2'); font-weight: 200 800; font-display: swap; }
+@font-face { font-family: 'Atkinson Hyperlegible Mono'; src: url('./fonts/atkinson-hyperlegible-mono.woff2') format('woff2'); font-weight: 200 800; font-display: swap; }
+
+:root {
+  color-scheme: dark;
+  --bg: #0f1218;          /* ink, a blue-black; pure #000 crushed the depth cue of the atoms */
+  --bg-2: #161b23;        /* raised surfaces: the reading panel, the viewer card */
+  --rule: #2a313c;
+  --ink: #eef1f5;         /* 16.6:1 on --bg */
+  --ink-2: #b9c1cc;       /* 10.4:1 */
+  --ink-3: #8a93a1;       /*  6.0:1, the smallest text never goes below this */
+
+  /* Bases: Okabe-Ito. Large glyphs and swatches only; body text stays in --ink. */
+  --base-a: #009e73;      /* adenine, bluish green */
+  --base-c: #56b4e9;      /* cytosine, sky blue */
+  --base-g: #f0e442;      /* guanine, yellow */
+  --base-t: #e2691e;      /* thymine, vermillion (Okabe-Ito #d55e00 lifted to 4.6:1 on --bg) */
+  --base-u: #cc79a7;      /* uracil, reddish purple */
+  --backbone-dna: #737c8c;  /* darker than the bases, so the letters read through the backbone */
+  --backbone-rna: #a99fb8;
+  /* Protein chains: desaturated, so no chain reads as a base. */
+  --chain-1: #9fb0d9; --chain-2: #c8b6e2; --chain-3: #a8cfc4; --chain-4: #d9c3a5;
+  --chain-5: #b7c4a0; --chain-6: #d6aec0; --chain-7: #9ec4d8; --chain-8: #c9c9b0;
+  --other: #6b7280;
+
+  --display: 'Bricolage Grotesque', 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  --text: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  --mono: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
+
+  --gutter: clamp(1rem, 4vw, 3rem);
+  --measure: 34rem;       /* ~66 characters of Atkinson at 1.125rem */
+  --radius: 999px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--bg); color: var(--ink); overflow-x: clip; -webkit-text-size-adjust: 100%; }
+body { margin: 0; font-family: var(--text); font-size: 1.125rem; line-height: 1.6; font-weight: 400; }
+a { color: inherit; text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--base-g); outline-offset: 3px; border-radius: 4px; }
+sup { font-size: 0.62em; line-height: 0; }
+
+/* ---- the fixed bar: same in the story and the viewer ------------------------------------- */
+.bar {
+  position: fixed; inset: 0 0 auto 0; z-index: 5; display: flex; align-items: center; gap: 1.5rem;
+  padding: 0.9rem var(--gutter); background: var(--bg); font-size: 0.95rem;
+}
+.bar::after { content: ''; position: absolute; inset: 100% 0 auto 0; height: 1.25rem; pointer-events: none; background: linear-gradient(var(--bg), transparent); }
+.brand { font-family: var(--display); font-weight: 700; font-size: 1.15rem; letter-spacing: -0.02em; text-decoration: none; margin-right: auto; display: inline-flex; gap: 0.55rem; align-items: center; }
+.brand-mark { display: inline-flex; gap: 2px; }
+.brand-mark i { width: 4px; height: 1rem; border-radius: 2px; }
+.bar nav { display: flex; gap: 1.25rem; align-items: center; }
+.bar nav a { text-decoration: none; color: var(--ink-2); }
+.bar nav a:hover { color: var(--ink); }
+
+.level { display: inline-flex; align-items: center; gap: 0.5rem; }
+.level-label { color: var(--ink-3); font-size: 0.85rem; }
+.seg { display: inline-flex; background: var(--bg-2); border-radius: var(--radius); padding: 3px; }
+.seg button {
+  font: inherit; font-size: 0.85rem; color: var(--ink-2); background: none; border: 0; cursor: pointer;
+  padding: 0.3rem 0.85rem; border-radius: var(--radius);
+}
+.seg button[aria-pressed='true'] { background: var(--ink); color: var(--bg); font-weight: 600; }
+
+@media (max-width: 760px) {
+  .bar { flex-wrap: wrap; gap: 0.5rem 1rem; padding-block: 0.7rem; }
+  .bar nav { gap: 1rem; font-size: 0.9rem; }
+  .level { order: 9; flex-basis: 100%; justify-content: space-between; }
+}
+
+/* ---- type ----------------------------------------------------------------------------------- */
+.kicker { font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 1rem; }
+.kicker b { color: var(--base-g); font-weight: 600; }
+h1, h2 { font-family: var(--display); letter-spacing: -0.035em; margin: 0; text-wrap: balance; }
+h1 { font-weight: 800; font-size: clamp(2.6rem, 6.4vw, 6rem); line-height: 0.95; }
+h2 { font-weight: 700; font-size: clamp(1.8rem, 3.6vw, 3rem); line-height: 1.02; }
+.lead { font-size: clamp(1.15rem, 1.6vw, 1.4rem); line-height: 1.45; color: var(--ink-2); max-width: 30rem; margin: 1.5rem 0 0; text-wrap: pretty; }
+.prose { max-width: var(--measure); }
+.prose p { margin: 0 0 1.1em; text-wrap: pretty; }
+.prose .refs { font-family: var(--mono); font-size: 0.8rem; color: var(--ink-3); }
+
+/* The figure that is the wonder: the number is the headline. */
+/* Sized by its own panel: --chars is the figure's length, so the longest figure still fits. */
+.fig, .v-score { container-type: inline-size; }
+.figure-num { font-family: var(--display); font-weight: 800; font-size: min(var(--max, 10.5rem), calc(100cqi / (var(--chars, 6) * 0.6))); line-height: 0.88; letter-spacing: -0.05em; font-variant-numeric: tabular-nums; margin: 0; }
+.figure-num small { font-size: 0.32em; letter-spacing: -0.01em; font-weight: 600; color: var(--ink-2); margin-left: 0.2em; }
+.figure-cap { font-size: 1.05rem; color: var(--ink-2); max-width: 30rem; margin: 1rem 0 0; }
+.figure-cap cite { font-style: normal; font-family: var(--mono); font-size: 0.8rem; color: var(--ink-3); display: block; margin-top: 0.35rem; }
+
+/* ---- the molecule's legend: what you are seeing ------------------------------------------ */
+.legend { font-size: 0.9rem; color: var(--ink-2); }
+.legend ul { list-style: none; display: flex; flex-wrap: wrap; gap: 0.35rem 1rem; padding: 0; margin: 0 0 0.4rem; }
+.legend li { display: inline-flex; align-items: center; gap: 0.4rem; }
+.legend li i { width: 0.8rem; height: 0.8rem; border-radius: 50%; display: inline-block; }
+.legend li b { font-family: var(--mono); font-weight: 700; color: var(--ink); }
+.legend .src { font-family: var(--mono); font-size: 0.78rem; color: var(--ink-3); margin: 0; }
+.seq { font-family: var(--mono); font-weight: 700; letter-spacing: 0.12em; }
+.seq .A { color: var(--base-a); } .seq .C { color: var(--base-c); } .seq .G { color: var(--base-g); } .seq .T { color: var(--base-t); }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }

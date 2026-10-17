@@ -12,6 +12,7 @@
 #   posters            -> tools/mac/posters.sh (stage posters + OG images from the real render; detached)
 #   media              -> tools/mac/media.sh   (demo video 1280x720@60, AV1 + H.264, burnt subtitles; detached)
 #   blender            -> tools/mac/blender.sh (Molecular Nodes render, only if installed; fails fast otherwise)
+#   atoms              -> tools/mac/atoms.sh   (phase B: frame cost of every atom as a sphere, Metal; detached)
 # A lane that does not exist yet on this commit says so and exits 41: the TASK was launched before
 # the push that brings it.
 # LEARN: the "layer" rule made concrete. The model only names an intent; everything that must be

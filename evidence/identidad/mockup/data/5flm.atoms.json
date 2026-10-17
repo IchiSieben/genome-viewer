@@ -1,0 +1,110 @@
+{
+ "pdbId": "5FLM",
+ "atoms": 32712,
+ "radiusA": 101.99,
+ "recordBytes": 8,
+ "counts": {
+  "A": 250,
+  "C": 144,
+  "G": 187,
+  "T": 171,
+  "U": 8,
+  "dnaBackbone": 717,
+  "rnaBackbone": 168,
+  "protein": 31058,
+  "other": 9
+ },
+ "chains": [
+  {
+   "name": "A",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "B",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "C",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "D",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "E",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "F",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "G",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "H",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "I",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "J",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "K",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "L",
+   "kinds": [
+    "protein"
+   ]
+  },
+  {
+   "name": "N",
+   "kinds": [
+    "dna"
+   ]
+  },
+  {
+   "name": "P",
+   "kinds": [
+    "rna"
+   ]
+  },
+  {
+   "name": "T",
+   "kinds": [
+    "dna"
+   ]
+  }
+ ],
+ "title": "Structure of transcribing mammalian RNA polymerase II"
+}
