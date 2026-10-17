@@ -1,0 +1,105 @@
+{
+ "angle": "metal",
+ "measuredAt": "2026-10-17T08:49:23.307Z",
+ "commit": "661310f",
+ "node": "mac (Apple M2 Pro)",
+ "note": "ms per frame, GPU-synchronous (readPixels), 90 frames, median and p90",
+ "rows": [
+  {
+   "view": "phone",
+   "id": "1bna",
+   "atoms": 486,
+   "medianMs": 1.399999976158142,
+   "p90Ms": 1.6999999284744263,
+   "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)",
+   "w": 390,
+   "h": 844,
+   "dpr": 3,
+   "errs": []
+  },
+  {
+   "view": "phone",
+   "id": "1kx5",
+   "atoms": 13625,
+   "medianMs": 2.399999976158142,
+   "p90Ms": 2.9000000953674316,
+   "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)",
+   "w": 390,
+   "h": 844,
+   "dpr": 3,
+   "errs": []
+  },
+  {
+   "view": "phone",
+   "id": "5flm",
+   "atoms": 32712,
+   "medianMs": 3.5,
+   "p90Ms": 4.100000023841858,
+   "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)",
+   "w": 390,
+   "h": 844,
+   "dpr": 3,
+   "errs": []
+  },
+  {
+   "view": "phone",
+   "id": "4ug0",
+   "atoms": 218776,
+   "medianMs": 3.399999976158142,
+   "p90Ms": 5.199999928474426,
+   "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)",
+   "w": 390,
+   "h": 844,
+   "dpr": 3,
+   "errs": []
+  },
+  {
+   "view": "desktop",
+   "id": "1bna",
+   "atoms": 486,
+   "medianMs": 2.299999952316284,
+   "p90Ms": 3.899999976158142,
+   "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)",
+   "w": 1440,
+   "h": 900,
+   "dpr": 2,
+   "errs": []
+  },
+  {
+   "view": "desktop",
+   "id": "1kx5",
+   "atoms": 13625,
+   "medianMs": 2.0999999046325684,
+   "p90Ms": 2.1999999284744263,
+   "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)",
+   "w": 1440,
+   "h": 900,
+   "dpr": 2,
+   "errs": []
+  },
+  {
+   "view": "desktop",
+   "id": "5flm",
+   "atoms": 32712,
+   "medianMs": 6.200000047683716,
+   "p90Ms": 6.799999952316284,
+   "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)",
+   "w": 1440,
+   "h": 900,
+   "dpr": 2,
+   "errs": []
+  },
+  {
+   "view": "desktop",
+   "id": "4ug0",
+   "atoms": 218776,
+   "medianMs": 5.699999928474426,
+   "p90Ms": 6.100000023841858,
+   "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)",
+   "w": 1440,
+   "h": 900,
+   "dpr": 2,
+   "errs": []
+  }
+ ]
+}

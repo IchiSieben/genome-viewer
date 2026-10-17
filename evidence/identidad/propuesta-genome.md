@@ -119,7 +119,6 @@ Medido con la fórmula de contraste WCAG. «Panel» es la superficie elevada, `#
 
 - **Medición en GPU real:** carril `atoms` de la Mac (`tools/mac/atoms.sh` →
   `web/scripts/bench-atoms.mjs`). Resultado en `evidence/identidad/atoms-bench.json`.
-  - Las cifras quedan en la sección de abajo cuando el carril termina.
 - **SwiftShader** (rasterizador por CPU de esta máquina; no representa ningún dispositivo), 390 px
   a DPR 2, mediana por fotograma:
 
@@ -130,12 +129,27 @@ Medido con la fórmula de contraste WCAG. «Panel» es la superficie elevada, `#
   | 5FLM | 354 ms |
   | 4UG0 | 1760 ms |
 
-- **Regla propuesta, a confirmar con la medición:**
-  - Átomos completos hasta el tamaño que el teléfono dibuje en menos de 16 ms.
-  - Por encima, tubos del esqueleto (un punto por residuo).
-  - Un teléfono real queda en NEEDS-OWNER: la Mac no es un teléfono.
+- **GPU real** (Apple M2 Pro con Metal, carril `atoms`, 2026-10-17, commit `661310f`). Son
+  milisegundos por fotograma, esperando a la GPU, en 90 fotogramas:
 
-<!-- atoms-bench -->
+  | Estructura | Átomos | Teléfono 390 px, DPR 3: mediana / p90 | Escritorio 1440 px, DPR 2: mediana / p90 |
+  |---|---|---|---|
+  | 1BNA | 486 | 1,4 / 1,7 ms | 2,3 / 3,9 ms |
+  | 1KX5 | 13 625 | 2,4 / 2,9 ms | 2,1 / 2,2 ms |
+  | 5FLM | 32 712 | 3,5 / 4,1 ms | 6,2 / 6,8 ms |
+  | 4UG0 | 218 776 | 3,4 / 5,2 ms | 5,7 / 6,1 ms |
+
+- **Qué dice la medición:**
+  - En esta GPU todo cabe con holgura: el peor p90 es 6,8 ms, contra 16,7 ms de un fotograma a
+    60 Hz.
+  - 4UG0, con 218 776 átomos, cuesta casi lo mismo que 5FLM, con 32 712. Manda la cantidad de
+    píxeles pintados, no el número de átomos. Por eso el escritorio, con más píxeles, va más lento.
+- **Regla propuesta:**
+  - Átomos completos en todas las estructuras.
+  - El sitio ya mide su propio fotograma y baja el detalle si no llega (fase A). Con átomos, ese
+    escalón sería pasar a tubos del esqueleto (un punto por residuo) en 4UG0 y 5FLM.
+  - Una M2 Pro no es un teléfono: la GPU de un teléfono de gama media es varias veces más lenta.
+    Probarlo en un teléfono real queda en NEEDS-OWNER #13.
 
 ### Más estructuras reales (si suman a la historia)
 
@@ -172,8 +186,8 @@ La portada del visor (`/app/`) usa el mismo fondo, la misma tipografía y los mi
 ## Lo que falta decidir (tuyo)
 
 1. **¿Apruebas la base?** Tipografía, color y molécula de átomos completos. ¿O pides cambios?
-2. **¿Átomos completos o tubos en el móvil?** Depende de la medición en GPU. En un teléfono real
-   hay que mirarlo con los propios ojos.
+2. **¿Átomos completos también en el móvil?** En la GPU de la Mac caben con holgura (peor p90:
+   6,8 ms). Falta verlo en un teléfono real, con tus propios ojos.
 3. **¿Entra 4OO8 (Cas9)?** Es una entrada nueva en el capítulo 7.
 4. Una vez aprobada la propuesta, se implementa en producción en una rama nueva, ítem por ítem,
    con sus pruebas.
