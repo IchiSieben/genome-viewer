@@ -3,6 +3,11 @@
 *, *::before, *::after { box-sizing: border-box; }
 html { background: var(--st-bg); color-scheme: dark; scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+/* The molecule turns under a drag on empty space (island.ts). Touch: horizontal drags turn it,
+   vertical ones scroll the page, pinch still zooms. */
+html { touch-action: pan-y pinch-zoom; }
+html.can-turn { cursor: grab; }
+html.is-turning, html.is-turning * { cursor: grabbing; user-select: none; }
 body {
   margin: 0; background: var(--st-bg); color: var(--st-ink);
   font: var(--st-w-body) var(--st-body)/1.6 var(--st-font);

@@ -13,6 +13,7 @@
     "verify": "node scripts/serve-subfolder.mjs --run \"node scripts/verify.mjs\"",
     "verify:links": "node scripts/serve-subfolder.mjs --run \"node scripts/verify-links.mjs\"",
     "verify:stage": "node scripts/serve-subfolder.mjs --run \"node scripts/verify-stage.mjs\"",
+    "verify:motion": "node scripts/serve-subfolder.mjs --run \"node scripts/verify-motion.mjs\"",
     "measure": "node scripts/serve-subfolder.mjs --run \"node scripts/measure.mjs\""
   },
   "devDependencies": {

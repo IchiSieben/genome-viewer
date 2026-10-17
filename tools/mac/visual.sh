@@ -15,6 +15,8 @@ for L in en es; do
   echo "== visual: $L"
   AGP_STAGE_LANGS=$L npm run verify:stage 2>&1 | tail -40; r=${PIPESTATUS[0]}
   [ "$r" != 0 ] && rc=$r
+  AGP_STAGE_LANGS=$L npm run verify:motion 2>&1 | tail -20; r=${PIPESTATUS[0]}
+  [ "$r" != 0 ] && rc=$r
 done
 mkdir -p ../docs/evidence/stage/visual && cp -R qa/stage/. ../docs/evidence/stage/visual/ 2>/dev/null || true
 exit "$rc"

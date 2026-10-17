@@ -71,10 +71,12 @@ function pick(): void {
     if (r.top <= mid && r.bottom > mid) { best = s; break; }
   }
   const id = best?.dataset.structure;
-  if (!id || id === currentId) return;
-  currentId = id;
-  setCaption(id);
-  island?.show(id);
+  if (!id) return;
+  // The cover lets the island cycle the catalog; a chapter asks for its own structure on every
+  // pick (the cycle may have moved it while the reader sat at the top).
+  if (best!.classList.contains('st-hero') && island?.mode === 'webgl') { island.idle(); return; }
+  if (id !== currentId) { currentId = id; setCaption(id); }
+  island?.show(id); // cheap when already there; also ends the cover's cycle
 }
 
 // ---- scale journey: scroll progress → size of one structure, ruler text ---------------------
@@ -132,7 +134,8 @@ function boot(): void {
   if (!root) return;
   const base = (document.querySelector<HTMLMetaElement>('meta[name="agp-root"]')?.content || './') + 'stage/';
   void import('./island')
-    .then((m) => m.mountIsland(root, base, currentId))
+    // The caption names what the island draws, including what the cover's cycle brings on.
+    .then((m) => m.mountIsland(root, base, currentId, (id) => { currentId = id; setCaption(id); }))
     .then((i) => {
       island = i;
       if (currentId !== firstId) i.show(currentId);
