@@ -12,12 +12,14 @@ AGP_SITE=https://genome.ichisieben.dev AGP_BASE=/ npm run build >/tmp/agp-visual
 # One browser per language: on Metal the second language of a shared browser fell back to the
 # poster with no console error (visual4); apart, each run starts from a fresh GPU process.
 rc=0
+# The node's GPU for the motion and layout checks (Metal on macOS; SwiftShader elsewhere).
+ANGLE=swiftshader; [ "$(uname -s)" = Darwin ] && ANGLE=metal
 for L in en es; do
   echo "== visual: $L"
   AGP_STAGE_LANGS=$L npm run verify:stage 2>&1 | tail -40; r=${PIPESTATUS[0]}
   [ "$r" != 0 ] && rc=$r
   for chk in motion layout register tour; do
-    AGP_STAGE_LANGS=$L npm run verify:$chk 2>&1 | grep -E 'FALLA|TODO OK|FALLAS'; r=${PIPESTATUS[0]}
+    AGP_ANGLE=$ANGLE AGP_STAGE_LANGS=$L npm run verify:$chk 2>&1 | grep -E 'FALLA|TODO OK|FALLAS'; r=${PIPESTATUS[0]}
     [ "$r" != 0 ] && rc=$r
   done
 done

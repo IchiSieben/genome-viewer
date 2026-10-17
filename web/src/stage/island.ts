@@ -231,7 +231,8 @@ export async function mountIsland(root: HTMLElement, base: string, firstId: stri
   let clock = 0; // ms of visible time: the thermal wobble's clock, it does not run while hidden
   let paused = false;
   document.addEventListener('visibilitychange', () => { paused = document.hidden; lastT = 0; });
-  let probe = { yaw: 0, pitch: PITCH0, scale: 1, target: firstId, current: firstId };
+  // t: the time of the frame these values were drawn in (the motion test samples per frame).
+  let probe = { t: 0, yaw: 0, pitch: PITCH0, scale: 1, target: firstId, current: firstId };
   function frame(now: number): void {
     if (lost) return;
     requestAnimationFrame(frame);
@@ -280,7 +281,10 @@ export async function mountIsland(root: HTMLElement, base: string, firstId: stri
 
     if (still) { yaw = 0.36; pitch = PITCH0; }
     else if (!dragging) {
-      const r = 1 - Math.exp(-dt / RELAX_MS);
+      // The relaxation runs on real time (bounded at 1 s), the integration on the capped step: a
+      // slow device turns a little slower but settles back to the idle turn on schedule (at 5 fps
+      // the capped step made the settling 4x slower; verify-motion, "5 fps").
+      const r = 1 - Math.exp(-Math.min(raw, 1000) / RELAX_MS);
       vYaw += (IDLE_YAW - vYaw) * r;
       vPitch += (0 - vPitch) * r;
       yaw += vYaw * dt;
@@ -289,7 +293,7 @@ export async function mountIsland(root: HTMLElement, base: string, firstId: stri
     }
     renderer.setRotation(yaw, pitch);
     renderer.draw((still ? 4000 : clock) / 1000);
-    probe = { yaw, pitch, scale: morphing ? scaleA + (scaleB - scaleA) * e : scaleA, target, current };
+    probe = { t: now, yaw, pitch, scale: morphing ? scaleA + (scaleB - scaleA) * e : scaleA, target, current };
   }
   requestAnimationFrame(frame);
 

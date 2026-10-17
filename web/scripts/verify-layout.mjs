@@ -13,11 +13,13 @@ import { chromium } from 'playwright';
 
 const BASE = process.env.AGP_BASE_URL || 'http://127.0.0.1:8099/genome-viewer/';
 const LANGS = (process.env.AGP_STAGE_LANGS || 'en,es').split(',');
+const ANGLE = process.env.AGP_ANGLE || 'swiftshader';
 const WIDTHS = [[390, 844], [768, 1024], [1440, 900], [1920, 1080], [2560, 1440]]
   .filter(([w]) => !process.env.AGP_WIDTHS || process.env.AGP_WIDTHS.split(',').includes(String(w)));
 
 const browser = await chromium.launch({
-  args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-webgl'],
+  // AGP_ANGLE=metal on the Mac lane: the node's GPU, not a CPU rasterizer (SwiftShader ran the Mac at ~5 fps).
+  args: [`--use-angle=${ANGLE}`, ...(ANGLE === 'swiftshader' ? ['--enable-unsafe-swiftshader'] : ['--enable-gpu']), '--ignore-gpu-blocklist', '--enable-webgl'],
 });
 let failures = 0;
 function check(label, ok, detail = '') {
@@ -32,7 +34,8 @@ for (const lang of LANGS) {
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
-    page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') errors.push(`${m.type()}: ${m.text()}`); });
+    // Errors only: a GL driver's performance warning ("GPU stall due to ReadPixels", Mac) is not a page fault.
+    page.on('console', (m) => { if (m.type() === 'error') errors.push(`${m.type()}: ${m.text()}`); });
     await page.goto(BASE + (lang === 'es' ? 'es/' : ''), { waitUntil: 'load' });
     await page.waitForTimeout(800);
 
