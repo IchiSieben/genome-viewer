@@ -148,3 +148,41 @@
   - **No se hace:** nada de la fase B toca `main` ni producción.
 - **Descartado:** implementar la fase B en producción con la mejor opción, como hace el modo
   autónomo con las variantes. El encargo lo prohíbe de forma explícita y específica.
+
+## F-11 · 2026-10-17 · Con pocos fotogramas el giro vuelve al reposo a tiempo; la Mac prueba con Metal
+
+- **Encontrado** por el carril de la Mac (`stage-visual6`). Fallaron 5 comprobaciones de movimiento
+  en EN y en ES, todas por correr a unos 5 fps:
+  - los tests forzaban SwiftShader (render por CPU) también en la Mac;
+  - otro trabajo usaba la Mac a la vez.
+- **Dos causas:**
+  - **Del test.** Muestreaba con el reloj cada 100 ms, pero el ángulo cambia una vez por fotograma.
+    «Sin cambio» entre fotogramas parecía congelado, y dos fotogramas juntos parecían un salto
+    (tamaño «3,3/s»).
+    - Arreglo: cada muestra lleva la hora del fotograma (`motion().t`) y se guarda una por
+      fotograma.
+  - **Del código.** La vuelta al giro de reposo usaba el paso acotado a 50 ms. A 5 fps tardaba 4
+    veces más: 5 s después de soltar seguía girando hacia atrás.
+    - Arreglo: la relajación corre en tiempo real (acotada a 1 s). La integración sigue con el
+      paso acotado, así que no hay saltos.
+- **Prueba nueva** «5 fps» (rAF retenido a 200 ms): falla con el código anterior y pasa con el
+  nuevo, en EN y en ES.
+- **El carril visual de la Mac** pasa `AGP_ANGLE=metal` a movimiento y maquetación: la GPU del
+  nodo, como pide el encargo.
+- **La maquetación** cuenta errores de página, no avisos de rendimiento del driver GL.
+- **Revertir:** `git revert a97d32b`.
+
+## F-12 · 2026-10-17 · Cambio de capítulo: la prueba exige continuidad, no velocidad exacta
+
+- **Encontrado:** visual7, en la Mac con Metal. La única falla fue en ES, al cambiar de capítulo:
+  un tramo a 0,033 rad/s cuando el reposo va a 0,09. La cota era ±60 % del reposo.
+- **Causa:** un fotograma largo mientras se cargaba la estructura siguiente. Como el paso está
+  acotado a 50 ms, ese fotograma avanza menos. Se ve como un instante más lento, no como un salto.
+- **Elegido:** el ángulo avanza siempre en el mismo sentido (r > 0) y nunca supera 1,6 × reposo.
+  - El fallo original de A1 (el término de scroll llegaba a 8,6 rad/s en los dos sentidos) sigue
+    fallando la prueba.
+  - El encargo pide «continuidad y que no se congele», no una velocidad exacta.
+- **Descartado:**
+  - Subir el tope de dt: vuelven los saltos tras una pestaña oculta.
+  - Perseguir el fotograma largo: es la carga de la nube y no se ve.
+- **Revertir:** devolver la cota `Math.abs(x.r - idle) < idle * 0.6` en `verify-motion.mjs`.

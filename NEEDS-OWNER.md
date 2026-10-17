@@ -81,7 +81,12 @@ AGP_AB_LANG=es AGP_AB_PATH_REF=es/ AGP_AB_PATH_NEW=es/app/ node scripts/measure-
   `genome-viewer-backup/pre-sanitize-2026-09-26.bundle` ya no está. Esta sesión volvió a crear la
   carpeta solo para la copia vieja del landing. Si el bundle lo borraste tú, no hay nada que hacer.
 
-## 11. Cancelar los trabajos viejos de AlphaGenome en la cola de enjambre
+## 11. ~~Cancelar los trabajos viejos de AlphaGenome en la cola de enjambre~~: ya no hace falta (2026-10-17)
+
+- Los cuatro trabajos corrieron cuando volvió la Mac (04:44–05:13 UTC del 2026-10-17) y la cola
+  está vacía.
+- `git ls-remote origin` muestra solo `main` y `fase-a-bugs`: ninguna rama `mac/*` volvió al
+  remoto público. Lo que sigue queda como historia.
 
 - **Qué:** `stage-visual2`, `stage-lh`, `stage-media` y `stage-posters` llevan desde el 2026-10-15
   esperando a la Mac, y ya están superados por `visual5`, `lh2`, `media4` y `posters2`. Si la Mac
@@ -92,3 +97,28 @@ AGP_AB_LANG=es AGP_AB_PATH_REF=es/ AGP_AB_PATH_NEW=es/app/ node scripts/measure-
   cd ../enjambre && for j in stage-visual2 stage-lh stage-media stage-posters; do python enjambre.py kill $j; done
   python enjambre.py status | grep -A6 '^queue'
   ```
+
+## 12. El «título cortado a la izquierda» de la fase A (A3): ¿en qué navegador?
+
+- **Qué:** no se reprodujo en Chromium, Firefox ni WebKit, de 1280 a 2560 px.
+  - Se añadió una guarda (`overflow-x: clip`) y una prueba en cinco anchos.
+- **Pedido:** si vuelve a verse, una captura y el navegador y su versión. Con eso se escribe la
+  prueba que lo reproduce.
+
+## 13. La molécula de átomos completos (propuesta B) en un teléfono real
+
+- **Qué:**
+  - La Mac mide el coste por fotograma en su GPU: carril `atoms`, resultado en
+    `evidence/identidad/atoms-bench.json`.
+  - Un teléfono no es una Mac. Hay que abrir el mockup en uno de gama media y mirar si gira suave.
+- **Cómo** (rama `fase-b-identidad`): en la raíz del repo,
+  `python -m http.server 8123 --directory evidence/identidad/mockup`. Luego, desde el teléfono en
+  la misma red, `http://<ip-del-pc>:8123/es/capitulo-1.html`.
+
+## 14. El borrador automático de handoff copia comandos con rutas locales
+
+- **Qué:** el hook que escribe `docs/handoffs/<fecha>-draft.md` vuelca los comandos fallidos tal
+  cual, con las rutas de la carpeta de usuario.
+  - La auditoría de privacidad lo frenó antes del push del 2026-10-17 y se tapó a mano.
+- **Arreglo propuesto:** que el hook reemplace las rutas de usuario por `<home>` al escribir. El
+  hook es global (`~/.claude`), no de este repo, por eso queda aquí.

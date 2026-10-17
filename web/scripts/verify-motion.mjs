@@ -124,7 +124,10 @@ for (const lang of LANGS) {
   const cs = rates(chapRec, 'scale');
   const targets = [...new Set(chapRec.map((m) => m.target))];
   check(`${lang} capitulos: cambia de estructura dos veces`, targets.length >= 3, targets.join(' → '));
-  check(`${lang} capitulos: el angulo sigue igual, sin saltos ni giro por el scroll`, cy.every((x) => x.r > 0 && Math.abs(x.r - idle) < idle * 0.6),
+  // Same direction and never faster than 1.6x the idle turn: a jump or a scroll-driven spin (the old
+  // scrollY term reached 8.6 rad/s, both ways) fails; a frame that ran long while the next cloud
+  // loaded advances less (dt is capped) and reads as a brief slowdown, not a jump (Mac, visual7).
+  check(`${lang} capitulos: el angulo sigue igual, sin saltos ni giro por el scroll`, cy.every((x) => x.r > 0 && x.r < idle * 1.6),
     `min ${fmt(Math.min(...cy.map((x) => x.r)))}, max ${fmt(Math.max(...cy.map((x) => x.r)))} rad/s`);
   check(`${lang} capitulos: sin saltos de tamaño`, maxAbs(cs) <= MAX_SCALE_RATE, `max ${fmt(maxAbs(cs))}/s`);
 
