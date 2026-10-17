@@ -506,6 +506,17 @@ catalogo. Y un test comprueba que la lista de prohibidos de verdad atrapa.
 - **El texto del hallazgo es prosa libre.** El test protege la aritmetica y el
   vocabulario, no la interpretacion biologica.
 
+## Fases A y B (sesión del 2026-10-17)
+
+- **Fase A (bugs A1–A4):** en `main` y en vivo. Las pruebas son verify-motion, verify-tour,
+  verify-layout y verify-register. Decisiones F-01…F-13 en `docs/DECISIONES.md`.
+- **verify-motion:** mide el giro por segundo del reloj de la isla (`__stage.motion().clock`) y el
+  tamaño y la mano en tiempo real (F-13). Si una falla aparece solo en la Mac, mira primero el ritmo
+  de fotogramas.
+- **Fase B:** propuesta en la rama `fase-b-identidad`, esperando al dueño. No implementar sin su sí.
+- **Antes de cada push:** `bash tools/privacy-audit.sh`. El borrador automático de handoff mete
+  rutas locales; hay que redactarlas antes del commit (NEEDS-OWNER #14).
+
 ## El escenario (sesión del 2026-10-15)
 
 - **Qué es:** `/` y `/es/` son un relato en siete capítulos y dos registros (8 años por

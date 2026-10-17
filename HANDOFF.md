@@ -1,4 +1,32 @@
-# HANDOFF — Visor del genoma / Genome Viewer (actualizado: 2026-10-16, ramas `mac/*` borradas)
+# HANDOFF — Visor del genoma / Genome Viewer (actualizado: 2026-10-17, fases A y B)
+
+## Sesión del 2026-10-17: fase A (bugs) desplegada, fase B (identidad) propuesta y PARADA
+
+- **Encargo:** el dueño revisó el sitio en escritorio: bugs y falta de personalidad. Decisiones
+  de la sesión: `docs/DECISIONES.md` F-01…F-13.
+- **Fase A, rama `fase-a-bugs`, integrada en `main`**. Un commit por ítem, cada uno
+  con una prueba que falló primero:
+  - A1, la molécula (`ed0baf5`, `9aee197`, `a97d32b`, `b66908a`, `10fc97d`, `0ea3006`):
+    `web/scripts/verify-motion.mjs`.
+  - A2, el tour (`2d44140`): `web/scripts/verify-tour.mjs`.
+  - A3, el layout (`8f36ede`, `4c945be`): `web/scripts/verify-layout.mjs`.
+  - A4, el interruptor de nivel (`0055a5a`): `web/scripts/verify-register.mjs`.
+  - Herramientas (`0d41d87`): `tools/privacy-audit.sh` antes de cada push; carril `visual` de la Mac
+    en Metal.
+- **Desplegado:** build de `10fc97d` (`0ea3006` solo cambia pruebas y documentos) con
+  `AGP_NOINDEX=0`, por TUS a `genome-app/` (182 archivos, 12,5 MB). verify-live: TODO OK.
+- **Mac (Metal), `stage-visual10` sobre `0ea3006`:** exit 0. stage, motion, layout, register y tour dan TODO OK en EN y ES, sin ninguna FALLA.
+- **Fase B, rama `fase-b-identidad`** (`7c106a8`, no integrada, no desplegada): propuesta en
+  `evidence/identidad/propuesta-genome.md`, mockup en `evidence/identidad/mockup/`, capturas en
+  `evidence/identidad/capturas/`. Banco de átomos en GPU real en `evidence/identidad/atoms-bench.json`
+  (peor p90 6,8 ms). **Espera el sí del dueño (F-10). No implementar.**
+- **Pendiente del dueño:** NEEDS-OWNER #12 (el «título cortado» de A3: ¿qué navegador?), #13
+  (átomos completos en un teléfono real), #14 (el hook del borrador de handoff escribe rutas
+  locales; aquí se redactan a mano antes de cada commit).
+- **Ojo al construir desde Git Bash:** `AGP_BASE='/'` se convierte en `C:/Program Files/Git/`.
+  Construir desde PowerShell, como dice E-02.
+
+## Estado anterior (actualizado: 2026-10-16, ramas `mac/*` borradas)
 
 > Sesión autónoma del 2026-10-15 (13:14–23:30 Lima) con el prompt maestro
 > `docs/09-PROMPT-escenario-educativo.md`. Decisiones: `docs/09-decisiones-autonomas.md`
@@ -11,7 +39,7 @@
   `origin/main` y se empuja con `git push origin master:main`).
 - **En vivo y público (sin noindex desde el 2026-10-15, E-25)** en el subdominio propio
   (docroot `public_html/genome-app`, subido por TUS con `tools/deploy_tus.py`). Lo desplegado es
-  el build de `6db6ea1` con `AGP_NOINDEX=0`; verify-live TODO OK, noindex en 0/23 documentos:
+  el build de `10fc97d` (2026-10-17) con `AGP_NOINDEX=0`; verify-live TODO OK:
   - https://genome.ichisieben.dev/ y `/es/`: **el escenario**, el relato en siete capítulos.
   - https://genome.ichisieben.dev/app/ y `/es/app/`: **el visor**. Los enlaces viejos `/#/…`
     redirigen a `app/#/…`.

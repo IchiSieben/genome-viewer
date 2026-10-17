@@ -1,3 +1,65 @@
+# MORNING-REPORT — fase A (bugs) y fase B (identidad), 2026-10-17
+
+> Sesión autónoma sobre tu revisión en escritorio: «tiene bugs y le falta personalidad». Las
+> decisiones están en `docs/DECISIONES.md` (F-01…F-13). Lo que necesita tu mano está en
+> `NEEDS-OWNER.md` #12–#14.
+
+## Fase A: en vivo en https://genome.ichisieben.dev/ (y /es/)
+
+Cada bug tiene una prueba que lo reproducía y fallaba antes del arreglo:
+
+| Bug | Qué cambió | Prueba |
+|---|---|---|
+| A1 molécula | Gira sola y sin pausa. Sigue al arrastre y conserva la inercia al soltar, también cuando el `pointerup` llega antes que el último movimiento. Después vuelve al giro de reposo. Al cambiar de capítulo no salta ni gira por el scroll. Respeta reduced-motion. A 5 fps se recupera a tiempo. | `web/scripts/verify-motion.mjs` |
+| A2 tour | Las tarjetas caben en 390, 768 y 1440 px. «Saltar» y Escape funcionan en cada paso. Se recuerda si ya lo viste. | `web/scripts/verify-tour.mjs` |
+| A3 layout | Sin scroll lateral. Cabecera y pie opacos, sin texto debajo. Una sola leyenda por estructura. Una descarga tardía ya no devuelve el escenario a un capítulo que ya dejaste. | `web/scripts/verify-layout.mjs` |
+| A4 nivel | Un único interruptor fijo en la barra. La primera vez dice «Elige cómo quieres leer: como a los ocho años o como en un doctorado». Cambia todos los bloques a la vez y se recuerda. | `web/scripts/verify-register.mjs` |
+
+- **Cifras:**
+  - 12 commits en `fase-a-bugs`, integrada en `main`.
+  - Build desplegado: 182 archivos, 12,5 MB.
+  - verify-live: TODO OK.
+  - En la Mac (Metal), `stage-visual10`: stage, motion, layout, register y tour dan TODO OK en ES y EN.
+- Tres de las fallas en la Mac eran de la prueba, no del producto: el ritmo de fotogramas de
+  Chromium sin pantalla. Cada una tiene su decisión: F-11, F-12 y F-13.
+
+## Fase B: propuesta, sin implementar (rama `fase-b-identidad`)
+
+- **Léela primero:** `evidence/identidad/propuesta-genome.md`.
+- **Mockup:** `python -m http.server 8123 --directory evidence/identidad/mockup`. Luego abre
+  `es/capitulo-1.html`, `en/chapter-1.html`, `es/visor.html` y `en/viewer.html`.
+- **Qué se ve distinto:**
+  - La doble hélice real de 1BNA, átomo por átomo (486 esferas), ocupa media pantalla y gira de
+    pie.
+  - A, C, G y T tienen color propio (Okabe-Ito). Ese color se repite en la leyenda, en la secuencia
+    CGCGAATTCGCG y en la variante del visor.
+  - Bricolage Grotesque 800 en titulares y cifras enormes; Atkinson Hyperlegible en el texto, con
+    una medida de unos 66 caracteres.
+  - El visor ya no tiene botón azul ni bordes de Bootstrap. Ahora muestra el PHRED 25,96 enorme,
+    una regla de rareza y la cascada SHAP.
+- **Cifras:**
+  - Contraste AA: el texto más tenue llega a 6,0:1; la T, a 4,8:1.
+  - Fuentes: 93 KB en total.
+  - GPU de la Mac: el peor fotograma (p90) es 6,8 ms, incluso con los 218 776 átomos de 4UG0.
+- **Base elegida: The Pudding** (Oro, Information is Beautiful Awards 2024). Lleva injertos de
+  Ciechanowski y de Learn.Genetics.
+
+## Qué mirar con tus propios ojos
+
+1. **En el sitio en vivo, en escritorio:**
+   - Arrastra la molécula y suéltala en pleno movimiento: debe seguir girando hacia ese lado y
+     volver despacio al giro de reposo.
+   - Baja capítulo a capítulo: no debe haber saltos de tamaño ni de ángulo.
+2. **El tour en tu móvil:** las tarjetas deben quedar dentro de la pantalla y «Saltar» debe
+   funcionar.
+3. **El «título cortado» que viste (#12):** no lo pude reproducir. Dime en qué navegador y a qué
+   ancho lo viste.
+4. **El mockup en un teléfono real (#13):** comprueba si los átomos completos van fluidos.
+5. **La propuesta:** ¿apruebas la base, la tipografía y el color? ¿Entra 4OO8 (Cas9) en el
+   capítulo 7?
+
+---
+
 # MORNING-REPORT — sesión del escenario, 2026-10-15
 
 > Sesión autónoma del 2026-10-15, de 13:14 a ~18:05 Lima (plan terminado antes de las 23:30), con `docs/09-PROMPT-escenario-educativo.md`. Los hitos
